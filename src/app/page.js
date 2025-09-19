@@ -125,7 +125,7 @@ export default function Home() {
                   </p>
                   <p>
                     We believe that education should be inclusive, engaging, and future-focused. 
-                    That's why we offer a diverse range of courses—from foundational knowledge to 
+                    That&apos;s why we offer a diverse range of courses—from foundational knowledge to 
                     digital entrepreneurship and personal development.
                   </p>
                   <p>
