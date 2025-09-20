@@ -4,14 +4,23 @@ import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import Header from './component/include/header'
 export default function Home() {
- const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
+    // run only on client
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
 
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // set initial value
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
   return (
     <>
