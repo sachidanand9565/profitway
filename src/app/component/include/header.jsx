@@ -1,20 +1,44 @@
-import React,{useState} from 'react'
-import Head from 'next/head'
+"use client";
+import React, { useState, useEffect } from "react";
+import Head from "next/head";
 
-function header() {
-   const [isMenuOpen, setIsMenuOpen] = useState(false)
+function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleScroll = () => setScrollY(window.scrollY);
+      window.addEventListener("scroll", handleScroll);
+
+      // set initial value
+      setScrollY(window.scrollY);
+
+      return () => window.removeEventListener("scroll", handleScroll);
+    }
+  }, []);
+
   return (
-  <div>
- <Head>
+    <div>
+      <Head>
         <title>ProfitWay - Transform Your Future Through Learning</title>
-        <meta name="description" content="Revolutionary online education platform combining neuro-education with arts. Unlock your potential with our innovative learning experience." />
+        <meta
+          name="description"
+          content="Revolutionary online education platform combining neuro-education with arts. Unlock your potential with our innovative learning experience."
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className=" bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         {/* Navigation */}
-        <nav className={`fixed w-full z-50 transition-all duration-300 ${scrollY > 50 ? 'bg-black/80 backdrop-blur-lg' : 'bg-transparent'}`}>
+        <nav
+          className={`fixed w-full z-50 transition-all duration-300 ${
+            scrollY > 50
+              ? "bg-black/80 backdrop-blur-lg"
+              : "bg-transparent"
+          }`}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center">
@@ -22,7 +46,7 @@ function header() {
                   ProfitWay
                 </div>
               </div>
-              
+
               {/* Desktop Menu */}
               <div className="hidden md:flex space-x-8">
                 <a href="#home" className="text-white hover:text-cyan-400 transition-colors">Home</a>
@@ -45,8 +69,18 @@ function header() {
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="text-white hover:text-cyan-400 transition-colors"
                 >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <svg
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   </svg>
                 </button>
               </div>
@@ -72,9 +106,9 @@ function header() {
             )}
           </div>
         </nav>
-</div>
-</div>
-  )
+      </div>
+    </div>
+  );
 }
 
-export default header
+export default Header;
