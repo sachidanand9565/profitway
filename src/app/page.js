@@ -176,82 +176,115 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                {
-                  title: "Digital Marketing Mastery",
-                  duration: "12 weeks",
-                  level: "Beginner to Advanced",
-                  students: "2,500+",
-                  rating: "4.9"
-                },
-                {
-                  title: "Affiliate Marketing Blueprint",
-                  duration: "8 weeks",
-                  level: "Intermediate",
-                  students: "1,800+",
-                  rating: "4.8"
-                },
-                {
-                  title: "E-commerce Business Strategy",
-                  duration: "10 weeks",
-                  level: "Advanced",
-                  students: "1,200+",
-                  rating: "4.9"
-                },
-                {
-                  title: "Social Media Marketing",
-                  duration: "6 weeks",
-                  level: "Beginner",
-                  students: "3,000+",
-                  rating: "4.7"
-                },
-                {
-                  title: "Content Creation & Copywriting",
-                  duration: "8 weeks",
-                  level: "Intermediate",
-                  students: "2,200+",
-                  rating: "4.8"
-                },
-                {
-                  title: "Personal Branding Essentials",
-                  duration: "4 weeks",
-                  level: "Beginner",
-                  students: "1,500+",
-                  rating: "4.6"
-                }
-              ].map((course, index) => (
-                <div key={index} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden hover:from-purple-800/30 hover:to-cyan-800/30 transition-all duration-300 transform hover:-translate-y-2 border border-gray-700/50">
-                  <div className="h-48 bg-gradient-to-br from-purple-600/30 to-cyan-600/30 flex items-center justify-center">
-                    <div className="text-6xl opacity-50">📚</div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-white mb-3">{course.title}</h3>
-                    <div className="space-y-2 text-sm text-gray-300 mb-4">
-                      <div className="flex justify-between">
-                        <span>Duration:</span>
-                        <span className="text-cyan-400">{course.duration}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Level:</span>
-                        <span className="text-purple-400">{course.level}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Students:</span>
-                        <span className="text-green-400">{course.students}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Rating:</span>
-                        <span className="text-yellow-400">⭐ {course.rating}</span>
-                      </div>
-                    </div>
-                    <button className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-700 transition-all">
-                      Enroll Now
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+  {[
+    {
+      title: "Digital Marketing Mastery",
+      duration: "12 weeks",
+      level: "Beginner to Advanced",
+      students: "2,500+",
+      rating: "4.9",
+      price: "₹12,999",
+      originalPrice: "₹19,999"
+    },
+    {
+      title: "Affiliate Marketing Blueprint",
+      duration: "8 weeks",
+      level: "Intermediate",
+      students: "1,800+",
+      rating: "4.8",
+      price: "₹8,999",
+      originalPrice: "₹14,999"
+    },
+    {
+      title: "E-commerce Business Strategy",
+      duration: "10 weeks",
+      level: "Advanced",
+      students: "1,200+",
+      rating: "4.9",
+      price: "₹15,999",
+      originalPrice: "₹24,999"
+    },
+    {
+      title: "Social Media Marketing",
+      duration: "6 weeks",
+      level: "Beginner",
+      students: "3,000+",
+      rating: "4.7",
+      price: "₹6,999",
+      originalPrice: "₹9,999"
+    },
+    {
+      title: "Content Creation & Copywriting",
+      duration: "8 weeks",
+      level: "Intermediate",
+      students: "2,200+",
+      rating: "4.8",
+      price: "₹9,999",
+      originalPrice: "₹15,999"
+    },
+    {
+      title: "Personal Branding Essentials",
+      duration: "4 weeks",
+      level: "Beginner",
+      students: "1,500+",
+      rating: "4.6",
+      price: "₹4,999",
+      originalPrice: "₹7,999"
+    }
+  ].map((course, index) => (
+    <div key={index} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden hover:from-purple-800/30 hover:to-cyan-800/30 transition-all duration-300 transform hover:-translate-y-2 border border-gray-700/50">
+      <div className="h-48 bg-gradient-to-br from-purple-600/30 to-cyan-600/30 flex items-center justify-center relative">
+        <div className="text-6xl opacity-50">📚</div>
+        {/* Price Badge */}
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+          Save 35%
+        </div>
+      </div>
+      <div className="p-6">
+        <h3 className="text-xl font-bold text-white mb-3">{course.title}</h3>
+        
+        {/* Price Section */}
+        <div className="mb-4">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              {course.price}
+            </span>
+            <span className="text-gray-400 line-through text-lg">
+              {course.originalPrice}
+            </span>
+          </div>
+          <div className="text-xs text-green-400 font-medium">
+            💰 Limited Time Offer
+          </div>
+        </div>
+
+        <div className="space-y-2 text-sm text-gray-300 mb-4">
+          <div className="flex justify-between">
+            <span>Duration:</span>
+            <span className="text-cyan-400">{course.duration}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Level:</span>
+            <span className="text-purple-400">{course.level}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Students:</span>
+            <span className="text-green-400">{course.students}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Rating:</span>
+            <span className="text-yellow-400">⭐ {course.rating}</span>
+          </div>
+        </div>
+        
+        <button className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-cyan-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg">
+          Enroll Now
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
           </div>
         </section>
 
