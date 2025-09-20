@@ -5,14 +5,31 @@
   import Header from '@/app/component/include/header'
 
   export default function About() {
-    const [isMenuOpen, setIsMenuOpen] = useState(false)
-    const [scrollY, setScrollY] = useState(0)
+const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [scrollY, setScrollY] = useState(0)
+  const [isMounted, setIsMounted] = useState(false)
 
-    useEffect(() => {
-      const handleScroll = () => setScrollY(window.scrollY)
+  useEffect(() => {
+    // Set mounted to true after component mounts (client-side only)
+    setIsMounted(true)
+    
+    const handleScroll = () => {
+      if (typeof window !== 'undefined') {
+        setScrollY(window.scrollY)
+      }
+    }
+    
+    // Only add event listener if window exists (client-side)
+    if (typeof window !== 'undefined') {
       window.addEventListener('scroll', handleScroll)
       return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
+    }
+  }, [])
+
+  // Don't render until component is mounted on client-side
+  if (!isMounted) {
+    return null
+  }
 
     return (
       <>
