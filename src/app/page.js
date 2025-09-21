@@ -556,7 +556,7 @@ export default function Home() {
                 Our <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Packages</span>
               </h2>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                "Unlock expertise with exclusive packages. Empower with industry-leading courses."
+                Unlock expertise with exclusive packages. Empower with industry-leading courses.
               </p>
             </div>
 
@@ -757,7 +757,7 @@ export default function Home() {
 
                     {/* Course Features */}
                     <div className="mb-6">
-                      <h4 className="text-white font-semibold mb-3 text-sm">What You'll Learn:</h4>
+                      <h4 className="text-white font-semibold mb-3 text-sm">What You&quot;ll Learn:</h4>
                       <div className="space-y-2">
                         {course.features.slice(0, 3).map((feature, idx) => (
                           <div key={idx} className="flex items-center text-sm text-gray-300">
