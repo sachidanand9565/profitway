@@ -51,7 +51,7 @@ function Header() {
               <div className="hidden md:flex space-x-8">
                 <a href="/" className="text-white hover:text-cyan-400 transition-colors">Home</a>
                 <a href="/about" className="text-white hover:text-cyan-400 transition-colors">About</a>
-                <a href="#courses" className="text-white hover:text-cyan-400 transition-colors">Courses</a>
+                <a href="/packages" className="text-white hover:text-cyan-400 transition-colors">Courses Packages</a>
                 <a href="#features" className="text-white hover:text-cyan-400 transition-colors">Features</a>
                 <a href="#contact" className="text-white hover:text-cyan-400 transition-colors">Contact</a>
               </div>
@@ -92,7 +92,7 @@ function Header() {
                 <div className="flex flex-col space-y-4 px-4">
                   <a href="/" className="text-white hover:text-cyan-400 transition-colors">Home</a>
                   <a href="/about" className="text-white hover:text-cyan-400 transition-colors">About</a>
-                  <a href="#courses" className="text-white hover:text-cyan-400 transition-colors">Courses</a>
+                  <a href="/packages" className="text-white hover:text-cyan-400 transition-colors">Courses Packages</a>
                   <a href="#features" className="text-white hover:text-cyan-400 transition-colors">Features</a>
                   <a href="#contact" className="text-white hover:text-cyan-400 transition-colors">Contact</a>
                   <div className="pt-4 border-t border-gray-700">

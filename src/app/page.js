@@ -218,65 +218,133 @@ export default function Home() {
     }
   ];
 
+  // Updated packages from handwritten notes with proper features
   const packages = [
     {
-      name: "Starter Package",
+      name: "BASIC PACKAGE",
       subtitle: "Perfect for Beginners",
-      price: "₹14,999",
-      originalPrice: "₹29,999",
-      duration: "3 Months Access",
+      price: "₹249",
+      originalPrice: "₹399",
+      duration: "Income Generation",
       popular: false,
       features: [
-        "3 Core Courses Access",
-        "Basic Community Access",
+        "Access to Digital Marketing Course",
+        "Basic Affiliate Marketing Training",
         "Email Support",
         "Mobile App Access",
-        "Certificate of Completion",
-        "Resource Downloads"
+        "Community Access"
       ],
-      courses: ["Digital Marketing Basics", "Social Media Marketing", "Personal Branding"],
-      savings: "50% OFF"
+      courses: ["Digital Marketing Basics", "Income Generation Strategies"],
+      savings: "37% OFF",
+      incomeDetails: {
+        active: "₹175",
+        passive: "₹25"
+      }
     },
     {
-      name: "Professional Package",
-      subtitle: "Most Popular Choice",
-      price: "₹24,999",
-      originalPrice: "₹49,999",
-      duration: "6 Months Access",
-      popular: true,
-      features: [
-        "6 Premium Courses Access",
-        "VIP Community Access",
-        "Priority Support",
-        "1-on-1 Mentorship (2 Sessions)",
-        "Live Masterclasses",
-        "Advanced Resources",
-        "Project Reviews",
-        "Industry Connections"
-      ],
-      courses: ["All Starter Courses", "Affiliate Marketing", "E-commerce Strategy", "Content Creation"],
-      savings: "50% OFF"
-    },
-    {
-      name: "Business Package",
-      subtitle: "For Serious Entrepreneurs",
-      price: "₹39,999",
-      originalPrice: "₹79,999",
-      duration: "12 Months Access",
+      name: "MEDIUM PACKAGE",
+      subtitle: "Enhanced Earning Potential",
+      price: "₹499",
+      originalPrice: "₹799",
+      duration: "Income Generation",
       popular: false,
       features: [
-        "All 9 Courses Access",
-        "Lifetime Community Access",
-        "24/7 Priority Support",
-        "Monthly 1-on-1 Mentorship",
-        "Exclusive Masterclasses",
-        "Business Templates",
-        "Revenue Optimization",
-        "Partner Network Access",
-        "Custom Strategy Session"
+        "All Basic Package Features",
+        "Advanced Marketing Strategies",
+        "Live Q&A Sessions",
+        "Priority Support",
+        "Bonus Templates & Tools"
       ],
-      courses: ["All Professional Courses", "YouTube Marketing", "Email Automation", "Freelancing Blueprint"],
-      savings: "50% OFF"
+      courses: ["All Basic Features", "Advanced Marketing", "Sales Strategies"],
+      savings: "37% OFF",
+      incomeDetails: {
+        active: "₹350",
+        passive: "₹50"
+      }
+    },
+    {
+      name: "PRO PACKAGE",
+      subtitle: "Professional Income Level",
+      price: "₹999",
+      originalPrice: "₹1599",
+      duration: "Income Generation",
+      popular: true,
+      features: [
+        "All Medium Package Features",
+        "1-on-1 Mentoring Sessions",
+        "Premium Marketing Tools",
+        "VIP Community Access",
+        "Business Strategy Course"
+      ],
+      courses: ["All Medium Features", "Pro Marketing Tools", "Business Strategy"],
+      savings: "37% OFF",
+      incomeDetails: {
+        active: "₹700",
+        passive: "₹100"
+      }
+    },
+    {
+      name: "MASTER PACKAGE",
+      subtitle: "Master Level Earnings",
+      price: "₹1999",
+      originalPrice: "₹3199",
+      duration: "Income Generation",
+      popular: false,
+      features: [
+        "All Pro Package Features",
+        "Weekly Mentoring Calls",
+        "Advanced Business Tools",
+        "Exclusive Masterclasses",
+        "Revenue Optimization Course"
+      ],
+      courses: ["All Pro Features", "Master Classes", "Advanced Business Tools"],
+      savings: "37% OFF",
+      incomeDetails: {
+        active: "₹1400",
+        passive: "₹200"
+      }
+    },
+    {
+      name: "CROWN PACKAGE",
+      subtitle: "Elite Business Level",
+      price: "₹3999",
+      originalPrice: "₹6399",
+      duration: "Income Generation",
+      popular: false,
+      features: [
+        "All Master Package Features",
+        "Personal Business Mentor",
+        "Done-for-You Marketing",
+        "Business Setup Assistance",
+        "Partner Network Access"
+      ],
+      courses: ["All Master Features", "Business Setup", "Revenue Optimization"],
+      savings: "37% OFF",
+      incomeDetails: {
+        active: "₹3000",
+        passive: "₹400"
+      }
+    },
+    {
+      name: "ROYAL PACKAGE",
+      subtitle: "Ultimate Success Package",
+      price: "₹7999",
+      originalPrice: "₹12799",
+      duration: "Income Generation",
+      popular: false,
+      features: [
+        "All Crown Package Features",
+        "Dedicated Success Manager",
+        "White-Label Resources",
+        "Lifetime Community Access",
+        "Custom Strategy Development"
+      ],
+      courses: ["All Crown Features", "Done-for-You Services", "Lifetime Access"],
+      savings: "37% OFF",
+      incomeDetails: {
+        active: "₹6000",
+        passive: "₹800"
+      }
     }
   ];
 
@@ -548,7 +616,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Our Packages Section - Converted from All Courses */}
+        {/* Our Packages Section - Updated with new income-based packages */}
         <section id="all-courses" className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -556,123 +624,76 @@ export default function Home() {
                 Our <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Packages</span>
               </h2>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                Unlock expertise with exclusive packages. Empower with industry-leading courses.
+                Unlock expertise with exclusive packages. Choose your income level and start earning.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                {
-                  name: "IRON PACKAGE",
-                  price: "₹ 299",
-                  originalPrice: "₹ 499",
-                  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop&crop=center",
-                  features: [
-                    "Access to Chat Gpt",
-                    "Access to Affiliate Marketing", 
-                    "Access to Attraction Marketing"
-                  ],
-                  buttonText: "Buy Now",
-                  color: "from-gray-600 to-gray-800",
-                  badge: "LEARN FROM BASIC TO ADVANCE"
-                },
-                {
-                  name: "SILVER PACKAGE", 
-                  price: "₹ 599",
-                  originalPrice: "₹ 899",
-                  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop&crop=center",
-                  features: [
-                    "Access to Public speaking",
-                    "Access to Sales closing secret",
-                    "Access to Professional logo"
-                  ],
-                  buttonText: "Buy Now",
-                  color: "from-gray-400 to-gray-600", 
-                  badge: "LEARN FROM BASIC TO ADVANCE"
-                },
-                {
-                  name: "GOLD PACKAGE",
-                  price: "₹ 999", 
-                  originalPrice: "₹ 1499",
-                  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop&crop=center",
-                  features: [
-                    "Access to Advanced Marketing",
-                    "Access to Business Strategy", 
-                    "Access to Premium Tools"
-                  ],
-                  buttonText: "Buy Now",
-                  color: "from-yellow-600 to-yellow-800",
-                  badge: "LEARN FROM BASIC TO ADVANCE"
-                }
-              ].map((pkg, index) => (
-                <div key={index} className="bg-white rounded-2xl overflow-hidden shadow-2xl transform hover:-translate-y-2 transition-all duration-300 group">
-                  
-                  {/* Package Image with Overlay */}
-                  <div className="relative h-80 overflow-hidden">
-                    <div className={`absolute inset-0 bg-gradient-to-br ${pkg.color} opacity-90`}></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {packages.slice(0, 6).map((pkg, index) => (
+                <div key={index} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden hover:from-purple-800/30 hover:to-cyan-800/30 transition-all duration-300 transform hover:-translate-y-2 border border-gray-700/50 group">
+                  {/* Package Image */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=200&fit=crop" 
+                      alt={pkg.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                     
-                    {/* Badge */}
-                    <div className="absolute top-4 left-4 bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold">
-                      VIDEO COURSE
+                    {/* Price Overlay */}
+                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
+                      <span className="text-gray-900 font-bold text-sm">{pkg.price}</span>
+                      <span className="text-gray-500 line-through text-xs ml-1">{pkg.originalPrice}</span>
                     </div>
                     
-                    {/* Package Name */}
-                    <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-6">
-                      <div className="text-white text-3xl font-bold mb-2">
-                        {pkg.name.split(' ')[0]}
-                      </div>
-                      <div className="text-white text-xl font-semibold mb-4">
-                        {pkg.name.split(' ')[1]}
-                      </div>
-                      
-                      {/* Bottom Badge */}
-                      <div className="absolute bottom-4 left-4 right-4 bg-black/50 text-white text-xs text-center py-2 rounded">
-                        {pkg.badge}
-                      </div>
+                    {/* Title Overlay */}
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="text-white font-bold text-lg leading-tight group-hover:text-cyan-400 transition-colors">
+                        {pkg.name}
+                      </h3>
                     </div>
+
+                    {/* Hover Effect Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
 
                   {/* Package Content */}
-                  <div className="p-6 bg-white">
-                    {/* Package Title */}
-                    <h3 className="text-2xl font-bold text-orange-600 mb-6 text-center">
-                      {pkg.name}
-                    </h3>
+                  <div className="p-5">
+                    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                      {pkg.subtitle}
+                    </p>
                     
-                    {/* Features List */}
-                    <div className="space-y-4 mb-6">
-                      {pkg.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-center text-gray-700">
-                          <div className="w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <span className="text-sm font-medium">{feature}</span>
+                    {/* Income Details */}
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4">
+                      <div className="text-green-400 font-semibold text-sm mb-2">Income Potential:</div>
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-300">Active Income:</span>
+                          <span className="text-green-400 font-semibold">{pkg.incomeDetails.active}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-300">Passive Income:</span>
+                          <span className="text-green-400 font-semibold">{pkg.incomeDetails.passive}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Features */}
+                    <div className="space-y-2 mb-4">
+                      {pkg.features.slice(0, 3).map((feature, idx) => (
+                        <div key={idx} className="flex items-center text-gray-300 text-sm">
+                          <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full mr-2"></div>
+                          {feature}
                         </div>
                       ))}
                     </div>
-
-                    {/* Price Section */}
-                    <div className="flex items-center justify-center gap-3 mb-6">
-                      <span className="text-3xl font-bold text-black">
-                        {pkg.price}
-                      </span>
-                      <span className="text-gray-500 line-through text-xl">
-                        {pkg.originalPrice}
-                      </span>
-                    </div>
                     
-                    {/* Buy Button */}
-                    <a 
-                      href={`/packages/${pkg.name.toLowerCase().replace(' ', '-')}`}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                    {/* Enroll Button */}
+                    <button 
+                      className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-2.5 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-700 transition-all transform hover:scale-105"
                     >
-                      {pkg.buttonText} 
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </a>
+                      Enroll Now
+                    </button>
                   </div>
                 </div>
               ))}
@@ -690,16 +711,14 @@ export default function Home() {
           </div>
         </section>
 
-      
-
         {/* Stats Section */}
-        <section className="py-20 ">
+        <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
-                { number: "10,000+", label: "Students Enrolled" },
-                { number: "50+", label: "Expert Instructors" },
-                { number: "200+", label: "Courses Available" },
+                { number: "5,000+", label: "Students Earning" },
+                { number: "₹6,800+", label: "Max Monthly Income" },
+                { number: "6", label: "Income Packages" },
                 { number: "95%", label: "Success Rate" }
               ].map((stat, index) => (
                 <div key={index} className="text-center">
@@ -717,17 +736,17 @@ export default function Home() {
         <section className="py-20 bg-gradient-to-r from-purple-900/50 to-cyan-900/50">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Ready to Start Your Learning Journey?
+              Ready to Start Earning?
             </h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands of learners who are transforming their careers with our innovative courses.
+              Join thousands of learners who are earning while they learn with our innovative income packages.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <button className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-cyan-600 hover:to-purple-700 transform hover:scale-105 transition-all shadow-xl">
-                Get Started Free
+                Start Earning Today
               </button>
               <button className="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-purple-900 transition-all">
-                View All Courses
+                View All Packages
               </button>
             </div>
           </div>
@@ -742,7 +761,7 @@ export default function Home() {
                   ProfitWay
                 </div>
                 <p className="text-gray-400 mb-4">
-                  Transforming education through innovative online learning experiences.
+                  Start earning while you learn with our proven digital marketing strategies.
                 </p>
                 <div className="flex space-x-4">
                   <a href="#" className="text-gray-400 hover:text-white transition-colors">📘</a>
@@ -789,7 +808,7 @@ export default function Home() {
             </div>
             
             <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-              <p>&copy; 2024 ProfitWay. All rights reserved. Empowering learners worldwide.</p>
+              <p>&copy; 2024 ProfitWay. All rights reserved. Empowering digital entrepreneurs worldwide.</p>
             </div>
           </div>
         </footer>
