@@ -665,17 +665,11 @@ export default function Home() {
                     
                     {/* Income Details */}
                     <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4">
-                      <div className="text-green-400 font-semibold text-sm mb-2">Income Potential:</div>
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-300">Active Income:</span>
-                          <span className="text-green-400 font-semibold">{pkg.incomeDetails.active}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-300">Passive Income:</span>
-                          <span className="text-green-400 font-semibold">{pkg.incomeDetails.passive}</span>
-                        </div>
+                      <div className="text-green-400 font-semibold text-sm mb-2">
+                        <span className="font-bold text-lg">{pkg.price}</span>
+                        <span className="text-gray-500 line-through text-xs ml-1">{pkg.originalPrice}</span>
                       </div>
+                      
                     </div>
                     
                     {/* Features */}
@@ -712,13 +706,12 @@ export default function Home() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-20">
+        <section className="py-20 bg-black/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {[
-                { number: "5,000+", label: "Students Earning" },
-                { number: "₹6,800+", label: "Max Monthly Income" },
-                { number: "6", label: "Income Packages" },
+                { number: "30000+", label: "Max Monthly Income" },
+                { number: "5000+", label: "Active Earners" },
                 { number: "95%", label: "Success Rate" }
               ].map((stat, index) => (
                 <div key={index} className="text-center">

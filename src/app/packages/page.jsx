@@ -178,16 +178,12 @@ export default function Plans() {
                     
                     {/* Income Details */}
                     <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4">
-                      <div className="text-green-400 font-semibold text-sm mb-2">Income Potential:</div>
+                      <div className="text-green-400 font-semibold text-sm mb-2">
+                        <span className="font-bold text-xl">{pkg.price}</span>
+                          <span className="text-gray-500 line-through text-xs ml-1">{pkg.originalPrice}</span>
+                      </div>
                       <div className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-300">Active Income:</span>
-                          <span className="text-green-400 font-semibold">{pkg.incomeDetails.active}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-300">Passive Income:</span>
-                          <span className="text-green-400 font-semibold">{pkg.incomeDetails.passive}</span>
-                        </div>
+                        
                       </div>
                     </div>
                     
@@ -216,7 +212,7 @@ export default function Plans() {
         </section>
 
         {/* Income Comparison Table */}
-        <section className="py-20 bg-black/30">
+        {/* <section className="py-20 bg-black/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
@@ -246,7 +242,7 @@ export default function Plans() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Why Choose Section */}
         <section className="py-20">
@@ -304,12 +300,11 @@ export default function Plans() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-20 bg-black/30">
+       <section className="py-20 bg-black/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {[
-                { number: "6", label: "Income Packages" },
-                { number: "₹6800+", label: "Max Monthly Income" },
+                { number: "30000+", label: "Max Monthly Income" },
                 { number: "5000+", label: "Active Earners" },
                 { number: "95%", label: "Success Rate" }
               ].map((stat, index) => (
