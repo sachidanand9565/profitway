@@ -2,7 +2,10 @@
 'use client';
 import Head from 'next/head'
 import { useState, useEffect } from 'react'
+import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from "react-icons/fa";
 import Header from './component/include/header'
+
+// (removed slug helper) using real package images from pkg.image
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -222,6 +225,7 @@ export default function Home() {
   const packages = [
     {
       name: "BASIC PACKAGE",
+      image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=800&h=600&fit=crop",
       subtitle: "Perfect for Beginners",
       price: "₹249",
       originalPrice: "₹399",
@@ -243,6 +247,7 @@ export default function Home() {
     },
     {
       name: "MEDIUM PACKAGE",
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop",
       subtitle: "Enhanced Earning Potential",
       price: "₹499",
       originalPrice: "₹799",
@@ -264,6 +269,7 @@ export default function Home() {
     },
     {
       name: "PRO PACKAGE",
+      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop",
       subtitle: "Professional Income Level",
       price: "₹999",
       originalPrice: "₹1599",
@@ -285,6 +291,7 @@ export default function Home() {
     },
     {
       name: "MASTER PACKAGE",
+      image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=600&fit=crop",
       subtitle: "Master Level Earnings",
       price: "₹1999",
       originalPrice: "₹3199",
@@ -306,6 +313,7 @@ export default function Home() {
     },
     {
       name: "CROWN PACKAGE",
+      image: "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?w=800&h=600&fit=crop",
       subtitle: "Elite Business Level",
       price: "₹3999",
       originalPrice: "₹6399",
@@ -327,6 +335,7 @@ export default function Home() {
     },
     {
       name: "ROYAL PACKAGE",
+      image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&h=600&fit=crop",
       subtitle: "Ultimate Success Package",
       price: "₹7999",
       originalPrice: "₹12799",
@@ -354,9 +363,21 @@ export default function Home() {
         {/* Navigation */}
         <Header />
 
-        {/* Hero Section */}
-        <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-800/20 to-cyan-800/20"></div>
+        {/* Hero Section with banner background */}
+        <section
+          id="home"
+          className="relative min-h-screen flex items-center justify-center overflow-hidden bg-cover bg-center"
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1600&auto=format&fit=crop')",
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          {/* Dark overlay to keep text readable */}
+          <div className="absolute inset-0 bg-black/60"></div>
+          {/* Subtle gradient overlay for brand colors */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-800/10 to-cyan-800/10 mix-blend-overlay"></div>
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="space-y-8">
               <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
@@ -633,9 +654,11 @@ export default function Home() {
                 <div key={index} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden hover:from-purple-800/30 hover:to-cyan-800/30 transition-all duration-300 transform hover:-translate-y-2 border border-gray-700/50 group">
                   {/* Package Image */}
                   <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&h=200&fit=crop" 
-                      alt={pkg.name}
+                    {/* Use real photographic image from package data */}
+                    <img
+                      src={pkg.image}
+                      alt={`${pkg.name} banner`}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
@@ -756,12 +779,20 @@ export default function Home() {
                 <p className="text-gray-400 mb-4">
                   Start earning while you learn with our proven digital marketing strategies.
                 </p>
-                <div className="flex space-x-4">
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">📘</a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">🐦</a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">💼</a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">📷</a>
-                </div>
+               <div className="flex space-x-4">
+  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+    <FaFacebookF size={24} color="#1877F2" />   {/* Facebook Blue */}
+  </a>
+  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+    <FaTwitter size={24} color="#1DA1F2" />     {/* Twitter Blue */}
+  </a>
+  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+    <FaLinkedinIn size={24} color="#0A66C2" />  {/* LinkedIn Blue */}
+  </a>
+  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+    <FaInstagram size={24} color="#E4405F" />   {/* Instagram Pink */}
+  </a>
+</div>
               </div>
               
               <div>

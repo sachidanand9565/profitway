@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#g1)" />
+  <g fill="#fff" font-family="Poppins, Arial, sans-serif">
+    <text x="60" y="180" font-size="72" font-weight="700">BASIC PACKAGE</text>
+    <text x="60" y="260" font-size="28" opacity="0.95">Perfect for Beginners • ₹249</text>
+  </g>
+</svg>
