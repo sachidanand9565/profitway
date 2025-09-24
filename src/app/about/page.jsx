@@ -40,10 +40,21 @@ export default function About() {
         {/* Header */}
         <Header />
 
-        {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-800/20 to-cyan-800/20"></div>
-          
+        {/* Hero Section with banner background */}
+        <section
+          className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 bg-cover bg-center"
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1600&auto=format&fit=crop')",
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          {/* Dark overlay to keep text readable */}
+          <div className="absolute inset-0 bg-black/60"></div>
+          {/* Subtle gradient overlay for brand colors */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-800/10 to-cyan-800/10 mix-blend-overlay"></div>
+
           {/* Floating Elements */}
           <div className="absolute top-32 left-10 w-20 h-20 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full opacity-20 animate-pulse"></div>
           <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-20 animate-bounce"></div>
