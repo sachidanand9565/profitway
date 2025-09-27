@@ -4,6 +4,7 @@ import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from "react-icons/fa";
 import Header from './component/include/header'
+import Footer from './component/include/footer'
 
 // (removed slug helper) using real package images from pkg.image
 
@@ -768,74 +769,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="bg-black/50 py-12 border-t border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-4">
-                  ProfitWay
-                </div>
-                <p className="text-gray-400 mb-4">
-                  Start earning while you learn with our proven digital marketing strategies.
-                </p>
-               <div className="flex space-x-4">
-  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-    <FaFacebookF size={24} color="#1877F2" />   {/* Facebook Blue */}
-  </a>
-  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-    <FaTwitter size={24} color="#1DA1F2" />     {/* Twitter Blue */}
-  </a>
-  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-    <FaLinkedinIn size={24} color="#0A66C2" />  {/* LinkedIn Blue */}
-  </a>
-  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-    <FaInstagram size={24} color="#E4405F" />   {/* Instagram Pink */}
-  </a>
-</div>
-              </div>
-              
-              <div>
-                <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-                <ul className="space-y-2 text-gray-400">
-                  <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Courses</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Instructors</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="text-white font-semibold mb-4">Support</h4>
-                <ul className="space-y-2 text-gray-400">
-                  <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="text-white font-semibold mb-4">Newsletter</h4>
-                <p className="text-gray-400 mb-4">Stay updated with our latest courses and news.</p>
-                <div className="flex">
-                  <input 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    className="bg-gray-800 text-white px-4 py-2 rounded-l-lg flex-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                  <button className="bg-gradient-to-r from-cyan-500 to-purple-600 px-4 py-2 rounded-r-lg hover:from-cyan-600 hover:to-purple-700 transition-all">
-                    →
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-              <p>&copy; 2024 ProfitWay. All rights reserved. Empowering digital entrepreneurs worldwide.</p>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   )

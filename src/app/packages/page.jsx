@@ -3,6 +3,7 @@
 import Head from 'next/head'
 import { useState } from 'react'
 import Header from '../component/include/header'
+import Footer from '../component/include/footer'
 
 export default function Plans() {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -107,26 +108,40 @@ export default function Plans() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <Header />
 
-        {/* Hero Section */}
-        <section className="relative pt-32 pb-16 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-800/20 to-cyan-800/20"></div>
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="space-y-6">
-              <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
-                Income-Based Learning
-                <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent block">
-                  Packages
-                </span>
-              </h1>
-              <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Choose your package based on your income goals. From basic to royal level earnings.
-              </p>
+        {/* Banner Hero */}
+        <section className="relative">
+          <div
+            className="relative bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage:
+                "url('https://images.unsplash.com/photo-1508830524289-0adcbe822b40?auto=format&fit=crop&w=1600&q=80')",
+            }}
+          >
+            <div className="absolute inset-0 bg-black/60" />
+
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-28">
+              <div className="space-y-6">
+                <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+                  Income-Based Learning
+                  <span className="block bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Packages
+                  </span>
+                </h1>
+                <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                  Choose your package based on your income goals. From basic to royal level earnings.
+                </p>
+
+                <div className="mt-6 flex justify-center gap-4">
+                  <a href="#packages" className="inline-block bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-3 rounded-full font-medium hover:from-cyan-600 hover:to-purple-700 transition-all">View Packages</a>
+                  <a href="/contact" className="inline-block border border-white text-white px-6 py-3 rounded-full font-medium hover:bg-white hover:text-purple-900 transition-all">Contact Us</a>
+                </div>
+              </div>
             </div>
+
+            {/* Decorative shapes */}
+            <div className="absolute top-10 left-8 w-20 h-20 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full opacity-20 blur-3xl" />
+            <div className="absolute bottom-12 right-8 w-28 h-28 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-20 blur-2xl" />
           </div>
-          
-          {/* Floating Elements */}
-          <div className="absolute top-20 left-10 w-16 h-16 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-24 h-24 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-20 animate-bounce"></div>
         </section>
 
         {/* All Packages Section - Same UI as Individual Courses */}
@@ -342,60 +357,7 @@ export default function Plans() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="bg-black/50 py-12 border-t border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-4">
-                  ProfitWay
-                </div>
-                <p className="text-gray-400 mb-4">
-                  Start earning while you learn with our proven digital marketing strategies.
-                </p>
-                <div className="flex space-x-4">
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">📘</a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">🐦</a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">💼</a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">📷</a>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-                <ul className="space-y-2 text-gray-400">
-                  <li><a href="/" className="hover:text-white transition-colors">Home</a></li>
-                  <li><a href="/courses" className="hover:text-white transition-colors">Courses</a></li>
-                  <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
-                  <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="text-white font-semibold mb-4">Support</h4>
-                <ul className="space-y-2 text-gray-400">
-                  <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Live Chat</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="text-white font-semibold mb-4">Contact Info</h4>
-                <div className="space-y-2 text-gray-400">
-                  <p>📞 +91 98765 43210</p>
-                  <p>📧 support@profitway.com</p>
-                  <p>📍 Mumbai, India</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-              <p>&copy; 2024 ProfitWay. All rights reserved. Empowering digital entrepreneurs worldwide.</p>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   )

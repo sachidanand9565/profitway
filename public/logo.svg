@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Refined logo to match provided image: PROFIT [bars+arrow] WAYS -->
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="180" viewBox="0 0 900 180" role="img" aria-labelledby="logoTitle">
+  <title id="logoTitle">PROFIT WAYS</title>
+  <defs>
+    <linearGradient id="cyanToPurple" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2BD0F7" />
+      <stop offset="55%" stop-color="#8B5CF6" />
+    </linearGradient>
+    <linearGradient id="purpleToPink" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7C4DFF" />
+      <stop offset="100%" stop-color="#FF5CA8" />
+    </linearGradient>
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- PROFIT (cyan) -->
+  <text x="12" y="100" font-family="Inter, Arial, sans-serif" font-size="56" font-weight="800" fill="url(#cyanToPurple)">PROFIT</text>
+
+  <!-- center mark: bars + rising arrow (moved left to tighten spacing) -->
+  <g transform="translate(260,18)" filter="url(#softShadow)">
+    <!-- bars -->
+    <rect x="0" y="70" width="22" height="60" rx="4" fill="url(#cyanToPurple)" />
+    <rect x="34" y="50" width="22" height="80" rx="4" fill="url(#cyanToPurple)" />
+    <rect x="68" y="30" width="22" height="100" rx="4" fill="url(#purpleToPink)" />
+
+    <!-- arrow line -->
+    <path d="M6 74 L46 36 L96 48" fill="none" stroke="url(#purpleToPink)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- arrow head -->
+    <path d="M94 44 L112 36 L102 60 Z" fill="url(#purpleToPink)" />
+  </g>
+
+  <!-- WAYS (purple) - moved left to sit near the mark -->
+  <text x="420" y="100" font-family="Inter, Arial, sans-serif" font-size="56" font-weight="800" fill="url(#purpleToPink)">WAYS</text>
+
+</svg>

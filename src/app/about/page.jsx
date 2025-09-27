@@ -2,6 +2,7 @@
 import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import Header from '@/app/component/include/header'
+import Footer from '@/app/component/include/footer'
 
 export default function About() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -406,11 +407,11 @@ export default function About() {
         {/* Stats Section */}
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
               {[
                 { number: "10,000+", label: "Students Graduated", icon: "🎓" },
                 { number: "95%", label: "Success Rate", icon: "📈" },
-                { number: "50+", label: "Countries Reached", icon: "🌍" },
+               
                 { number: "4.9/5", label: "Average Rating", icon: "⭐" }
               ].map((stat, index) => (
                 <div key={index} className="text-center bg-gradient-to-br from-gray-800/30 to-gray-900/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 hover:scale-105 transition-transform">
@@ -451,66 +452,7 @@ export default function About() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="bg-black/50 py-12 border-t border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-4">
-                  ProfitWay
-                </div>
-                <p className="text-gray-400 mb-4">
-                  Transforming education through innovative online learning experiences.
-                </p>
-                <div className="flex space-x-4">
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">📘</a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">🐦</a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">💼</a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">📷</a>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-                <ul className="space-y-2 text-gray-400">
-                  <li><a href="/" className="hover:text-white transition-colors">Home</a></li>
-                  <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
-                  <li><a href="/courses" className="hover:text-white transition-colors">Courses</a></li>
-                  <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="text-white font-semibold mb-4">Support</h4>
-                <ul className="space-y-2 text-gray-400">
-                  <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="text-white font-semibold mb-4">Newsletter</h4>
-                <p className="text-gray-400 mb-4">Stay updated with our latest courses and news.</p>
-                <div className="flex">
-                  <input 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    className="bg-gray-800 text-white px-4 py-2 rounded-l-lg flex-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                  <button className="bg-gradient-to-r from-cyan-500 to-purple-600 px-4 py-2 rounded-r-lg hover:from-cyan-600 hover:to-purple-700 transition-all">
-                    →
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-              <p>&copy; 2024 ProfitWay. All rights reserved. Empowering learners worldwide.</p>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   )
