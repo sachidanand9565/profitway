@@ -56,10 +56,10 @@ function Header() {
               </div>
 
               <div className="hidden md:flex items-center space-x-4">
-                <button className="text-white hover:text-cyan-400 transition-colors">Login</button>
-                <button className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-cyan-600 hover:to-purple-700 transition-all">
+                <a href="/login" className="text-white hover:text-cyan-400 transition-colors">Login</a>
+                <a href="/signup" className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-cyan-600 hover:to-purple-700 transition-all">
                   Get Started
-                </button>
+                </a>
               </div>
 
               {/* Mobile menu button */}
@@ -94,10 +94,8 @@ function Header() {
                   <a href="/packages" className="text-white hover:text-cyan-400 transition-colors">Courses Packages</a>
                   <a href="/contact" className="text-white hover:text-cyan-400 transition-colors">Contact</a>
                   <div className="pt-4 border-t border-gray-700">
-                    <button className="text-white hover:text-cyan-400 transition-colors mb-2 block">Login</button>
-                    <button className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-2 rounded-full w-full">
-                      Get Started
-                    </button>
+                    <a href="/login" className="text-white hover:text-cyan-400 transition-colors mb-2 block">Login</a>
+                    <a href="/signup" className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-2 rounded-full w-full text-center">Get Started</a>
                   </div>
                 </div>
               </div>
