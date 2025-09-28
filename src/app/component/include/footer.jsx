@@ -20,7 +20,7 @@ function Footer() {
   <a href="https://www.facebook.com/share/19rSdLYzU9/" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
     <FaFacebookF size={20} color="#1877F2" />
   </a>
-  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+  <a href="https://x.com/ProfitWayss?t=K1sTv6cau4P7HfrMIYm9Ng&s=09" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
     <FaTwitter size={20} color="#1DA1F2" />
   </a>
   <a href="https://whatsapp.com/channel/0029Vb6VmBj3AzNJKMPDmC2T" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
