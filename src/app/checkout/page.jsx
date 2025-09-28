@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
-import { useSearchParams } from "next/navigation";
+// removed: import { useSearchParams } from "next/navigation";
 import Header from "../component/include/header";
 import Footer from "../component/include/footer";
 
@@ -15,11 +15,21 @@ function slugToTitle(slug) {
 }
 
 export default function CheckoutPage() {
-  const searchParams = useSearchParams();
-  const slug = searchParams?.get("slug") || "";
-  const qTitle = searchParams?.get("title") || "";
-  const qPrice = searchParams?.get("price") || "";
-  const qImage = searchParams?.get("image") || "";
+  // replaced useSearchParams with client-side state + URLSearchParams
+  const [slug, setSlug] = useState("");
+  const [qTitle, setQTitle] = useState("");
+  const [qPrice, setQPrice] = useState("");
+  const [qImage, setQImage] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      setSlug(sp.get("slug") || "");
+      setQTitle(sp.get("title") || "");
+      setQPrice(sp.get("price") || "");
+      setQImage(sp.get("image") || "");
+    }
+  }, []);
 
   const packageTitle = qTitle || slugToTitle(slug);
 
@@ -31,12 +41,63 @@ export default function CheckoutPage() {
     message: "",
     packageTitle,
     price: qPrice,
+    state: "",
+    city: "",
+    sponsorCode: "",
   });
+  const [pkgData, setPkgData] = useState({ title: packageTitle, price: qPrice, image: qImage, slug });
   const [status, setStatus] = useState(null);
 
+  // small list of states -> cities (extend as needed)
+  const stateCityMap = {
+    "Maharashtra": ["Mumbai", "Pune", "Nagpur"],
+    "Karnataka": ["Bengaluru", "Mysore", "Mangalore"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai"],
+    "Delhi": ["New Delhi", "North Delhi", "South Delhi"],
+    "Uttar Pradesh": ["Lucknow", "Kanpur", "Varanasi"],
+  };
+  const [cities, setCities] = useState([]);
+
   useEffect(() => {
-    setForm((s) => ({ ...s, packageTitle, price: qPrice }));
-  }, [packageTitle, qPrice]);
+    // prefer sessionStorage package object (set by packages page)
+    try {
+      const raw = sessionStorage.getItem("checkout_pkg");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setPkgData({
+          title: parsed.title || packageTitle,
+          price: parsed.price || qPrice,
+          image: parsed.image || qImage,
+          slug: parsed.slug || slug,
+        });
+        setForm((s) => ({
+          ...s,
+          packageTitle: parsed.title || packageTitle,
+          price: parsed.price || qPrice,
+        }));
+        return;
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+    // fallback to query params
+    setPkgData({ title: packageTitle, price: qPrice, image: qImage, slug });
+    setForm((s) => ({ ...s, packageTitle: packageTitle, price: qPrice }));
+  }, [slug, qTitle, qPrice, qImage, packageTitle]);
+
+  // update cities when state changes
+  useEffect(() => {
+    const s = form.state;
+    if (s && stateCityMap[s]) {
+      setCities(stateCityMap[s]);
+      // if current city not in new list, clear it
+      if (!stateCityMap[s].includes(form.city)) {
+        setForm((f) => ({ ...f, city: "" }));
+      }
+    } else {
+      setCities([]);
+    }
+  }, [form.state]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -73,10 +134,10 @@ export default function CheckoutPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
               {/* Left: package summary */}
               <div className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 rounded-2xl p-6 border border-gray-700/50">
-                {qImage ? (
-                  <img src={qImage} alt={packageTitle} className="w-full h-44 object-cover rounded-lg mb-4" />
+                {pkgData.image ? (
+                  <img src={pkgData.image} alt={pkgData.title} className="w-full h-48 object-cover rounded-lg mb-4 shadow-lg" />
                 ) : null}
-                <h2 className="text-2xl font-bold text-white mb-2">{packageTitle}</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">{pkgData.title}</h2>
                 {form.price ? (
                   <div className="text-white font-semibold text-lg mb-3">Price: ₹{form.price}</div>
                 ) : (
@@ -96,6 +157,17 @@ export default function CheckoutPage() {
                 <h3 className="text-xl font-bold text-white mb-4">Your details</h3>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="rounded-md bg-gradient-to-r from-white/5 to-white/3 p-3 border border-white/5">
+                    <div className="text-sm text-gray-300 mb-1">Selected Package</div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <div className="text-white font-semibold">{pkgData.title}</div>
+                        <div className="text-gray-400 text-sm">Price: {form.price || "TBD"}</div>
+                      </div>
+                      {pkgData.image ? <img src={pkgData.image} alt={pkgData.title} className="w-20 h-12 object-cover rounded" /> : null}
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm text-gray-300 mb-1">Full name</label>
                     <input
@@ -130,12 +202,68 @@ export default function CheckoutPage() {
                     />
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-300 mb-1">State</label>
+                      <select
+                        name="state"
+                        value={form.state}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      >
+                        <option value="">Select state</option>
+                        {Object.keys(stateCityMap).map((st) => (
+                          <option key={st} value={st}>{st}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-300 mb-1">City</label>
+                      {cities.length > 0 ? (
+                        <select
+                          name="city"
+                          value={form.city}
+                          onChange={handleChange}
+                          required
+                          className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                          <option value="">Select city</option>
+                          {cities.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          name="city"
+                          value={form.city}
+                          onChange={handleChange}
+                          placeholder="City"
+                          required
+                          className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      )}
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm text-gray-300 mb-1">Address (optional)</label>
                     <input
                       name="address"
                       value={form.address}
                       onChange={handleChange}
+                      className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-300 mb-1">Sponsor Code (optional)</label>
+                    <input
+                      name="sponsorCode"
+                      value={form.sponsorCode}
+                      onChange={handleChange}
+                      placeholder="Enter sponsor / referral code"
                       className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>

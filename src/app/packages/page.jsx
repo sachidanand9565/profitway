@@ -1,12 +1,29 @@
 // pages/plans.js or app/plans/page.js
 'use client';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Head from 'next/head'
-import { useState } from 'react'
 import Header from '../component/include/header'
 import Footer from '../component/include/footer'
 
 export default function Plans() {
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const router = useRouter();
+  const [busySlug, setBusySlug] = useState(null);
+
+  const handleEnrollNow = (pkg) => {
+    try {
+      sessionStorage.setItem("checkout_pkg", JSON.stringify(pkg));
+    } catch (e) {
+      console.warn("sessionStorage unavailable", e);
+    }
+    const slug = encodeURIComponent((pkg.slug || pkg.title).toString().toLowerCase().replace(/\s+/g, "-"));
+    setBusySlug(slug);
+    // small delay to show micro-interaction if needed
+    setTimeout(() => {
+      router.push(`/checkout?slug=${slug}`);
+    }, 120);
+  };
 
   // Exact packages from your handwritten notes with improved features
   const allPackages = [
@@ -89,12 +106,6 @@ export default function Plans() {
       }
     }
   ];
-
-  const handleEnrollNow = (packageId) => {
-    setSelectedPlan(packageId);
-    // Add enrollment logic here
-    console.log(`Enrolled in: ${packageId}`);
-  };
 
   return (
     <>
@@ -213,12 +224,14 @@ export default function Plans() {
                     </div>
                     
                     {/* Enroll Button */}
-                    <a
-                      href={`/checkout?slug=${encodeURIComponent((pkg.slug || pkg.title).toString().toLowerCase().replace(/\s+/g, "-"))}&title=${encodeURIComponent(pkg.title)}&price=${encodeURIComponent(pkg.price || "")}&image=${encodeURIComponent(pkg.image || "")}`}
-                      className="w-full inline-block text-center bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-2.5 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-700 transition-all transform hover:scale-105"
+                    <button
+                      type="button"
+                      onClick={() => handleEnrollNow(pkg)}
+                      disabled={busySlug === (pkg.slug || pkg.title).toString().toLowerCase().replace(/\s+/g, "-")}
+                      className="w-full inline-block text-center bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-2.5 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Enroll Now
-                    </a>
+                      {busySlug === (pkg.slug || pkg.title).toString().toLowerCase().replace(/\s+/g, "-") ? "Opening…" : "Enroll Now"}
+                    </button>
                   </div>
                 </div>
               ))}

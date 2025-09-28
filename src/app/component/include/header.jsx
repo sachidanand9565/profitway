@@ -45,7 +45,7 @@ function Header() {
                 <div className="flex items-center">
                   <a href="/" className="flex items-center gap-3">
                     {/* logo — use public file */}
-                    <img src="/logo.png" alt="ProfitWay" className="h-10 w-auto" />
+                    <img src="/logo.png" alt="ProfitWay" className="h-12 md:h-14 w-auto object-contain" />
                   </a>
                 </div>
 
