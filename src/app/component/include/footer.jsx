@@ -11,7 +11,7 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="mb-4">
-              <img src="/logo.svg" alt="ProfitWay logo" className="h-10 w-auto" />
+              <img src="/logo.png" alt="ProfitWay" className="h-8 w-auto inline-block" />
             </div>
             <p className="text-gray-400 mb-4">
               Start earning while you learn with our proven digital marketing strategies.

@@ -213,12 +213,12 @@ export default function Plans() {
                     </div>
                     
                     {/* Enroll Button */}
-                    <button 
-                      onClick={() => handleEnrollNow(pkg.id)}
-                      className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-2.5 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-700 transition-all transform hover:scale-105"
+                    <a
+                      href={`/checkout?slug=${encodeURIComponent((pkg.slug || pkg.title).toString().toLowerCase().replace(/\s+/g, "-"))}&title=${encodeURIComponent(pkg.title)}&price=${encodeURIComponent(pkg.price || "")}&image=${encodeURIComponent(pkg.image || "")}`}
+                      className="w-full inline-block text-center bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-2.5 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-700 transition-all transform hover:scale-105"
                     >
                       Enroll Now
-                    </button>
+                    </a>
                   </div>
                 </div>
               ))}

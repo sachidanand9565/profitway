@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
+import Image from "next/image";
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -43,7 +44,8 @@ function Header() {
             <div className="flex justify-between items-center py-4">
                 <div className="flex items-center">
                   <a href="/" className="flex items-center gap-3">
-                    <img src="/logo.svg" alt="ProfitWay logo" className="h-10 w-auto" />
+                    {/* logo — use public file */}
+                    <img src="/logo.png" alt="ProfitWay" className="h-10 w-auto" />
                   </a>
                 </div>
 
