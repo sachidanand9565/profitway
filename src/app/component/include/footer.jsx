@@ -68,6 +68,14 @@ function Footer() {
           </div>
         </div>
         
+        <nav className="flex gap-4 flex-wrap mt-8">
+  <a href="/" className="text-gray-200 hover:text-cyan-400">Home</a>
+  <a href="/about" className="text-gray-200 hover:text-cyan-400">About</a>
+  <a href="/packages" className="text-gray-200 hover:text-cyan-400">Packages</a>
+  <a href="/contact" className="text-gray-200 hover:text-cyan-400">Contact</a>
+  <a href="/login" className="text-gray-200 hover:text-cyan-400">Login</a>
+</nav>
+        
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
           <p>© {year} ProfitWay. All rights reserved. Empowering digital entrepreneurs worldwide.</p>
         </div>

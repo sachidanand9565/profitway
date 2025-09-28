@@ -42,8 +42,8 @@ export default function LoginPage() {
                   <input name="password" type="password" value={form.password} onChange={handleChange} required className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg" />
                 </div>
                 <div className="flex items-center justify-between">
-                  <a href="/signup" className="text-sm text-cyan-400 hover:underline">Create account</a>
-                  <button type="submit" className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-5 py-2 rounded-lg">Sign in</button>
+
+                  <button type="submit" className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-12 py-2 rounded-lg">Sign in</button>
                 </div>
                 {status === 'success' && <div className="text-green-400">Logged in (demo)</div>}
               </form>
