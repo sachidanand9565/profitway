@@ -2,24 +2,30 @@
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import Header from "../component/include/header";
 import Footer from "../component/include/footer";
 
-function slugToTitle(slug) {
-  if (!slug) return "Selected Package";
-  return slug
-    .replace(/-/g, " ")
-    .split(" ")
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join(" ");
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckoutPageContent />
+    </Suspense>
+  );
 }
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const searchParams = useSearchParams();
   const slug = searchParams.get("slug");
   const qTitle = searchParams.get("title");
   const qPrice = searchParams.get("price");
   const qImage = searchParams.get("image");
+
+  function slugToTitle(slug) {
+    if (!slug) return "Selected Package";
+    return slug.replace(/-/g, " ").split(" ").map((s) => s.charAt(0).toUpperCase() + s.slice(1));
+  }
+
   const packageTitle = slugToTitle(slug) || qTitle || "Selected Package";
 
   const [pkgData, setPkgData] = useState({ title: "", price: "", image: "", slug: "" });
