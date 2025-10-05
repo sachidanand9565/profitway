@@ -3,15 +3,41 @@
 import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 import Header from './component/include/header'
 import Footer from './component/include/footer'
-
-// (removed slug helper) using real package images from pkg.image
+import PackagesGrid from './component/packages/PackagesGrid'
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [packages, setPackages] = useState([]);
+  const router = useRouter();
+  const [busySlug, setBusySlug] = useState(null);
+
+  useEffect(() => {
+    async function fetchPackages() {
+      try {
+        const response = await fetch('/api/packages');
+        if (!response.ok) {
+          throw new Error('Failed to fetch packages');
+        }
+        const packagesData = await response.json();
+
+        // Parse features JSON for each package
+        const processedPackages = packagesData.map(pkg => ({
+          ...pkg,
+          features: typeof pkg.features === 'string' ? JSON.parse(pkg.features) : pkg.features
+        }));
+
+        setPackages(processedPackages);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchPackages();
+  }, []);
 
   useEffect(() => {
     // run only on client
@@ -28,6 +54,20 @@ export default function Home() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  const handleEnrollNow = (pkg) => {
+    try {
+      sessionStorage.setItem("checkout_pkg", JSON.stringify(pkg));
+    } catch (e) {
+      console.warn("sessionStorage unavailable", e);
+    }
+    const slug = encodeURIComponent((pkg.slug || pkg.title).toString().toLowerCase().replace(/\s+/g, "-"));
+    setBusySlug(slug);
+    // small delay to show micro-interaction if needed
+    setTimeout(() => {
+      router.push(`/checkout?slug=${slug}`);
+    }, 120);
+  };
 
   // Carousel courses data
   const carouselCourses = [
@@ -219,142 +259,6 @@ export default function Home() {
       price: "₹5,999",
       originalPrice: "₹9,999",
       features: ["Client Acquisition", "Pricing Strategies", "Portfolio Building", "Project Management", "Scaling Business"]
-    }
-  ];
-
-  // Updated packages from handwritten notes with proper features
-  const packages = [
-    {
-      name: "BASIC PACKAGE",
-      image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=800&h=600&fit=crop",
-      subtitle: "Perfect for Beginners",
-      price: "₹249",
-      originalPrice: "₹399",
-      duration: "Income Generation",
-      popular: false,
-      features: [
-        "Access to Digital Marketing Course",
-        "Basic Affiliate Marketing Training",
-        "Email Support",
-        "Mobile App Access",
-        "Community Access"
-      ],
-      courses: ["Digital Marketing Basics", "Income Generation Strategies"],
-      savings: "37% OFF",
-      incomeDetails: {
-        active: "₹175",
-        passive: "₹25"
-      }
-    },
-    {
-      name: "MEDIUM PACKAGE",
-      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop",
-      subtitle: "Enhanced Earning Potential",
-      price: "₹499",
-      originalPrice: "₹799",
-      duration: "Income Generation",
-      popular: false,
-      features: [
-        "All Basic Package Features",
-        "Advanced Marketing Strategies",
-        "Live Q&A Sessions",
-        "Priority Support",
-        "Bonus Templates & Tools"
-      ],
-      courses: ["All Basic Features", "Advanced Marketing", "Sales Strategies"],
-      savings: "37% OFF",
-      incomeDetails: {
-        active: "₹350",
-        passive: "₹50"
-      }
-    },
-    {
-      name: "PRO PACKAGE",
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop",
-      subtitle: "Professional Income Level",
-      price: "₹999",
-      originalPrice: "₹1599",
-      duration: "Income Generation",
-      popular: true,
-      features: [
-        "All Medium Package Features",
-        "1-on-1 Mentoring Sessions",
-        "Premium Marketing Tools",
-        "VIP Community Access",
-        "Business Strategy Course"
-      ],
-      courses: ["All Medium Features", "Pro Marketing Tools", "Business Strategy"],
-      savings: "37% OFF",
-      incomeDetails: {
-        active: "₹700",
-        passive: "₹100"
-      }
-    },
-    {
-      name: "MASTER PACKAGE",
-      image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=600&fit=crop",
-      subtitle: "Master Level Earnings",
-      price: "₹1999",
-      originalPrice: "₹3199",
-      duration: "Income Generation",
-      popular: false,
-      features: [
-        "All Pro Package Features",
-        "Weekly Mentoring Calls",
-        "Advanced Business Tools",
-        "Exclusive Masterclasses",
-        "Revenue Optimization Course"
-      ],
-      courses: ["All Pro Features", "Master Classes", "Advanced Business Tools"],
-      savings: "37% OFF",
-      incomeDetails: {
-        active: "₹1400",
-        passive: "₹200"
-      }
-    },
-    {
-      name: "CROWN PACKAGE",
-      image: "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?w=800&h=600&fit=crop",
-      subtitle: "Elite Business Level",
-      price: "₹3999",
-      originalPrice: "₹6399",
-      duration: "Income Generation",
-      popular: false,
-      features: [
-        "All Master Package Features",
-        "Personal Business Mentor",
-        "Done-for-You Marketing",
-        "Business Setup Assistance",
-        "Partner Network Access"
-      ],
-      courses: ["All Master Features", "Business Setup", "Revenue Optimization"],
-      savings: "37% OFF",
-      incomeDetails: {
-        active: "₹3000",
-        passive: "₹400"
-      }
-    },
-    {
-      name: "ROYAL PACKAGE",
-      image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&h=600&fit=crop",
-      subtitle: "Ultimate Success Package",
-      price: "₹7999",
-      originalPrice: "₹12799",
-      duration: "Income Generation",
-      popular: false,
-      features: [
-        "All Crown Package Features",
-        "Dedicated Success Manager",
-        "White-Label Resources",
-        "Lifetime Community Access",
-        "Custom Strategy Development"
-      ],
-      courses: ["All Crown Features", "Done-for-You Services", "Lifetime Access"],
-      savings: "37% OFF",
-      incomeDetails: {
-        active: "₹6000",
-        passive: "₹800"
-      }
     }
   ];
 
@@ -652,28 +556,28 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {packages.slice(0, 6).map((pkg, index) => (
-                <div key={index} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden hover:from-purple-800/30 hover:to-cyan-800/30 transition-all duration-300 transform hover:-translate-y-2 border border-gray-700/50 group">
+                <div key={pkg.id || index} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden hover:from-purple-800/30 hover:to-cyan-800/30 transition-all duration-300 transform hover:-translate-y-2 border border-gray-700/50 group">
                   {/* Package Image */}
                   <div className="relative h-48 overflow-hidden">
                     {/* Use real photographic image from package data */}
                     <img
                       src={pkg.image}
-                      alt={`${pkg.name} banner`}
+                      alt={`${pkg.title} banner`}
                       loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                    
+
                     {/* Price Overlay */}
                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
                       <span className="text-gray-900 font-bold text-sm">{pkg.price}</span>
                       <span className="text-gray-500 line-through text-xs ml-1">{pkg.originalPrice}</span>
                     </div>
-                    
+
                     {/* Title Overlay */}
                     <div className="absolute bottom-4 left-4 right-4">
                       <h3 className="text-white font-bold text-lg leading-tight group-hover:text-cyan-400 transition-colors">
-                        {pkg.name}
+                        {pkg.title}
                       </h3>
                     </div>
 
@@ -684,7 +588,7 @@ export default function Home() {
                   {/* Package Content */}
                   <div className="p-5">
                     <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-                      {pkg.subtitle}
+                      {pkg.description}
                     </p>
                     
                     {/* Income Details */}
@@ -708,9 +612,12 @@ export default function Home() {
                     
                     {/* Enroll Button */}
                     <button 
-                      className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-2.5 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-700 transition-all transform hover:scale-105"
+                      type="button"
+                      onClick={() => handleEnrollNow(pkg)}
+                      disabled={busySlug === (pkg.slug || pkg.title).toString().toLowerCase().replace(/\s+/g, "-")}
+                      className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-2.5 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Enroll Now
+                      {busySlug === (pkg.slug || pkg.title).toString().toLowerCase().replace(/\s+/g, "-") ? "Opening…" : "Enroll Now"}
                     </button>
                   </div>
                 </div>

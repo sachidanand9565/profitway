@@ -1,84 +1,162 @@
 import { NextResponse } from "next/server";
-import { getCollection } from "@/lib/mongoClient";
+import { query } from "../../../lib/mysqlClient";
 
-const packages = [
+const packagesData = [
   {
-    slug: "basic-package",
+    name: "Basic Package",
     title: "Basic Package",
-    price: "999",
-    originalPrice: "1499",
-    image: "https://images.unsplash.com/photo-1508830524289-0adcbe822b40?auto=format&fit=crop&w=1200&q=80",
-    description: "Starter set of courses and basic support to get you earning.",
-    features: ["Core courses", "Community access", "Email support"],
-    createdAt: new Date(),
+    subtitle: "Start your earning journey with fundamental skills",
+    description: "Perfect for beginners looking to start earning online with basic digital marketing skills.",
+    price: "₹2,999",
+    originalPrice: "₹4,999",
+    image: "/images/packages/basic-package.svg",
+    features: [
+      "Basic Digital Marketing Course",
+      "Email Marketing Fundamentals",
+      "Social Media Basics",
+      "Lead Generation Techniques",
+      "Community Access"
+    ],
+    slug: "basic-package"
   },
   {
-    slug: "medium-package",
+    name: "Medium Package",
     title: "Medium Package",
-    price: "2999",
-    originalPrice: "3999",
-    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
-    description: "More courses, hands-on projects and priority support.",
-    features: ["All Basic + projects", "Weekly Q&A", "Priority support"],
-    createdAt: new Date(),
+    subtitle: "Advance your skills and increase your earning potential",
+    description: "Intermediate level courses with advanced strategies for higher income generation.",
+    price: "₹7,999",
+    originalPrice: "₹12,999",
+    image: "/images/packages/medium-package.svg",
+    features: [
+      "Advanced Digital Marketing",
+      "SEO & SEM Mastery",
+      "Content Creation",
+      "Affiliate Marketing",
+      "Analytics & Reporting"
+    ],
+    slug: "medium-package"
   },
   {
-    slug: "pro-package",
+    name: "Pro Package",
     title: "Pro Package",
-    price: "5999",
-    originalPrice: "8999",
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
-    description: "Advanced content, 1:1 mentorship and placement assistance.",
-    features: ["1:1 mentorship", "Advanced modules", "Placement help"],
-    createdAt: new Date(),
+    subtitle: "Professional level training for serious earners",
+    description: "Comprehensive training with business development strategies for maximum earnings.",
+    price: "₹14,999",
+    originalPrice: "₹24,999",
+    image: "/images/packages/pro-package.svg",
+    features: [
+      "Complete Business Development",
+      "Advanced SEO Strategies",
+      "E-commerce Mastery",
+      "Personal Branding",
+      "Mentorship Program"
+    ],
+    slug: "pro-package"
   },
   {
-    slug: "master-package",
+    name: "Master Package",
     title: "Master Package",
-    price: "12999",
-    originalPrice: "17999",
-    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80",
-    description: "Full access, live workshops, and VIP onboarding.",
-    features: ["Live workshops", "VIP onboarding", "Dedicated mentor"],
-    createdAt: new Date(),
+    subtitle: "Elite training for top performers",
+    description: "Master level courses with exclusive strategies and one-on-one coaching.",
+    price: "₹24,999",
+    originalPrice: "₹39,999",
+    image: "/images/packages/master-package.svg",
+    features: [
+      "Elite Business Strategies",
+      "Advanced Analytics",
+      "Custom Marketing Plans",
+      "VIP Community Access",
+      "Personal Coach"
+    ],
+    slug: "master-package"
   },
   {
-    slug: "crown-package",
+    name: "Crown Package",
     title: "Crown Package",
-    price: "24999",
-    originalPrice: "29999",
-    image: "https://images.unsplash.com/photo-1485217988980-11786ced9454?auto=format&fit=crop&w=1200&q=80",
-    description: "Enterprise-level program with business coaching.",
-    features: ["Business coaching", "Enterprise resources", "Dedicated success manager"],
-    createdAt: new Date(),
+    subtitle: "Ultimate package for maximum earnings",
+    description: "The ultimate earning package with all premium features and unlimited support.",
+    price: "₹49,999",
+    originalPrice: "₹79,999",
+    image: "/images/packages/crown-package.svg",
+    features: [
+      "All Master Features",
+      "Unlimited Consultations",
+      "Custom Business Setup",
+      "Priority Support",
+      "Revenue Sharing"
+    ],
+    slug: "crown-package"
   },
   {
-    slug: "royal-package",
+    name: "Royal Package",
     title: "Royal Package",
-    price: "49999",
-    originalPrice: "59999",
-    image: "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1200&q=80",
-    description: "All-access VIP plan — premium support & partnership opportunities.",
-    features: ["Partnerships", "Premium support", "Custom onboarding"],
-    createdAt: new Date(),
-  },
+    subtitle: "Royal treatment for royal earnings",
+    description: "Exclusive royal package with personalized strategies and guaranteed results.",
+    price: "₹99,999",
+    originalPrice: "₹149,999",
+    image: "/images/packages/royal-package.svg",
+    features: [
+      "All Crown Features",
+      "Guaranteed Results",
+      "Personal Business Manager",
+      "VIP Networking Events",
+      "Royal Community"
+    ],
+    slug: "royal-package"
+  }
 ];
 
-export async function GET() {
+export async function POST() {
   try {
-    const coll = await getCollection("packages");
-    // Skip duplicates by slug: insert only slugs that don't exist
-    const existing = await coll.find({ slug: { $in: packages.map((p) => p.slug) } }).project({ slug: 1 }).toArray();
-    const existingSlugs = new Set(existing.map((e) => e.slug));
-    const toInsert = packages.filter((p) => !existingSlugs.has(p.slug));
-    if (toInsert.length === 0) {
-      return NextResponse.json({ ok: true, inserted: 0, message: "All packages already exist" });
+    // First, create the database if it doesn't exist
+    await query("CREATE DATABASE IF NOT EXISTS profitway", [], null);
+
+    // Use the profitway database for subsequent queries
+    const dbName = 'profitway';
+
+    // First, create the packages table if it doesn't exist
+    await query(`
+      CREATE TABLE IF NOT EXISTS packages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        subtitle TEXT,
+        description TEXT,
+        price VARCHAR(50),
+        originalPrice VARCHAR(50),
+        image VARCHAR(255),
+        features JSON,
+        slug VARCHAR(255) UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `, [], dbName);
+
+    // Clear existing data
+    await query("DELETE FROM packages", [], dbName);
+
+    // Insert new data
+    for (const pkg of packagesData) {
+      await query(
+        `INSERT INTO packages (name, title, subtitle, description, price, originalPrice, image, features, slug)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          pkg.name,
+          pkg.title,
+          pkg.subtitle,
+          pkg.description,
+          pkg.price,
+          pkg.originalPrice,
+          pkg.image,
+          JSON.stringify(pkg.features),
+          pkg.slug
+        ],
+        dbName
+      );
     }
-    const result = await coll.insertMany(toInsert, { ordered: false });
-    const inserted = result.insertedIds ? Object.keys(result.insertedIds).length : 0;
-    return NextResponse.json({ ok: true, inserted, insertedIds: result.insertedIds || null });
+
+    return NextResponse.json({ message: "Packages seeded successfully" });
   } catch (err) {
-    console.error("seed-packages error:", err);
-    return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
+    console.error("Seeding error:", err);
+    return NextResponse.json({ error: "Failed to seed packages" }, { status: 500 });
   }
 }
