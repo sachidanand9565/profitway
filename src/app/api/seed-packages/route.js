@@ -111,8 +111,8 @@ export async function POST() {
     // First, create the database if it doesn't exist
     await query("CREATE DATABASE IF NOT EXISTS profitway", [], null);
 
-    // Use the profitway database for subsequent queries
-    const dbName = 'profitway';
+    // Use the pro_test database for subsequent queries
+    const dbName = 'pro_test';
 
     // First, create the packages table if it doesn't exist
     await query(`

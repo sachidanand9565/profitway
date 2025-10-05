@@ -4,7 +4,7 @@ const {
   MYSQL_HOST = '68.178.149.177',
   MYSQL_USER = 'pro_test',
   MYSQL_PASSWORD = 'GpX=Dh;McdbL',
-  MYSQL_DATABASE,
+  MYSQL_DATABASE = 'pro_test',
   MYSQL_PORT = 3306
 } = process.env;
 
