@@ -7,6 +7,8 @@
 - [x] Add upload logic in form submit (upload file first, then save package)
 - [x] Make modal dark themed for better visibility
 - [x] Update form reset to clear selected file
+- [x] Make admin panel mobile responsive
+- [x] Make packages page mobile responsive
 - [x] Implementation complete - ready for testing
 
 ## Next Steps

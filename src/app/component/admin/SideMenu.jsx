@@ -1,9 +1,9 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaTachometerAlt, FaBox, FaUsers, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import { FaTachometerAlt, FaBox, FaUsers, FaCog, FaSignOutAlt, FaTimes } from 'react-icons/fa';
 
-export default function SideMenu() {
+export default function SideMenu({ onClose }) {
   const pathname = usePathname();
 
   const menuItems = [

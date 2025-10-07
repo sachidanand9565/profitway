@@ -76,21 +76,21 @@ export default function Plans() {
           >
             <div className="absolute inset-0 bg-black/60" />
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-28">
-              <div className="space-y-6">
-                <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16 sm:py-20 lg:py-28">
+              <div className="space-y-4 sm:space-y-6">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
                   Income-Based Learning
                   <span className="block bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                     Packages
                   </span>
                 </h1>
-                <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed px-4">
                   Choose your package based on your income goals. From basic to royal level earnings.
                 </p>
 
-                <div className="mt-6 flex justify-center gap-4">
-                  <a href="#packages" className="inline-block bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-3 rounded-full font-medium hover:from-cyan-600 hover:to-purple-700 transition-all">View Packages</a>
-                  <a href="/contact" className="inline-block border border-white text-white px-6 py-3 rounded-full font-medium hover:bg-white hover:text-purple-900 transition-all">Contact Us</a>
+                <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-4">
+                  <a href="#packages" className="inline-block bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium hover:from-cyan-600 hover:to-purple-700 transition-all text-sm sm:text-base">View Packages</a>
+                  <a href="/contact" className="inline-block border border-white text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium hover:bg-white hover:text-purple-900 transition-all text-sm sm:text-base">Contact Us</a>
                 </div>
               </div>
             </div>
@@ -104,11 +104,11 @@ export default function Plans() {
         {/* All Packages Section - Same UI as Individual Courses */}
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6 px-4">
                 Our <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Packages</span>
               </h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto px-4">
                 Unlock expertise with exclusive packages. Empower with industry-leading courses.
               </p>
             </div>
@@ -153,16 +153,16 @@ export default function Plans() {
         {/* Why Choose Section */}
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6 px-4">
                 Why Choose <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">ProfitWay</span>
               </h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto px-4">
                 Start earning while you learn with our proven income system
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {[
                 {
                   icon: "💰",
@@ -226,23 +226,23 @@ export default function Plans() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-20 bg-gradient-to-r from-purple-900/50 to-cyan-900/50">
+        <section className="py-16 sm:py-20 bg-gradient-to-r from-purple-900/50 to-cyan-900/50">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6 px-4">
               Ready to Start Earning?
             </h2>
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
               Choose your income level and start your journey to financial freedom today.
             </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4">
               <button
                 onClick={() => allPackages.length > 0 && handleEnrollNow(allPackages[0])}
                 disabled={allPackages.length === 0}
-                className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-cyan-600 hover:to-purple-700 transform hover:scale-105 transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:from-cyan-600 hover:to-purple-700 transform hover:scale-105 transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {allPackages.length > 0 ? `Start with ${allPackages[0].title}` : "Loading..."}
               </button>
-              <button className="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-purple-900 transition-all">
+              <button className="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-white hover:text-purple-900 transition-all">
                 View All Packages
               </button>
             </div>

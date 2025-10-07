@@ -151,22 +151,23 @@ export default function PackagesManagement() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Packages Management</h1>
+    <div className="p-4 lg:p-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 lg:mb-8 gap-4">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Packages Management</h1>
         <button
           onClick={() => {
             resetForm();
             setShowModal(true);
           }}
-          className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-cyan-600 hover:to-purple-700 transition-all flex items-center space-x-2"
+          className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-cyan-600 hover:to-purple-700 transition-all flex items-center space-x-2 w-full sm:w-auto justify-center"
         >
           <FaPlus />
           <span>Add Package</span>
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full">
           <thead className="bg-gray-50">
             <tr>
@@ -202,12 +203,43 @@ export default function PackagesManagement() {
         </table>
       </div>
 
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4">
+        {packages.map((pkg) => (
+          <div key={pkg.id} className="bg-white rounded-lg shadow p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">{pkg.name}</h3>
+                <p className="text-sm text-gray-500">{pkg.slug}</p>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleEdit(pkg)}
+                  className="text-indigo-600 hover:text-indigo-900 p-2"
+                >
+                  <FaEdit className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(pkg.id)}
+                  className="text-red-600 hover:text-red-900 p-2"
+                >
+                  <FaTrash className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="text-sm text-gray-600">
+              <span className="font-medium">Price:</span> {pkg.price}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-4 text-white">{editingPackage ? 'Edit Package' : 'Add Package'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white">Name</label>
                   <input
@@ -250,7 +282,7 @@ export default function PackagesManagement() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white">Price</label>
                   <input
