@@ -17,13 +17,31 @@ export async function POST(request) {
     // Create unique filename
     const timestamp = Date.now();
     const filename = `${timestamp}-${file.name}`;
-    const filepath = path.join(process.cwd(), 'public', 'packages', filename);
+
+    // Use environment variable for upload directory or default to public/packages
+    const uploadDir = process.env.UPLOAD_DIR || path.resolve(process.cwd(), 'public', 'packages');
+    const filepath = path.join(uploadDir, filename);
+
+    console.log('Upload directory:', uploadDir);
+    console.log('File path:', filepath);
 
     // Ensure directory exists
-    await mkdir(path.dirname(filepath), { recursive: true });
+    try {
+      await mkdir(path.dirname(filepath), { recursive: true });
+      console.log('Directory ensured:', path.dirname(filepath));
+    } catch (dirError) {
+      console.error('Failed to create directory:', dirError);
+      return NextResponse.json({ error: 'Failed to create upload directory' }, { status: 500 });
+    }
 
     // Write file
-    await writeFile(filepath, buffer);
+    try {
+      await writeFile(filepath, buffer);
+      console.log('File written successfully:', filepath);
+    } catch (writeError) {
+      console.error('Failed to write file:', writeError);
+      return NextResponse.json({ error: 'Failed to write file' }, { status: 500 });
+    }
 
     // Return the public URL
     const url = `/packages/${filename}`;
