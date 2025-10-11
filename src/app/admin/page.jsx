@@ -69,10 +69,15 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {statCards.map((card, index) => {
           const Icon = card.icon;
-          return (
+          const isPackagesCard = card.title === 'Total Packages';
+
+          const cardContent = (
             <div
-              key={index}
-              className={`bg-gradient-to-r ${card.color} rounded-lg p-6 text-white`}
+              className={`bg-gradient-to-r ${card.color} rounded-lg p-6 text-white ${
+                isPackagesCard
+                  ? 'cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-200'
+                  : ''
+              }`}
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -81,6 +86,16 @@ export default function AdminDashboard() {
                 </div>
                 <Icon className="w-8 h-8 opacity-80" />
               </div>
+            </div>
+          );
+
+          return isPackagesCard ? (
+            <Link key={index} href="/admin/packages">
+              {cardContent}
+            </Link>
+          ) : (
+            <div key={index}>
+              {cardContent}
             </div>
           );
         })}
