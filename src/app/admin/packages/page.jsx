@@ -19,6 +19,8 @@ export default function PackagesManagement() {
     slug: ''
   });
   const [selectedFile, setSelectedFile] = useState(null);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
 
   useEffect(() => {
     fetchPackages();
@@ -55,7 +57,8 @@ export default function PackagesManagement() {
           const uploadData = await uploadResponse.json();
           imageUrl = uploadData.url;
         } else {
-          alert('Failed to upload image');
+          setMessage('Failed to upload image');
+          setMessageType('error');
           return;
         }
       }
@@ -74,9 +77,13 @@ export default function PackagesManagement() {
         fetchPackages();
         setShowModal(false);
         resetForm();
+        setMessage(editingPackage ? 'Package updated successfully' : 'Package added successfully');
+        setMessageType('success');
       }
     } catch (error) {
       console.error('Failed to save package:', error);
+      setMessage('Failed to save package');
+      setMessageType('error');
     }
   };
 
@@ -87,9 +94,13 @@ export default function PackagesManagement() {
       const response = await fetch(`/api/packages?id=${id}`, { method: 'DELETE' });
       if (response.ok) {
         fetchPackages();
+        setMessage('Package deleted successfully');
+        setMessageType('success');
       }
     } catch (error) {
       console.error('Failed to delete package:', error);
+      setMessage('Failed to delete package');
+      setMessageType('error');
     }
   };
 
@@ -107,6 +118,8 @@ export default function PackagesManagement() {
       slug: pkg.slug
     });
     setShowModal(true);
+    setMessage('');
+    setMessageType('');
   };
 
   const resetForm = () => {
@@ -158,6 +171,8 @@ export default function PackagesManagement() {
           onClick={() => {
             resetForm();
             setShowModal(true);
+            setMessage('');
+            setMessageType('');
           }}
           className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-cyan-600 hover:to-purple-700 transition-all flex items-center space-x-2 w-full sm:w-auto justify-center"
         >
@@ -165,6 +180,12 @@ export default function PackagesManagement() {
           <span>Add Package</span>
         </button>
       </div>
+
+      {message && (
+        <div className={`mb-4 p-4 rounded-lg ${messageType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {message}
+        </div>
+      )}
 
       {/* Desktop Table View */}
       <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">

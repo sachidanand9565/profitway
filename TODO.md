@@ -16,3 +16,12 @@
 - [ ] Verify uploaded images display correctly on packages page
 - [ ] Ensure form submission works with uploaded images
 - [ ] Test editing existing packages with images
+
+# Add Success/Error Messages for Package Operations
+
+## Tasks
+- [ ] Add message state (message and messageType) to PackagesManagement component
+- [ ] Update handleSubmit to set success message on add/update, error on failure
+- [ ] Update handleDelete to set success/error messages
+- [ ] Add JSX to display the message with appropriate styling
+- [ ] Clear message when opening add/edit modal
