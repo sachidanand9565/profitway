@@ -39,7 +39,6 @@ function CheckoutPageContent() {
     packageTitle,
     price: qPrice,
     state: "",
-    city: "",
     sponsorCode: "",
     paymentScreenshot: null,
     utrNumber: "",
@@ -51,15 +50,45 @@ function CheckoutPageContent() {
   const [orderId, setOrderId] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // small list of states -> cities (extend as needed)
-  const stateCityMap = {
-    Maharashtra: ["Mumbai", "Pune", "Nagpur"],
-    Karnataka: ["Bengaluru", "Mysore", "Mangalore"],
-    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai"],
-    Delhi: ["New Delhi", "North Delhi", "South Delhi"],
-    "Uttar Pradesh": ["Lucknow", "Kanpur", "Varanasi"],
-  };
-  const [cities, setCities] = useState([]);
+  // comprehensive list of Indian states and union territories
+  const states = [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+    "Andaman and Nicobar Islands",
+    "Chandigarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi",
+    "Jammu and Kashmir",
+    "Ladakh",
+    "Lakshadweep",
+    "Puducherry",
+  ];
 
   useEffect(() => {
     // prefer sessionStorage package object (set by packages page)
@@ -87,20 +116,6 @@ function CheckoutPageContent() {
     setPkgData({ title: packageTitle, price: qPrice, image: qImage, slug });
     setForm((s) => ({ ...s, packageTitle: packageTitle, price: qPrice }));
   }, [slug, qTitle, qPrice, qImage, packageTitle]);
-
-  // update cities when state changes
-  useEffect(() => {
-    const s = form.state;
-    if (s && stateCityMap[s]) {
-      setCities(stateCityMap[s]);
-      // if current city not in new list, clear it
-      if (!stateCityMap[s].includes(form.city)) {
-        setForm((f) => ({ ...f, city: "" }));
-      }
-    } else {
-      setCities([]);
-    }
-  }, [form.state]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -289,7 +304,7 @@ function CheckoutPageContent() {
                             className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                           >
                             <option value="">Select state</option>
-                            {Object.keys(stateCityMap).map((st) => (
+                            {states.map((st) => (
                               <option key={st} value={st}>{st}</option>
                             ))}
                           </select>

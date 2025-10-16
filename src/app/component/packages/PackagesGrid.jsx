@@ -4,11 +4,11 @@ export default function PackagesGrid({ packages, handleEnrollNow, busySlug }) {
       {packages.map((pkg, index) => (
         <div key={pkg.id || index} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden hover:from-purple-800/30 hover:to-cyan-800/30 transition-all duration-300 transform hover:-translate-y-2 border border-gray-700/50 group">
           {/* Package Image */}
-          <div className="relative h-40 sm:h-48 overflow-hidden">
+          <div className="relative h-64 sm:h-80 md:h-96 overflow-hidden">
             <img
               src={pkg.image}
               alt={pkg.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
