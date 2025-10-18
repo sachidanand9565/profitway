@@ -1,3 +1,39 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "use client";
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
@@ -226,82 +262,82 @@ function CheckoutPageContent() {
         <meta name="description" content={`Checkout for ${pkgData.title}`} />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
         <Header />
 
         <main className="py-20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-white">Checkout</h1>
-              <p className="text-gray-300 mt-2">
+              <h1 className="text-4xl font-bold text-gray-900">Checkout</h1>
+              <p className="text-gray-600 mt-2">
                 You're enrolling for:{" "}
-                <span className="text-cyan-400 font-semibold">{pkgData.title}</span>
+                <span className="text-blue-600 font-semibold">{pkgData.title}</span>
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
            
               {/* Center: form or review */}
-              <div className="lg:col-span-2 bg-gradient-to-br from-gray-800/40 to-gray-900/40 rounded-2xl p-6 border border-gray-700/50">
+              <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
                 {step === "form" && (
                   <>
-                    <h3 className="text-xl font-bold text-white mb-4">Your details</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">Your details</h3>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="rounded-md bg-gradient-to-r from-white/5 to-white/3 p-3 border border-white/5">
-                        <div className="text-sm text-gray-300 mb-1">Selected Package</div>
+                      <div className="rounded-md bg-gray-50 p-3 border border-gray-200">
+                        <div className="text-sm text-gray-600 mb-1">Selected Package</div>
                         <div className="flex items-center gap-3">
                           <div className="flex-1">
-                            <div className="text-white font-semibold">{pkgData.title}</div>
-                            <div className="text-gray-400 text-sm">Price: {form.price || "TBD"}</div>
+                            <div className="text-gray-900 font-semibold">{pkgData.title}</div>
+                            <div className="text-gray-500 text-sm">Price: {form.price || "TBD"}</div>
                           </div>
                           {pkgData.image ? <img src={pkgData.image} alt={pkgData.title} className="w-20 h-12 object-cover rounded" /> : null}
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-sm text-gray-300 mb-1">Full name</label>
+                        <label className="block text-sm text-gray-700 mb-1">Full name</label>
                         <input
                           name="name"
                           value={form.name}
                           onChange={handleChange}
                           required
-                          className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm text-gray-300 mb-1">Email address</label>
+                        <label className="block text-sm text-gray-700 mb-1">Email address</label>
                         <input
                           name="email"
                           type="email"
                           value={form.email}
                           onChange={handleChange}
                           required
-                          className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm text-gray-300 mb-1">Mobile number</label>
+                        <label className="block text-sm text-gray-700 mb-1">Mobile number</label>
                         <input
                           name="phone"
                           value={form.phone}
                           onChange={handleChange}
                           required
-                          className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
                       <div className="grid grid-cols-1  gap-4">
                         <div>
-                          <label className="block text-sm text-gray-300 mb-1">State</label>
+                          <label className="block text-sm text-gray-700 mb-1">State</label>
                           <select
                             name="state"
                             value={form.state}
                             onChange={handleChange}
                             required
-                            className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="">Select state</option>
                             {states.map((st) => (
@@ -313,34 +349,34 @@ function CheckoutPageContent() {
                       </div>
 
                       <div>
-                        <label className="block text-sm text-gray-300 mb-1">Address (optional)</label>
+                        <label className="block text-sm text-gray-700 mb-1">Address (optional)</label>
                         <input
                           name="address"
                           value={form.address}
                           onChange={handleChange}
-                          className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm text-gray-300 mb-1">Sponsor Code (optional)</label>
+                        <label className="block text-sm text-gray-700 mb-1">Sponsor Code (optional)</label>
                         <input
                           name="sponsorCode"
                           value={form.sponsorCode}
                           onChange={handleChange}
                           placeholder="Enter sponsor / referral code"
-                          className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm text-gray-300 mb-1">Message / Notes</label>
+                        <label className="block text-sm text-gray-700 mb-1">Message / Notes</label>
                         <textarea
                           name="message"
                           value={form.message}
                           onChange={handleChange}
                           rows={4}
-                          className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
@@ -348,13 +384,13 @@ function CheckoutPageContent() {
                         <button
                           type="submit"
                           disabled={status === "sending"}
-                          className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-700 transition-all"
+                          className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-cyan-700 transition-all"
                         >
                           Review & Pay
                         </button>
 
                         {status === "sent" && (
-                          <div className="text-green-400 font-medium">Request received — we will contact you shortly.</div>
+                          <div className="text-green-600 font-medium">Request received — we will contact you shortly.</div>
                         )}
                       </div>
                     </form>
@@ -578,26 +614,26 @@ function CheckoutPageContent() {
               </div>
 
               {/* Right: price summary (hidden on mobile) */}
-              <aside className="hidden lg:block lg:col-span-1 bg-gradient-to-br from-gray-800/40 to-gray-900/40 rounded-2xl p-6 border border-gray-700/50 shadow-xl">
-                <h4 className="text-white font-bold text-lg mb-4">Order Summary</h4>
+              <aside className="hidden lg:block lg:col-span-1 bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
+                <h4 className="text-gray-900 font-bold text-lg mb-4">Order Summary</h4>
                 <div className="space-y-3">
-                  <div className="flex justify-between text-gray-300">
+                  <div className="flex justify-between text-gray-600">
                     <span>Package:</span>
-                    <span className="text-white font-medium">{pkgData.title}</span>
+                    <span className="text-gray-900 font-medium">{pkgData.title}</span>
                   </div>
-                  <div className="flex justify-between text-gray-300">
+                  <div className="flex justify-between text-gray-600">
                     <span>Price:</span>
-                    <span className="text-white font-medium">{form.price ? `₹${form.price}` : "TBD"}</span>
+                    <span className="text-gray-900 font-medium">{form.price ? `₹${form.price}` : "TBD"}</span>
                   </div>
-                  <div className="border-t border-gray-600 pt-3">
-                    <div className="flex justify-between text-white font-bold text-lg">
+                  <div className="border-t border-gray-300 pt-3">
+                    <div className="flex justify-between text-gray-900 font-bold text-lg">
                       <span>Total:</span>
                       <span>{form.price ? `₹${form.price}` : "TBD"}</span>
                     </div>
                   </div>
                 </div>
                 <div className="mt-6 text-center">
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-gray-500">
                     Secure payment via UPI
                   </div>
                 </div>

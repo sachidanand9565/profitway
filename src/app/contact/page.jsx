@@ -30,7 +30,7 @@ export default function ContactPage() {
         <meta name="description" content="Contact ProfitWay for support, partnerships, or general inquiries." />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
         <Header />
 
         <main className="py-24">
@@ -48,71 +48,71 @@ export default function ContactPage() {
 
               {/* Right: Form + Details */}
               <div>
-                <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 rounded-2xl p-8 border border-gray-700/50 mb-6">
-                  <h1 className="text-3xl font-bold text-white mb-2">Contact Us</h1>
-                  <p className="text-gray-300 mb-6">Questions about courses, partnerships, or support? Send us a message and we'll reply within 24 hours.</p>
+                <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-lg mb-6">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Contact Us</h1>
+                  <p className="text-gray-600 mb-6">Questions about courses, partnerships, or support? Send us a message and we'll reply within 24 hours.</p>
 
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                      <label className="block text-sm text-gray-300 mb-1">Full name</label>
+                      <label className="block text-sm text-gray-700 mb-1">Full name</label>
                       <input
                         name="name"
                         value={form.name}
                         onChange={handleChange}
                         required
-                        className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm text-gray-300 mb-1">Email address</label>
+                      <label className="block text-sm text-gray-700 mb-1">Email address</label>
                       <input
                         name="email"
                         type="email"
                         value={form.email}
                         onChange={handleChange}
                         required
-                        className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm text-gray-300 mb-1">Message</label>
+                      <label className="block text-sm text-gray-700 mb-1">Message</label>
                       <textarea
                         name="message"
                         value={form.message}
                         onChange={handleChange}
                         rows={6}
                         required
-                        className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div className="flex items-center gap-4">
                       <button
                         type="submit"
-                        className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-700 transition-all"
+                        className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-600 hover:to-cyan-700 transition-all"
                         disabled={status === 'sending'}
                       >
                         {status === 'sending' ? 'Sending...' : 'Send Message'}
                       </button>
 
                       {status === 'sent' && (
-                        <div className="text-green-400 font-medium">Message sent — we will reply shortly.</div>
+                        <div className="text-green-600 font-medium">Message sent — we will reply shortly.</div>
                       )}
                     </div>
                   </form>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
-                  <div className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 rounded-2xl p-6 border border-gray-700/50">
-                    <h3 className="text-lg font-semibold text-white mb-3">Contact Info</h3>
-                        <p className="text-gray-300">📞 +91 7460901738</p>
-                    <p className="text-gray-300">📧 info.profitways@gmail.com</p>
-                    <p className="text-gray-300">📍 Kushinagar, India</p>
+                  <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 shadow-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Contact Info</h3>
+                        <p className="text-gray-600">📞 +91 7460901738</p>
+                    <p className="text-gray-600">📧 info.profitways@gmail.com</p>
+                    <p className="text-gray-600">📍 Kushinagar, India</p>
                   </div>
 
-                  
+
                 </div>
               </div>
             </div>

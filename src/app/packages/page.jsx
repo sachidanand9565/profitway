@@ -6,6 +6,8 @@ import Head from 'next/head'
 import Header from '../component/include/header'
 import Footer from '../component/include/footer'
 import PackagesGrid from '../component/packages/PackagesGrid'
+import WhyChooseProfitWay from '../component/WhyChooseProfitWay'
+import StatsSection from '../component/StatsSection'
 
 export default function Plans() {
   
@@ -62,7 +64,7 @@ export default function Plans() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
         <Header />
 
         {/* Banner Hero */}
@@ -74,30 +76,32 @@ export default function Plans() {
                 "url('https://images.unsplash.com/photo-1508830524289-0adcbe822b40?auto=format&fit=crop&w=1600&q=80')",
             }}
           >
-            <div className="absolute inset-0 bg-black/60" />
+            <div className="absolute inset-0 bg-white/70"></div>
+            {/* Subtle gradient overlay for brand colors */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 mix-blend-overlay"></div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16 sm:py-20 lg:py-28">
               <div className="space-y-4 sm:space-y-6">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+                <h1 className="text-5xl md:text-7xl font-bold text-gray-900 leading-tight">
                   Income-Based Learning
-                  <span className="block bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent block">
                     Packages
                   </span>
                 </h1>
-                <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed px-4">
+                <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed px-4">
                   Choose your package based on your income goals. From basic to royal level earnings.
                 </p>
 
                 <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-4">
-                  <a href="#packages" className="inline-block bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium hover:from-cyan-600 hover:to-purple-700 transition-all text-sm sm:text-base">View Packages</a>
-                  <a href="/contact" className="inline-block border border-white text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium hover:bg-white hover:text-purple-900 transition-all text-sm sm:text-base">Contact Us</a>
+                  <a href="#packages" className="inline-block bg-gradient-to-r from-cyan-600 to-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium hover:from-cyan-700 hover:to-purple-700 transition-all text-sm sm:text-base">View Packages</a>
+                  <a href="/contact" className="inline-block border border-gray-900 text-gray-900 px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium hover:bg-gray-900 hover:text-white transition-all text-sm sm:text-base">Contact Us</a>
                 </div>
               </div>
             </div>
 
             {/* Decorative shapes */}
-            <div className="absolute top-10 left-8 w-20 h-20 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full opacity-20 blur-3xl" />
-            <div className="absolute bottom-12 right-8 w-28 h-28 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-20 blur-2xl" />
+            <div className="absolute top-10 left-8 w-20 h-20 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full opacity-20 blur-3xl" />
+            <div className="absolute bottom-12 right-8 w-28 h-28 bg-gradient-to-r from-cyan-400 to-teal-400 rounded-full opacity-20 blur-2xl" />
           </div>
         </section>
 
@@ -105,10 +109,10 @@ export default function Plans() {
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12 sm:mb-16">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6 px-4">
-                Our <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Packages</span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
+                Our <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Packages</span>
               </h2>
-              <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto px-4">
+              <p className="text-lg sm:text-xl text-gray-700 max-w-3xl mx-auto px-4">
                 Unlock expertise with exclusive packages. Empower with industry-leading courses.
               </p>
             </div>
@@ -150,83 +154,14 @@ export default function Plans() {
           </div>
         </section> */}
 
-        {/* Why Choose Section */}
-        <section className="py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12 sm:mb-16">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6 px-4">
-                Why Choose <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">ProfitWay</span>
-              </h2>
-              <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto px-4">
-                Start earning while you learn with our proven income system
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {[
-                {
-                  icon: "💰",
-                  title: "Guaranteed Income",
-                  description: "Start earning from day one with our proven income generation system"
-                },
-                {
-                  icon: "📈", 
-                  title: "Progressive Growth",
-                  description: "Your income grows as you progress through higher packages"
-                },
-                {
-                  icon: "🎯",
-                  title: "Dual Income Streams",
-                  description: "Both active and passive income opportunities in every package"
-                },
-                {
-                  icon: "🤝",
-                  title: "Community Support",
-                  description: "Join a network of successful earners and learn from their experience"
-                },
-                {
-                  icon: "📚",
-                  title: "Comprehensive Training",
-                  description: "Complete courses covering all aspects of digital income generation"
-                },
-                {
-                  icon: "🔄",
-                  title: "Continuous Support",
-                  description: "Ongoing mentorship and support to maximize your earnings"
-                }
-              ].map((feature, index) => (
-                <div key={index} className="group bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-6 hover:from-purple-800/30 hover:to-cyan-800/30 transition-all duration-300 transform hover:-translate-y-2 border border-gray-700/50">
-                  <div className="text-3xl mb-4 group-hover:scale-110 transition-transform">{feature.icon}</div>
-                  <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
-                  <p className="text-gray-300 leading-relaxed">{feature.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Why Choose ProfitWay Section */}
+        <WhyChooseProfitWay />
 
         {/* Stats Section */}
-       <section className="py-20 bg-black/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-              {[
-                { number: "30000+", label: "Max Monthly Income" },
-                { number: "5000+", label: "Active Earners" },
-                { number: "95%", label: "Success Rate" }
-              ].map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-2">
-                    {stat.number}
-                  </div>
-                  <div className="text-gray-300 text-sm md:text-base">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <StatsSection />
 
         {/* Final CTA Section */}
-        <section className="py-16 sm:py-20 bg-gradient-to-r from-purple-900/50 to-cyan-900/50">
+        <section className="py-16 sm:py-20 bg-gradient-to-r from-blue-900/50 to-cyan-900/50">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6 px-4">
               Ready to Start Earning?
@@ -242,7 +177,7 @@ export default function Plans() {
               >
                 {allPackages.length > 0 ? `Start with ${allPackages[0].title}` : "Loading..."}
               </button>
-              <button className="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-white hover:text-purple-900 transition-all">
+              <button className="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-white hover:text-blue-900 transition-all">
                 View All Packages
               </button>
             </div>

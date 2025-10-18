@@ -31,12 +31,12 @@ function Header() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="bg-gradient-to-br from-blue-50 via-white to-cyan-50">
         {/* Navigation */}
         <nav
           className={`fixed w-full z-50 transition-all duration-300 ${
             scrollY > 50
-              ? "bg-black/80 backdrop-blur-lg"
+              ? "bg-white/90 backdrop-blur-lg shadow-lg"
               : "bg-transparent"
           }`}
         >
@@ -51,15 +51,15 @@ function Header() {
 
               {/* Desktop Menu */}
               <div className="hidden md:flex space-x-8">
-                <a href="/" className="text-white hover:text-cyan-400 transition-colors">Home</a>
-                <a href="/about" className="text-white hover:text-cyan-400 transition-colors">About</a>
-                <a href="/packages" className="text-white hover:text-cyan-400 transition-colors">Courses Packages</a>
-                <a href="/contact" className="text-white hover:text-cyan-400 transition-colors">Contact</a>
+                <a href="/" className="text-gray-900 hover:text-blue-600 transition-colors">Home</a>
+                <a href="/about" className="text-gray-900 hover:text-blue-600 transition-colors">About</a>
+                <a href="/packages" className="text-gray-900 hover:text-blue-600 transition-colors">Courses Packages</a>
+                <a href="/contact" className="text-gray-900 hover:text-blue-600 transition-colors">Contact</a>
               </div>
 
               <div className="hidden md:flex items-center space-x-4">
-                <a href="/login" className="text-white hover:text-cyan-400 transition-colors">Login</a>
-                <a href="/signup" className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-cyan-600 hover:to-purple-700 transition-all">
+                <a href="/login" className="text-gray-900 hover:text-blue-600 transition-colors">Login</a>
+                <a href="/signup" className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-cyan-700 transition-all">
                   Get Started
                 </a>
               </div>
@@ -68,7 +68,7 @@ function Header() {
               <div className="md:hidden">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="text-white hover:text-cyan-400 transition-colors"
+                  className="text-gray-900 hover:text-blue-600 transition-colors"
                 >
                   <svg
                     className="h-6 w-6"
@@ -89,15 +89,15 @@ function Header() {
 
             {/* Mobile Menu */}
             {isMenuOpen && (
-              <div className="md:hidden bg-black/90 backdrop-blur-lg rounded-lg mt-2 py-4">
+              <div className="md:hidden bg-white/95 backdrop-blur-lg rounded-lg mt-2 py-4 shadow-lg border border-gray-200">
                 <div className="flex flex-col space-y-4 px-4">
-                  <a href="/" className="text-white hover:text-cyan-400 transition-colors">Home</a>
-                  <a href="/about" className="text-white hover:text-cyan-400 transition-colors">About</a>
-                  <a href="/packages" className="text-white hover:text-cyan-400 transition-colors">Courses Packages</a>
-                  <a href="/contact" className="text-white hover:text-cyan-400 transition-colors">Contact</a>
-                  <div className="pt-4 border-t border-gray-700">
-                    <a href="/login" className="text-white hover:text-cyan-400 transition-colors mb-2 block">Login</a>
-                    <a href="/signup" className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-2 rounded-full w-full text-center">Get Started</a>
+                  <a href="/" className="text-gray-900 hover:text-blue-600 transition-colors">Home</a>
+                  <a href="/about" className="text-gray-900 hover:text-blue-600 transition-colors">About</a>
+                  <a href="/packages" className="text-gray-900 hover:text-blue-600 transition-colors">Courses Packages</a>
+                  <a href="/contact" className="text-gray-900 hover:text-blue-600 transition-colors">Contact</a>
+                  <div className="pt-4 border-t border-gray-300">
+                    <a href="/login" className="text-gray-900 hover:text-blue-600 transition-colors mb-2 block">Login</a>
+                    <a href="/signup" className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-2 rounded-full w-full text-center hover:from-blue-600 hover:to-cyan-700 transition-all">Get Started</a>
                   </div>
                 </div>
               </div>

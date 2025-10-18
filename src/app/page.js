@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import Header from './component/include/header'
 import Footer from './component/include/footer'
 import PackagesGrid from './component/packages/PackagesGrid'
+import WhyChooseProfitWay from './component/WhyChooseProfitWay'
+import StatsSection from './component/StatsSection'
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -160,111 +162,11 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [currentSlide]);
 
-  const allCourses = [
-    {
-      title: "Digital Marketing Mastery",
-      description: "Complete digital marketing course covering SEO, SEM, social media, and analytics",
-      duration: "12 weeks",
-      level: "Beginner to Advanced",
-      students: "2,500+",
-      rating: "4.9",
-      price: "₹12,999",
-      originalPrice: "₹19,999",
-      features: ["SEO Optimization", "Google Ads", "Social Media Marketing", "Email Marketing", "Analytics"]
-    },
-    {
-      title: "Affiliate Marketing Blueprint",
-      description: "Master the art of affiliate marketing and build passive income streams",
-      duration: "8 weeks",
-      level: "Intermediate",
-      students: "1,800+",
-      rating: "4.8",
-      price: "₹8,999",
-      originalPrice: "₹14,999",
-      features: ["Affiliate Networks", "Commission Strategies", "Content Marketing", "Traffic Generation", "Conversion Optimization"]
-    },
-    {
-      title: "E-commerce Business Strategy",
-      description: "Build and scale your online business with proven e-commerce strategies",
-      duration: "10 weeks",
-      level: "Advanced",
-      students: "1,200+",
-      rating: "4.9",
-      price: "₹15,999",
-      originalPrice: "₹24,999",
-      features: ["Online Store Setup", "Product Research", "Supply Chain", "Customer Acquisition", "Scaling Strategies"]
-    },
-    {
-      title: "Social Media Marketing",
-      description: "Dominate social platforms and build engaged communities",
-      duration: "6 weeks",
-      level: "Beginner",
-      students: "3,000+",
-      rating: "4.7",
-      price: "₹6,999",
-      originalPrice: "₹9,999",
-      features: ["Content Strategy", "Platform Optimization", "Influencer Marketing", "Paid Advertising", "Community Building"]
-    },
-    {
-      title: "Content Creation & Copywriting",
-      description: "Create compelling content that converts and engages audiences",
-      duration: "8 weeks",
-      level: "Intermediate",
-      students: "2,200+",
-      rating: "4.8",
-      price: "₹9,999",
-      originalPrice: "₹15,999",
-      features: ["Copywriting Techniques", "Video Production", "Blog Writing", "Sales Funnels", "Brand Storytelling"]
-    },
-    {
-      title: "Personal Branding Essentials",
-      description: "Build a powerful personal brand that opens doors and creates opportunities",
-      duration: "4 weeks",
-      level: "Beginner",
-      students: "1,500+",
-      rating: "4.6",
-      price: "₹4,999",
-      originalPrice: "₹7,999",
-      features: ["Brand Identity", "LinkedIn Optimization", "Networking", "Thought Leadership", "Online Presence"]
-    },
-    {
-      title: "YouTube Marketing Mastery",
-      description: "Grow your YouTube channel and monetize your content effectively",
-      duration: "6 weeks",
-      level: "Beginner to Intermediate",
-      students: "1,900+",
-      rating: "4.7",
-      price: "₹7,999",
-      originalPrice: "₹12,999",
-      features: ["Channel Setup", "Video SEO", "Thumbnail Design", "Monetization", "Audience Engagement"]
-    },
-    {
-      title: "Email Marketing Automation",
-      description: "Build automated email sequences that convert leads into customers",
-      duration: "5 weeks",
-      level: "Intermediate",
-      students: "1,400+",
-      rating: "4.8",
-      price: "₹6,499",
-      originalPrice: "₹10,999",
-      features: ["Email Sequences", "Automation Tools", "List Building", "Segmentation", "A/B Testing"]
-    },
-    {
-      title: "Freelancing Success Blueprint",
-      description: "Start and scale your freelancing business with proven strategies",
-      duration: "7 weeks",
-      level: "Beginner",
-      students: "2,100+",
-      rating: "4.6",
-      price: "₹5,999",
-      originalPrice: "₹9,999",
-      features: ["Client Acquisition", "Pricing Strategies", "Portfolio Building", "Project Management", "Scaling Business"]
-    }
-  ];
+ 
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
         {/* Navigation */}
         <Header />
 
@@ -279,27 +181,27 @@ export default function Home() {
             backgroundPosition: 'center'
           }}
         >
-          {/* Dark overlay to keep text readable */}
-          <div className="absolute inset-0 bg-black/60"></div>
+          {/* Light overlay to keep text readable */}
+          <div className="absolute inset-0 bg-white/70"></div>
           {/* Subtle gradient overlay for brand colors */}
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-800/10 to-cyan-800/10 mix-blend-overlay"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 mix-blend-overlay"></div>
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="space-y-8">
-              <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
+              <h1 className="text-5xl md:text-7xl font-bold text-gray-900 leading-tight">
                 Transform Your
-                <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent block">
+                <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent block">
                   Future Through Learning
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Revolutionary online education platform that integrates neuro-education with the arts, 
+              <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+                Revolutionary online education platform that integrates neuro-education with the arts,
                 creating borderless, inclusive learning experiences without traditional constraints.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <button className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-cyan-600 hover:to-purple-700 transform hover:scale-105 transition-all shadow-xl">
+                <button className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-blue-600 hover:to-cyan-700 transform hover:scale-105 transition-all shadow-xl">
                   Start Learning Today
                 </button>
-                <button className="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-purple-900 transition-all">
+                <button className="border-2 border-gray-900 text-gray-900 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-900 hover:text-white transition-all">
                   Explore Courses
                 </button>
               </div>
@@ -307,19 +209,19 @@ export default function Home() {
           </div>
           
           {/* Floating Elements */}
-          <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-20 animate-bounce"></div>
-          <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-r from-pink-400 to-cyan-400 rounded-full opacity-20 animate-ping"></div>
+          <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full opacity-30 animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-r from-cyan-400 to-teal-400 rounded-full opacity-30 animate-bounce"></div>
+          <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-r from-teal-400 to-blue-400 rounded-full opacity-30 animate-ping"></div>
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-20 bg-black/30">
+        <section id="features" className="py-20 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                Why Choose <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">ProfitWay</span>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                Why Choose <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">ProfitWay</span>
               </h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                 Unlock expertise with exclusive packages. Empower with industry-leading courses.
               </p>
             </div>
@@ -357,10 +259,10 @@ export default function Home() {
                   description: "Specialized courses tailored to meet the demands of various industries and future job markets."
                 }
               ].map((feature, index) => (
-                <div key={index} className="group bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-8 hover:from-purple-800/30 hover:to-cyan-800/30 transition-all duration-300 transform hover:-translate-y-2 border border-gray-700/50">
+                <div key={index} className="group bg-white rounded-2xl p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-200 hover:border-blue-300">
                   <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{feature.icon}</div>
-                  <h3 className="text-2xl font-bold text-white mb-4">{feature.title}</h3>
-                  <p className="text-gray-300 leading-relaxed">{feature.description}</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </div>
               ))}
             </div>
@@ -368,43 +270,43 @@ export default function Home() {
         </section>
 
         {/* About Section */}
-        <section id="about" className="py-20">
+        <section id="about" className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
-                  Our <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Mission</span>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8">
+                  Our <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Mission</span>
                 </h2>
-                <div className="space-y-6 text-lg text-gray-300 leading-relaxed">
+                <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
                   <p>
-                    At ProfitWay, our mission is to empower learners globally through accessible, 
-                    innovative, and life-transforming education. We are committed to creating a dynamic 
+                    At ProfitWay, our mission is to empower learners globally through accessible,
+                    innovative, and life-transforming education. We are committed to creating a dynamic
                     online learning environment that blends technology, creativity, and real-world skills.
                   </p>
                   <p>
-                    We believe that education should be inclusive, engaging, and future-focused. 
-                    That&apos;s why we offer a diverse range of courses—from foundational knowledge to 
+                    We believe that education should be inclusive, engaging, and future-focused.
+                    That&apos;s why we offer a diverse range of courses—from foundational knowledge to
                     digital entrepreneurship and personal development.
                   </p>
                   <p>
-                    Our vision is to become a global leader in transformative online education, 
+                    Our vision is to become a global leader in transformative online education,
                     where learning is not limited by geography, age, or circumstance.
                   </p>
                 </div>
               </div>
-              
+
               <div className="relative">
-                <div className="bg-gradient-to-br from-purple-600/20 to-cyan-600/20 backdrop-blur-sm rounded-3xl p-8 border border-gray-700/50">
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-8 border border-blue-200 shadow-lg">
                   <div className="text-center mb-8">
-                    <div className="w-32 h-32 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl font-bold text-white">
+                    <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl font-bold text-white">
                       SK
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">Himanshu Kushwaha</h3>
-                    <p className="text-cyan-400 font-semibold">Founder & CEO</p>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Himanshu Kushwaha</h3>
+                    <p className="text-blue-600 font-semibold">Founder & CEO</p>
                   </div>
-                  <p className="text-gray-300 text-center leading-relaxed">
-                    Dedicated to empowering individuals and businesses in the competitive world of digital marketing. 
-                    With extensive experience in business strategy and online revenue generation, he created ProfitWay 
+                  <p className="text-gray-600 text-center leading-relaxed">
+                    Dedicated to empowering individuals and businesses in the competitive world of digital marketing.
+                    With extensive experience in business strategy and online revenue generation, he created ProfitWay
                     as a platform for ambitious achievers to unleash their potential and achieve financial freedom.
                   </p>
                 </div>
@@ -414,13 +316,13 @@ export default function Home() {
         </section>
 
         {/* Popular Courses Section */}
-        <section id="courses" className="py-20 bg-black/30">
+        <section id="courses" className="py-20 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                Popular <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Courses</span>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                Popular <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Courses</span>
               </h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                 Specialized courses tailored to meet the demands of various industries
               </p>
             </div>
@@ -430,7 +332,7 @@ export default function Home() {
               {/* Previous Button */}
               <button
                 onClick={prevSlide}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 rounded-full transition-all duration-300 hover:scale-110 border border-gray-700/50 hover:border-purple-400/50 sm:block hidden"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-50 text-gray-700 p-3 rounded-full transition-all duration-300 hover:scale-110 border border-gray-200 hover:border-blue-300 shadow-lg sm:block hidden"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -440,7 +342,7 @@ export default function Home() {
               {/* Next Button */}
               <button
                 onClick={nextSlide}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 rounded-full transition-all duration-300 hover:scale-110 border border-gray-700/50 hover:border-purple-400/50 sm:block hidden"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-50 text-gray-700 p-3 rounded-full transition-all duration-300 hover:scale-110 border border-gray-200 hover:border-blue-300 shadow-lg sm:block hidden"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -461,10 +363,10 @@ export default function Home() {
                         {carouselCourses
                           .slice(slideIndex * itemsPerSlide, (slideIndex + 1) * itemsPerSlide)
                           .map((course, index) => (
-                            <a 
-                              key={index} 
+                            <a
+                              key={index}
                               href={course.url}
-                              className="group block bg-white/10 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl border border-gray-700/50 hover:border-purple-400/50"
+                              className="group block bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-200 hover:border-blue-300"
                             >
                               {/* Course Image */}
                               <div className="relative h-48 overflow-hidden">
@@ -478,13 +380,13 @@ export default function Home() {
                                 
                                 {/* Title Overlay */}
                                 <div className="absolute bottom-4 left-4 right-4">
-                                  <h3 className="text-white font-bold text-lg leading-tight group-hover:text-cyan-400 transition-colors">
+                                  <h3 className="text-gray-900 font-bold text-lg leading-tight group-hover:text-blue-600 transition-colors">
                                     {course.title}
                                   </h3>
                                 </div>
 
                                 {/* Hover Effect Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                               </div>
                             </a>
                           ))}
@@ -498,7 +400,7 @@ export default function Home() {
               <div className="flex justify-between mt-6 sm:hidden">
                 <button
                   onClick={prevSlide}
-                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 rounded-full transition-all duration-300 border border-gray-700/50 hover:border-purple-400/50"
+                  className="bg-white hover:bg-gray-50 text-gray-700 p-3 rounded-full transition-all duration-300 border border-gray-200 hover:border-blue-300 shadow-lg"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -506,7 +408,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 rounded-full transition-all duration-300 border border-gray-700/50 hover:border-purple-400/50"
+                  className="bg-white hover:bg-gray-50 text-gray-700 p-3 rounded-full transition-all duration-300 border border-gray-200 hover:border-blue-300 shadow-lg"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -522,9 +424,9 @@ export default function Home() {
                   key={index}
                   onClick={() => goToSlide(index)}
                   className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentSlide 
-                      ? 'bg-gradient-to-r from-cyan-400 to-purple-400 scale-125' 
-                      : 'bg-gray-600 hover:bg-gray-500'
+                    index === currentSlide
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 scale-125'
+                      : 'bg-gray-300 hover:bg-gray-400'
                   }`}
                 ></button>
               ))}
@@ -532,9 +434,9 @@ export default function Home() {
 
             {/* View All Courses Button */}
             <div className="text-center mt-12">
-              <a 
+              <a
                 href="/courses"
-                className="inline-block border-2 border-purple-400 text-purple-400 px-8 py-3 rounded-full text-lg font-semibold hover:bg-purple-400 hover:text-white transition-all transform hover:scale-105"
+                className="inline-block border-2 border-blue-500 text-blue-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-500 hover:text-white transition-all transform hover:scale-105"
               >
                 View All Courses →
               </a>
@@ -543,133 +445,32 @@ export default function Home() {
         </section>
 
         {/* Our Packages Section - Updated with new income-based packages */}
-        <section id="all-courses" className="py-20">
+        <section className="py-20 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                Our <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Packages</span>
-              </h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                Unlock expertise with exclusive packages. Choose your income level and start earning.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {packages.slice(0, 6).map((pkg, index) => (
-                <div key={pkg.id || index} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden hover:from-purple-800/30 hover:to-cyan-800/30 transition-all duration-300 transform hover:-translate-y-2 border border-gray-700/50 group">
-                  {/* Package Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    {/* Use real photographic image from package data */}
-                    <img
-                      src={pkg.image}
-                      alt={`${pkg.title} banner`}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-
-                    {/* Price Overlay */}
-                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                      <span className="text-gray-900 font-bold text-sm">{pkg.price}</span>
-                      <span className="text-gray-500 line-through text-xs ml-1">{pkg.originalPrice}</span>
-                    </div>
-
-                    {/* Title Overlay */}
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-white font-bold text-lg leading-tight group-hover:text-cyan-400 transition-colors">
-                        {pkg.title}
-                      </h3>
-                    </div>
-
-                    {/* Hover Effect Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
-
-                  {/* Package Content */}
-                  <div className="p-5">
-                    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-                      {pkg.description}
-                    </p>
-                    
-                    {/* Income Details */}
-                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4">
-                      <div className="text-green-400 font-semibold text-sm mb-2">
-                        <span className="font-bold text-lg">{pkg.price}</span>
-                        <span className="text-gray-500 line-through text-xs ml-1">{pkg.originalPrice}</span>
-                      </div>
-                      
-                    </div>
-                    
-                    {/* Features */}
-                    <div className="space-y-2 mb-4">
-                      {pkg.features.slice(0, 3).map((feature, idx) => (
-                        <div key={idx} className="flex items-center text-gray-300 text-sm">
-                          <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full mr-2"></div>
-                          {feature}
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {/* Enroll Button */}
-                    <button 
-                      type="button"
-                      onClick={() => handleEnrollNow(pkg)}
-                      disabled={busySlug === (pkg.slug || pkg.title).toString().toLowerCase().replace(/\s+/g, "-")}
-                      className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-2.5 rounded-lg font-medium hover:from-cyan-600 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {busySlug === (pkg.slug || pkg.title).toString().toLowerCase().replace(/\s+/g, "-") ? "Opening…" : "Enroll Now"}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* View More Button */}
-            <div className="text-center mt-12">
-              <a 
-                href="/packages"
-                className="inline-block border-2 border-purple-400 text-purple-400 px-8 py-3 rounded-full text-lg font-semibold hover:bg-purple-400 hover:text-white transition-all transform hover:scale-105"
-              >
-                View All Packages →
-              </a>
-            </div>
+            <PackagesGrid packages={packages} handleEnrollNow={handleEnrollNow} busySlug={busySlug}/>
           </div>
         </section>
+
+        {/* Why Choose ProfitWay Section */}
+        <WhyChooseProfitWay />
 
         {/* Stats Section */}
-        <section className="py-20 bg-black/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-              {[
-                { number: "30000+", label: "Max Monthly Income" },
-                { number: "5000+", label: "Active Earners" },
-                { number: "95%", label: "Success Rate" }
-              ].map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-2">
-                    {stat.number}
-                  </div>
-                  <div className="text-gray-300 text-sm md:text-base">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <StatsSection />
 
         {/* CTA Section */}
-        <section className="py-20 bg-gradient-to-r from-purple-900/50 to-cyan-900/50">
+        <section className="py-20 bg-gradient-to-r from-blue-600 to-cyan-600">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Ready to Start Earning?
             </h2>
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               Join thousands of learners who are earning while they learn with our innovative income packages.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <button className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-cyan-600 hover:to-purple-700 transform hover:scale-105 transition-all shadow-xl">
+              <button className="bg-white text-blue-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all shadow-xl">
                 Start Earning Today
               </button>
-              <button className="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-purple-900 transition-all">
+              <button className="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-blue-600 transition-all">
                 View All Packages
               </button>
             </div>
