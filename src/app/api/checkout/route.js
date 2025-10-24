@@ -26,6 +26,30 @@ export async function POST(request) {
     // Generate unique referral code (simple approach, could be improved)
     const referralCode = generateReferralCode();
 
+    // Handle image upload if provided
+    let imagePath = null;
+    if (data.paymentScreenshot) {
+      const fs = require('fs');
+      const path = require('path');
+
+      // Create unique filename
+      const timestamp = Date.now();
+      const filename = `payment_${timestamp}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'payments');
+
+      // Ensure directory exists
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      // Convert base64 to file
+      const base64Data = data.paymentScreenshot.replace(/^data:image\/jpeg;base64,/, '');
+      const filePath = path.join(uploadDir, filename);
+      fs.writeFileSync(filePath, base64Data, 'base64');
+
+      imagePath = `/uploads/payments/${filename}`;
+    }
+
     // Insert into database
     const sql = `
       INSERT INTO checkout
@@ -45,7 +69,7 @@ export async function POST(request) {
       data.city || null,
       data.sponsorCode || null,
       referralCode,
-      data.paymentScreenshot || null,
+      imagePath,
       data.utrNumber || null,
     ];
 

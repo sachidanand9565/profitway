@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaTachometerAlt, FaBox, FaUsers, FaCog, FaSignOutAlt, FaTimes } from 'react-icons/fa';
+import { FaTachometerAlt, FaBox, FaUsers, FaCog, FaSignOutAlt, FaTimes, FaShoppingCart } from 'react-icons/fa';
 
 export default function SideMenu({ onClose }) {
   const pathname = usePathname();
@@ -16,6 +16,11 @@ export default function SideMenu({ onClose }) {
       name: 'Packages',
       href: '/admin/packages',
       icon: FaBox,
+    },
+    {
+      name: 'Purchases',
+      href: '/admin/purchases',
+      icon: FaShoppingCart,
     },
     {
       name: 'Users',

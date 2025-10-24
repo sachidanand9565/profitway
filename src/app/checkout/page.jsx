@@ -85,6 +85,7 @@ function CheckoutPageContent() {
   const [step, setStep] = useState("form");
   const [orderId, setOrderId] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [doneFade, setDoneFade] = useState(false);
 
   // comprehensive list of Indian states and union territories
   const states = [
@@ -152,6 +153,21 @@ function CheckoutPageContent() {
     setPkgData({ title: packageTitle, price: qPrice, image: qImage, slug });
     setForm((s) => ({ ...s, packageTitle: packageTitle, price: qPrice }));
   }, [slug, qTitle, qPrice, qImage, packageTitle]);
+
+  // If user previously completed an order, allow showing the success panel from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('last_order');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.orderId) {
+          setOrderId(parsed.orderId);
+          // show success panel with basic info if caller wants
+          // do not automatically switch UI unless user explicitly revisits checkout
+        }
+      }
+    } catch (e) {}
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -236,6 +252,22 @@ function CheckoutPageContent() {
         setStatus("paid");
         setStep("done");
 
+        // persist order summary to localStorage for revisit
+        try {
+          localStorage.setItem('last_order', JSON.stringify({
+            orderId: id,
+            name: form.name,
+            packageTitle: pkgData.title,
+            price: form.price || pkgData.price || null,
+            date: new Date().toISOString()
+          }));
+        } catch (e) {
+          console.warn('Could not persist order to localStorage', e);
+        }
+
+        // trigger fade animation for done panel
+        setTimeout(() => setDoneFade(true), 30);
+
         // clear session storage package to avoid reuse
         try {
           sessionStorage.removeItem("checkout_pkg");
@@ -289,7 +321,7 @@ function CheckoutPageContent() {
                         <div className="flex items-center gap-3">
                           <div className="flex-1">
                             <div className="text-gray-900 font-semibold">{pkgData.title}</div>
-                            <div className="text-gray-500 text-sm">Price: {form.price || "TBD"}</div>
+                            <div className="text-gray-500 text-sm">Price: {pkgData.price || pkgData.price || "TBD"}</div>
                           </div>
                           {pkgData.image ? <img src={pkgData.image} alt={pkgData.title} className="w-20 h-12 object-cover rounded" /> : null}
                         </div>
@@ -410,7 +442,7 @@ function CheckoutPageContent() {
                             )}
                             <div className="flex-1">
                               <div className="text-white font-semibold text-lg">{pkgData.title}</div>
-                              <div className="text-gray-400 text-sm">Price: {form.price || "TBD"}</div>
+                              <div className="text-gray-400 text-sm">Price: {pkgData.price || pkgData.price || "TBD"}</div>
                             </div>
                           </div>
                           <div className="space-y-2 text-sm">
@@ -437,7 +469,7 @@ function CheckoutPageContent() {
                               </tr>
                               <tr className="border-b border-gray-700">
                                 <th className="text-left py-2 pr-4 font-semibold">Price</th>
-                                <td className="py-2">{form.price || "TBD"}</td>
+                                <td className="py-2">{form.price || pkgData.price || "TBD"}</td>
                               </tr>
                               <tr className="border-b border-gray-700">
                                 <th className="text-left py-2 pr-4 font-semibold">Name</th>
@@ -469,7 +501,7 @@ function CheckoutPageContent() {
 
                     {/* Payment Info Section */}
                     <div className="mb-6 p-6 bg-gray-800 rounded-lg border border-gray-700">
-                      <h3 className="text-lg font-bold text-white mb-4">Please Pay Rs. {form.price || "TBD"} /- On below given UPI</h3>
+                      <h3 className="text-lg font-bold text-white mb-4">Please Pay Rs. {form.price || pkgData.price || "TBD"} /- On below given UPI</h3>
                       <div className="text-center mb-6">
 <img
   src="/payqr.jpeg"
@@ -600,10 +632,17 @@ function CheckoutPageContent() {
                 )}
 
                 {step === "done" && (
-                  <div className="text-center py-8">
-                    <div className="text-2xl font-bold text-green-400 mb-3">Payment successful</div>
-                    <div className="text-gray-300 mb-4">Thank you, {form.name}. We received your order.</div>
-                    <div className="text-sm text-gray-400 mb-6">Order ID: <span className="font-mono text-white">{orderId}</span></div>
+                  <div className={`text-center py-8 transform transition-all duration-500 ${doneFade ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+                    <div className="text-2xl font-bold text-green-400 mb-3">Request submit successful</div>
+                    <div className="text-gray-300 mb-4">Thank you, {form.name}. Your request has been submitted successfully.</div>
+                    <div className="text-sm text-gray-400 mb-2">Order ID: <span className="font-mono text-white">{orderId}</span></div>
+
+                    <div className="mx-auto my-4 max-w-md bg-white rounded-lg p-4 text-left text-gray-900 shadow">
+                      <h4 className="font-semibold mb-2">Order Summary</h4>
+                      <div className="flex justify-between"><span>Package:</span><span>{pkgData.title}</span></div>
+                      <div className="flex justify-between"><span>Price:</span><span>{form.price || pkgData.price ? `₹${form.price || pkgData.price}` : 'TBD'}</span></div>
+                      <div className="border-t mt-3 pt-2 flex justify-between font-bold"><span>Total:</span><span>{form.price || pkgData.price ? `₹${form.price || pkgData.price}` : 'TBD'}</span></div>
+                    </div>
 
                     <div className="flex justify-center gap-4">
                       <a href="/packages" className="px-5 py-3 rounded-lg bg-cyan-500 text-white">Back to Packages</a>
@@ -614,6 +653,7 @@ function CheckoutPageContent() {
               </div>
 
               {/* Right: price summary (hidden on mobile) */}
+              {step !== 'done' && (
               <aside className="hidden lg:block lg:col-span-1 bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
                 <h4 className="text-gray-900 font-bold text-lg mb-4">Order Summary</h4>
                 <div className="space-y-3">
@@ -623,12 +663,12 @@ function CheckoutPageContent() {
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Price:</span>
-                    <span className="text-gray-900 font-medium">{form.price ? `₹${form.price}` : "TBD"}</span>
+                    <span className="text-gray-900 font-medium">{pkgData.price ? `₹${form.price}` : "TBD"}</span>
                   </div>
                   <div className="border-t border-gray-300 pt-3">
                     <div className="flex justify-between text-gray-900 font-bold text-lg">
                       <span>Total:</span>
-                      <span>{form.price ? `₹${form.price}` : "TBD"}</span>
+                      <span>{form.price ? `₹${pkgData.price}` : "TBD"}</span>
                     </div>
                   </div>
                 </div>
@@ -638,6 +678,7 @@ function CheckoutPageContent() {
                   </div>
                 </div>
               </aside>
+              )}
             </div>
           </div>
         </main>
