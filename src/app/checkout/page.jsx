@@ -1,39 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 "use client";
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
@@ -86,6 +50,7 @@ function CheckoutPageContent() {
   const [orderId, setOrderId] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
   const [doneFade, setDoneFade] = useState(false);
+  const [orderPrice, setOrderPrice] = useState(null);
 
   // comprehensive list of Indian states and union territories
   const states = [
@@ -248,7 +213,9 @@ function CheckoutPageContent() {
       if (response.ok) {
         // generate simple order id
         const id = "ORD" + Date.now().toString().slice(-6);
+        const finalPrice = form.price || pkgData.price;
         setOrderId(id);
+        setOrderPrice(finalPrice);
         setStatus("paid");
         setStep("done");
 
@@ -258,7 +225,7 @@ function CheckoutPageContent() {
             orderId: id,
             name: form.name,
             packageTitle: pkgData.title,
-            price: form.price || pkgData.price || null,
+            price: finalPrice,
             date: new Date().toISOString()
           }));
         } catch (e) {
@@ -635,13 +602,12 @@ function CheckoutPageContent() {
                   <div className={`text-center py-8 transform transition-all duration-500 ${doneFade ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
                     <div className="text-2xl font-bold text-green-400 mb-3">Request submit successful</div>
                     <div className="text-gray-300 mb-4">Thank you, {form.name}. Your request has been submitted successfully.</div>
-                    <div className="text-sm text-gray-400 mb-2">Order ID: <span className="font-mono text-white">{orderId}</span></div>
 
                     <div className="mx-auto my-4 max-w-md bg-white rounded-lg p-4 text-left text-gray-900 shadow">
                       <h4 className="font-semibold mb-2">Order Summary</h4>
                       <div className="flex justify-between"><span>Package:</span><span>{pkgData.title}</span></div>
-                      <div className="flex justify-between"><span>Price:</span><span>{form.price || pkgData.price ? `₹${form.price || pkgData.price}` : 'TBD'}</span></div>
-                      <div className="border-t mt-3 pt-2 flex justify-between font-bold"><span>Total:</span><span>{form.price || pkgData.price ? `₹${form.price || pkgData.price}` : 'TBD'}</span></div>
+                      <div className="flex justify-between"><span>Price:</span><span>{orderPrice ? `₹${orderPrice}` : 'TBD'}</span></div>
+                      <div className="border-t mt-3 pt-2 flex justify-between font-bold"><span>Total:</span><span>{orderPrice ? `₹${orderPrice}` : 'TBD'}</span></div>
                     </div>
 
                     <div className="flex justify-center gap-4">
