@@ -39,6 +39,21 @@ export async function POST(request) {
       console.log("Purchase details:", purchase);
       console.log("Package ID:", purchase.packageid, "Type:", typeof purchase.packageid);
 
+      // Get the actual package ID (handle if packageid is slug or ID)
+      let packageId = purchase.packageid;
+      if (typeof packageId === 'string' && packageId !== 'unknown') {
+        // If it's a string (slug), fetch the numeric ID from packages table
+        const packages = await query("SELECT id FROM packages WHERE slug = ?", [packageId]);
+        if (packages.length > 0) {
+          packageId = packages[0].id;
+        } else {
+          console.warn("Package slug not found:", packageId);
+          packageId = null;
+        }
+      } else if (packageId === 'unknown' || packageId === 0) {
+        packageId = null;
+      }
+
       // Update purchase status
       await query("UPDATE checkout SET status = 'approved' WHERE id = ?", [id]);
 
@@ -50,8 +65,8 @@ export async function POST(request) {
         // User exists, update approved packages
         const user = existingUsers[0];
         const currentPackages = JSON.parse(user.approved_packages || '[]');
-        if (purchase.packageid && purchase.packageid !== 0) {
-          const updatedPackages = [...new Set([...currentPackages, purchase.packageid])]; // Avoid duplicates
+        if (packageId) {
+          const updatedPackages = [...new Set([...currentPackages, packageId])]; // Avoid duplicates, ensure numeric IDs
           await query(
             "UPDATE users SET approved_packages = ? WHERE id = ?",
             [JSON.stringify(updatedPackages), user.id]
@@ -60,10 +75,40 @@ export async function POST(request) {
       } else {
         // Create new user account
         isNewUser = true;
-        const initialPackages = (purchase.packageid && purchase.packageid !== 0) ? [purchase.packageid] : [];
+        const initialPackages = packageId ? [packageId] : [];
+
+        // Generate referral code: "PW" + 8 random alphanumeric characters
+        const generateReferralCode = () => {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+          let result = 'PW';
+          for (let i = 0; i < 8; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          return result;
+        };
+
+        let referralCode;
+        let isUnique = false;
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        // Ensure referral code is unique
+        while (!isUnique && attempts < maxAttempts) {
+          referralCode = generateReferralCode();
+          const existingCodes = await query("SELECT id FROM users WHERE referral_code = ?", [referralCode]);
+          if (existingCodes.length === 0) {
+            isUnique = true;
+          }
+          attempts++;
+        }
+
+        if (!isUnique) {
+          throw new Error("Failed to generate unique referral code");
+        }
+
         await query(
-          "INSERT INTO users (username, password, email, approved_packages, created_at) VALUES (?, ?, ?, ?, ?)",
-          [username, password, purchase.email, JSON.stringify(initialPackages), purchase.created_at]
+          "INSERT INTO users (username, password, email, sponsor_code, referral_code, approved_packages, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          [username, password, purchase.email, purchase.sponsorcode || null, referralCode, JSON.stringify(initialPackages), purchase.created_at]
         );
       }
 
@@ -85,7 +130,7 @@ export async function POST(request) {
             </div>
           `;
 
-          await fetch('/api/email', {
+          await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/api/email`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

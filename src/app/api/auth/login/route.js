@@ -23,6 +23,8 @@ export async function POST(request) {
       id: user.id,
       username: user.username,
       email: user.email,
+      sponsor_code: user.sponsor_code,
+      referral_code: user.referral_code,
       approved_packages: JSON.parse(user.approved_packages || '[]'),
       created_at: user.created_at
     };

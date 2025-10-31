@@ -11,10 +11,14 @@ CREATE TABLE IF NOT EXISTS users (
   username VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
+  sponsor_code VARCHAR(10),
+  referral_code VARCHAR(10) NOT NULL UNIQUE,
   approved_packages JSON,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_username (username),
-  INDEX idx_email (email)
+  INDEX idx_email (email),
+  INDEX idx_sponsor_code (sponsor_code),
+  INDEX idx_referral_code (referral_code)
 );
 
 -- Optional: Add some sample data for testing

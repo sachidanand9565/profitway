@@ -1,26 +1,5 @@
-# Admin Panel Package Purchase Management Implementation
-
-## Database Changes
-- [x] Add 'status' column to 'checkout' table (pending/approved/rejected)
-- [x] Create new 'users' table for approved users (username, password, email, approved_packages)
-
-## Admin Panel Updates
-- [x] Add "Purchases" link to admin side menu (SideMenu.jsx)
-- [x] Create /admin/purchases/page.jsx to list pending purchases with approve/reject buttons
-
-## API Endpoints
-- [x] Create /api/purchases/route.js: GET pending purchases, POST approve/reject actions
-- [x] Create /api/users/route.js: User management (creation upon approval)
-
-## User System
-- [x] Update /login/page.jsx for user authentication
-- [x] Create /user/dashboard/page.jsx to access approved packages/courses
-- [x] Email notification system for approval with credentials
-
-## Email Integration
-- [x] Send username/password to user email upon approval
-
-## Followup Steps
-- [x] Database schema migration
-- [x] Email service integration
-- [ ] Testing approval flow and user login
+- [x] Add sponsor_code and referral_code columns to users table in database_migration.sql
+- [x] Modify src/app/api/purchases/route.js to use sponsor_code from checkout and generate referral_code ("PW" + 8 random alphanumeric characters) for new users
+- [x] Update src/app/api/auth/login/route.js to include sponsor_code and referral_code in user data response
+- [x] Run the updated database migration to add the sponsor_code and referral_code columns
+- [x] Test the approval process to ensure sponsor code is used from checkout and referral code is generated and stored

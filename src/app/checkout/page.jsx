@@ -233,7 +233,7 @@ function CheckoutPageContent() {
         }
 
         // trigger fade animation for done panel
-        setTimeout(() => setDoneFade(true), 30);
+        setTimeout(() => setDoneFade(true), 10);
 
         // clear session storage package to avoid reuse
         try {
