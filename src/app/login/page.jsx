@@ -64,7 +64,9 @@ export default function LoginPage() {
                   <input name="password" type="password" value={form.password} onChange={handleChange} required className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300" />
                 </div>
                 <div className="flex items-center justify-between">
-
+                  <a href="/forgot-password" className="text-blue-600 hover:text-blue-800 text-sm">
+                    Forgot password?
+                  </a>
                   <button type="submit" className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-12 py-2 rounded-lg">Sign in</button>
                 </div>
                 {error && <div className="text-red-600">{error}</div>}
