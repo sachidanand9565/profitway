@@ -3,10 +3,22 @@ import { query } from "../../../lib/mysqlClient";
 
 export async function GET() {
   try {
-    const users = await query("SELECT id, username, email, approved_packages, status, created_at FROM users ORDER BY created_at DESC");
-    return NextResponse.json(users);
+    const users = await query("SELECT id, username, email, password, approved_packages, status, created_at FROM users ORDER BY created_at DESC");
+    return NextResponse.json(users || []);
   } catch (err) {
     console.error("Failed to fetch users:", err);
+    // If status column doesn't exist, try without it
+    if (err.code === 'ER_BAD_FIELD_ERROR' && err.sqlMessage.includes('status')) {
+      try {
+        const users = await query("SELECT id, username, email, password, approved_packages, created_at FROM users ORDER BY created_at DESC");
+        // Add default status to each user
+        const usersWithStatus = users.map(user => ({ ...user, status: 'active' }));
+        return NextResponse.json(usersWithStatus || []);
+      } catch (fallbackErr) {
+        console.error("Fallback query also failed:", fallbackErr);
+        return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
+      }
+    }
     return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
   }
 }
@@ -35,8 +47,23 @@ export async function PUT(request) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    let queryStr = "UPDATE users SET username = ?, email = ?, approved_packages = ?, status = ?";
-    let params = [username, email, JSON.stringify(approved_packages), status];
+    // First check if status column exists
+    let hasStatusColumn = true;
+    try {
+      await query("SELECT status FROM users LIMIT 1");
+    } catch (err) {
+      if (err.code === 'ER_BAD_FIELD_ERROR' && err.sqlMessage.includes('status')) {
+        hasStatusColumn = false;
+      }
+    }
+
+    let queryStr = "UPDATE users SET username = ?, email = ?, approved_packages = ?";
+    let params = [username, email, JSON.stringify(approved_packages)];
+
+    if (hasStatusColumn) {
+      queryStr += ", status = ?";
+      params.push(status);
+    }
 
     if (password) {
       queryStr += ", password = ?";

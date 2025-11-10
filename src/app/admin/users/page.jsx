@@ -25,10 +25,19 @@ export default function UsersManagement() {
   const fetchUsers = async () => {
     try {
       const response = await fetch('/api/users');
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
       const data = await response.json();
-      setUsers(data);
+      if (Array.isArray(data)) {
+        setUsers(data);
+      } else {
+        console.error('Invalid data format:', data);
+        setUsers([]);
+      }
     } catch (error) {
       console.error('Failed to fetch users:', error);
+      setUsers([]);
       setMessage('Failed to fetch users');
       setMessageType('error');
     } finally {
@@ -315,6 +324,11 @@ export default function UsersManagement() {
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                   required={!editingUser}
                 />
+                {editingUser && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Current password: {editingUser.password}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Email</label>

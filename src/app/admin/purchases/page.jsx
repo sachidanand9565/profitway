@@ -20,10 +20,19 @@ export default function PurchasesManagement() {
   const fetchPurchases = async () => {
     try {
       const response = await fetch('/api/purchases');
+      if (!response.ok) {
+        throw new Error('Failed to fetch purchases');
+      }
       const data = await response.json();
-      setPurchases(data);
+      if (Array.isArray(data)) {
+        setPurchases(data);
+      } else {
+        console.error('Invalid data format:', data);
+        setPurchases([]);
+      }
     } catch (error) {
       console.error('Failed to fetch purchases:', error);
+      setPurchases([]);
     } finally {
       setLoading(false);
     }

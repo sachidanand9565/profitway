@@ -28,7 +28,7 @@ function CheckoutPageContent() {
 
   const packageTitle = slugToTitle(slug) || qTitle || "Selected Package";
 
-  const [pkgData, setPkgData] = useState({ title: "", price: "", image: "", slug: "" });
+  const [pkgData, setPkgData] = useState({ title: "", price: "", image: "", slug: "", id: null });
 
   const [form, setForm] = useState({
     name: "",
@@ -103,6 +103,7 @@ function CheckoutPageContent() {
           price: parsed.price || qPrice,
           image: parsed.image || qImage,
           slug: parsed.slug || slug,
+          id: parsed.id || null,
         });
         setForm((s) => ({
           ...s,
@@ -115,7 +116,7 @@ function CheckoutPageContent() {
       // ignore storage errors
     }
     // fallback to query params
-    setPkgData({ title: packageTitle, price: qPrice, image: qImage, slug });
+    setPkgData({ title: packageTitle, price: qPrice, image: qImage, slug, id: null });
     setForm((s) => ({ ...s, packageTitle: packageTitle, price: qPrice }));
   }, [slug, qTitle, qPrice, qImage, packageTitle]);
 
@@ -150,14 +151,44 @@ function CheckoutPageContent() {
     setStep("review");
   };
 
-  // Helper function to convert file to base64
-  const fileToBase64 = (file) => {
+  // Helper function to compress image if needed
+  const compressImage = (file) => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.onload = () => {
+        // Max width 800px, maintain aspect ratio
+        const maxWidth = 800;
+        const ratio = maxWidth / img.width;
+        canvas.width = maxWidth;
+        canvas.height = img.height * ratio;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // Compress to JPEG with quality 0.8
+        canvas.toBlob(resolve, 'image/jpeg', 0.8);
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
     });
+  };
+
+  // Helper function to convert file to base64, with compression for images
+  const fileToBase64 = async (file) => {
+    try {
+      let processedFile = file;
+      // If it's an image, compress it
+      if (file.type.startsWith('image/')) {
+        processedFile = await compressImage(file);
+      }
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(processedFile);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+      });
+    } catch (error) {
+      throw new Error('Failed to process image: ' + error.message);
+    }
   };
 
   // Handle payment submission
@@ -189,7 +220,7 @@ function CheckoutPageContent() {
         phone: form.phone,
         address: form.address,
         message: form.message,
-        packageId: pkgData.slug || "unknown",
+        packageId: pkgData.id || pkgData.slug || "unknown",
         packageTitle: pkgData.title,
         price: form.price,
         state: form.state,
@@ -244,7 +275,17 @@ function CheckoutPageContent() {
       }
     } catch (error) {
       console.error("Payment error:", error);
-      alert("Failed to process payment. Please try again.");
+      let errorMessage = "Failed to process payment. Please try again.";
+      if (!navigator.onLine) {
+        errorMessage = "No internet connection. Please check your network and try again.";
+      } else if (error.message.includes("Failed to process image")) {
+        errorMessage = "Image processing failed. Please ensure the screenshot is a valid image file and try again.";
+      } else if (error.message.includes("File size")) {
+        errorMessage = "File size is too large. Please select a smaller image (max 5MB) and try again.";
+      } else if (/mobile|android|iphone/i.test(navigator.userAgent)) {
+        errorMessage = "Payment submission failed on mobile. Please ensure you have a stable connection and the image is under 5MB, then try again.";
+      }
+      alert(errorMessage);
       setStep("review");
       setStatus(null);
     }
@@ -516,6 +557,10 @@ function CheckoutPageContent() {
                             accept="image/*"
                             onChange={(e) => {
                               const file = e.target.files[0];
+                              if (file && file.size > 5 * 1024 * 1024) {
+                                alert("File size must be less than 5MB. Please select a smaller image.");
+                                return;
+                              }
                               setForm((f) => ({ ...f, paymentScreenshot: file }));
                             }}
                             className="w-full text-gray-300 bg-gray-700 rounded px-3 py-2 mb-3"
@@ -541,6 +586,10 @@ function CheckoutPageContent() {
                               accept="image/*"
                               onChange={(e) => {
                                 const file = e.target.files[0];
+                                if (file && file.size > 5 * 1024 * 1024) {
+                                  alert("File size must be less than 5MB. Please select a smaller image.");
+                                  return;
+                                }
                                 setForm((f) => ({ ...f, paymentScreenshot: file }));
                               }}
                               className="w-full text-gray-300 bg-gray-700 rounded px-3 py-2"

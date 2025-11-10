@@ -90,13 +90,24 @@ export default function UserDashboard() {
               <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user.username}</h1>
               <p className="text-gray-600 mt-2">Your account dashboard</p>
             </div>
-            <div>
-              <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
+            <div className="flex items-center gap-4">
+              {/* Mobile Menu Button */}
+              <div className="lg:hidden">
+                <button
+                  onClick={() => setActiveTab(activeTab === 'menu' ? 'profile' : 'menu')}
+                  className="text-gray-900 hover:text-blue-600 transition-colors"
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <aside className="lg:col-span-1 bg-white rounded p-4 border">
+            {/* Desktop Sidebar */}
+            <aside className="hidden lg:block lg:col-span-1 bg-white rounded p-4 border">
               <nav className="space-y-2">
                 {[{k:'profile',l:'My Profile',i:<FaUser/>},{k:'mycourses',l:'My Courses',i:<FaBook/>},{k:'affiliate',l:'Affiliate Dashboard',i:<FaChartLine/>},{k:'withdraw',l:'Withdrawals',i:<FaMoneyBillWave/>},{k:'team',l:'My Team',i:<FaUsers/>},{k:'community',l:'Community',i:<FaComments/>}].map(item=> (
                   <button key={item.k} onClick={()=>setActiveTab(item.k)} className={`w-full text-left flex items-center gap-3 p-2 rounded hover:bg-blue-50 ${activeTab===item.k?'bg-blue-50 font-semibold':''}`}>
@@ -106,6 +117,35 @@ export default function UserDashboard() {
                 ))}
               </nav>
             </aside>
+
+            {/* Mobile Menu Overlay */}
+            {activeTab === 'menu' && (
+              <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-end pt-20">
+                <div className="bg-white w-80 max-w-full h-full shadow-lg">
+                  <div className="p-4 border-b">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">Menu</h3>
+                      <button
+                        onClick={() => setActiveTab('profile')}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <nav className="p-4 space-y-2">
+                    {[{k:'profile',l:'My Profile',i:<FaUser/>},{k:'mycourses',l:'My Courses',i:<FaBook/>},{k:'affiliate',l:'Affiliate Dashboard',i:<FaChartLine/>},{k:'withdraw',l:'Withdrawals',i:<FaMoneyBillWave/>},{k:'team',l:'My Team',i:<FaUsers/>},{k:'community',l:'Community',i:<FaComments/>}].map(item=> (
+                      <button key={item.k} onClick={()=>{setActiveTab(item.k)}} className={`w-full text-left flex items-center gap-3 p-3 rounded hover:bg-blue-50 ${activeTab===item.k?'bg-blue-50 font-semibold':''}`}>
+                        <span className="text-blue-600">{item.i}</span>
+                        <span className="text-sm">{item.l}</span>
+                      </button>
+                    ))}
+                  </nav>
+                </div>
+              </div>
+            )}
 
             <section className="lg:col-span-3">
                 {activeTab === 'profile' && (

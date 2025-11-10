@@ -8,9 +8,23 @@ export async function GET() {
       FROM checkout
       ORDER BY created_at DESC
     `);
-    return NextResponse.json(purchases);
+    return NextResponse.json(purchases || []);
   } catch (err) {
     console.error("Failed to fetch purchases:", err);
+    // If column doesn't exist, try without it
+    if (err.code === 'ER_BAD_FIELD_ERROR' && err.sqlMessage.includes('packageid')) {
+      try {
+        const purchases = await query(`
+          SELECT id, name, email, phone, packagetitle, price, state, city, sponsorcode, referralcode, image, utr_no, status, created_at
+          FROM checkout
+          ORDER BY created_at DESC
+        `);
+        return NextResponse.json(purchases || []);
+      } catch (fallbackErr) {
+        console.error("Fallback query also failed:", fallbackErr);
+        return NextResponse.json({ error: "Failed to fetch purchases" }, { status: 500 });
+      }
+    }
     return NextResponse.json({ error: "Failed to fetch purchases" }, { status: 500 });
   }
 }
