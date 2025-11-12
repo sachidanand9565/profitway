@@ -167,7 +167,9 @@ function CheckoutPageContent() {
         // Compress to JPEG with quality 0.8
         canvas.toBlob(resolve, 'image/jpeg', 0.8);
       };
-      img.onerror = reject;
+      img.onerror = (error) => {
+        reject(new Error('Failed to load image. Please ensure the file is a valid image.'));
+      };
       img.src = URL.createObjectURL(file);
     });
   };
@@ -179,12 +181,18 @@ function CheckoutPageContent() {
       // If it's an image, compress it
       if (file.type.startsWith('image/')) {
         processedFile = await compressImage(file);
+        // Check final size after compression
+        if (processedFile.size > 5 * 1024 * 1024) {
+          throw new Error('File size is too large even after compression. Please select a smaller image (max 5MB).');
+        }
       }
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(processedFile);
         reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
+        reader.onerror = (error) => {
+          reject(new Error('Failed to read file. Please try again.'));
+        };
       });
     } catch (error) {
       throw new Error('Failed to process image: ' + error.message);
@@ -282,8 +290,23 @@ function CheckoutPageContent() {
         errorMessage = "Image processing failed. Please ensure the screenshot is a valid image file and try again.";
       } else if (error.message.includes("File size")) {
         errorMessage = "File size is too large. Please select a smaller image (max 5MB) and try again.";
+      } else if (error.message.includes("Failed to load image")) {
+        errorMessage = "Invalid image file. Please select a valid image file and try again.";
+      } else if (error.message.includes("Failed to read file")) {
+        errorMessage = "Failed to read the selected file. Please try selecting the image again.";
+      } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        errorMessage = "Network error occurred. Please check your connection and try again.";
+      } else if (error.message.includes("Failed to save order")) {
+        errorMessage = "Server error occurred while saving your order. Please try again in a few moments.";
       } else if (/mobile|android|iphone/i.test(navigator.userAgent)) {
-        errorMessage = "Payment submission failed on mobile. Please ensure you have a stable connection and the image is under 5MB, then try again.";
+        // More specific mobile error handling
+        if (error.message.includes("File size") || error.message.includes("Failed to process image")) {
+          errorMessage = "Image processing failed on mobile. Please ensure the screenshot is under 5MB and is a valid image file, then try again.";
+        } else if (!navigator.onLine) {
+          errorMessage = "No internet connection on mobile. Please check your mobile data or WiFi and try again.";
+        } else {
+          errorMessage = "Payment submission failed on mobile. Please ensure you have a stable connection and try again.";
+        }
       }
       alert(errorMessage);
       setStep("review");

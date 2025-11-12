@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaPlay } from 'react-icons/fa';
 
 export default function PackagesManagement() {
   const [packages, setPackages] = useState([]);
@@ -16,11 +16,14 @@ export default function PackagesManagement() {
     originalPrice: '',
     image: '',
     features: [],
-    slug: ''
+    slug: '',
+    videos: []
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [newVideoUrl, setNewVideoUrl] = useState('');
+  const [currentPackageVideos, setCurrentPackageVideos] = useState([]);
 
   useEffect(() => {
     fetchPackages();
@@ -35,6 +38,16 @@ export default function PackagesManagement() {
       console.error('Failed to fetch packages:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPackageVideos = async (packageId) => {
+    try {
+      const response = await fetch(`/api/packages/${packageId}/videos`);
+      const videos = await response.json();
+      setCurrentPackageVideos(videos);
+    } catch (error) {
+      console.error('Failed to fetch package videos:', error);
     }
   };
 
@@ -115,8 +128,10 @@ export default function PackagesManagement() {
       originalPrice: pkg.originalPrice,
       image: pkg.image,
       features: Array.isArray(pkg.features) ? pkg.features : JSON.parse(pkg.features || '[]'),
-      slug: pkg.slug
+      slug: pkg.slug,
+      videos: pkg.videos || []
     });
+    setCurrentPackageVideos(pkg.videos || []);
     setShowModal(true);
     setMessage('');
     setMessageType('');
@@ -132,10 +147,13 @@ export default function PackagesManagement() {
       originalPrice: '',
       image: '',
       features: [],
-      slug: ''
+      slug: '',
+      videos: []
     });
     setEditingPackage(null);
     setSelectedFile(null);
+    setCurrentPackageVideos([]);
+    setNewVideoUrl('');
   };
 
   const addFeature = () => {
@@ -157,6 +175,49 @@ export default function PackagesManagement() {
       ...prev,
       features: prev.features.filter((_, i) => i !== index)
     }));
+  };
+
+  const addVideo = async () => {
+    if (!newVideoUrl.trim()) return;
+
+    try {
+      const response = await fetch(`/api/packages/${editingPackage.id}/videos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video: newVideoUrl.trim() })
+      });
+
+      if (response.ok) {
+        setNewVideoUrl('');
+        fetchPackageVideos(editingPackage.id);
+        setMessage('Video added successfully');
+        setMessageType('success');
+      }
+    } catch (error) {
+      console.error('Failed to add video:', error);
+      setMessage('Failed to add video');
+      setMessageType('error');
+    }
+  };
+
+  const removeVideo = async (videoId) => {
+    if (!confirm('Are you sure you want to delete this video?')) return;
+
+    try {
+      const response = await fetch(`/api/packages/${editingPackage.id}/videos/${videoId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        fetchPackageVideos(editingPackage.id);
+        setMessage('Video deleted successfully');
+        setMessageType('success');
+      }
+    } catch (error) {
+      console.error('Failed to delete video:', error);
+      setMessage('Failed to delete video');
+      setMessageType('error');
+    }
   };
 
   if (loading) {
@@ -194,7 +255,7 @@ export default function PackagesManagement() {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Videos</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
@@ -203,7 +264,7 @@ export default function PackagesManagement() {
               <tr key={pkg.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pkg.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pkg.price}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pkg.slug}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pkg.videos?.length || 0} videos</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                   <button
                     onClick={() => handleEdit(pkg)}
@@ -232,6 +293,7 @@ export default function PackagesManagement() {
               <div>
                 <h3 className="text-lg font-medium text-gray-900">{pkg.name}</h3>
                 <p className="text-sm text-gray-500">{pkg.slug}</p>
+                <p className="text-sm text-gray-600">{pkg.videos?.length || 0} videos</p>
               </div>
               <div className="flex space-x-2">
                 <button
@@ -377,6 +439,44 @@ export default function PackagesManagement() {
                   + Add Feature
                 </button>
               </div>
+
+              {/* Videos Section */}
+              {editingPackage && (
+                <div>
+                  <label className="block text-sm font-medium text-white mb-2">Videos</label>
+                  <div className="space-y-2 mb-4">
+                    {currentPackageVideos.map((video) => (
+                      <div key={video.id} className="flex items-center space-x-2 p-2 bg-gray-700 rounded">
+                        <FaPlay className="text-cyan-400" />
+                        <span className="flex-1 text-white text-sm truncate">{video.video}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeVideo(video.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex space-x-2">
+                    <input
+                      type="url"
+                      value={newVideoUrl}
+                      onChange={(e) => setNewVideoUrl(e.target.value)}
+                      placeholder="Enter YouTube video URL"
+                      className="flex-1 border border-gray-600 rounded-md shadow-sm p-2 bg-gray-700 text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={addVideo}
+                      className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700"
+                    >
+                      Add Video
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="flex space-x-4 pt-4">
                 <button

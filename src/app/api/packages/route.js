@@ -4,6 +4,11 @@ import { query } from "../../../lib/mysqlClient";
 export async function GET() {
   try {
     const packages = await query("SELECT * FROM packages");
+    // Fetch videos for each package
+    for (let pkg of packages) {
+      const videos = await query("SELECT * FROM packages_content WHERE package_id = ? ORDER BY created_at DESC", [pkg.id]);
+      pkg.videos = videos;
+    }
     return NextResponse.json(packages);
   } catch (err) {
     return NextResponse.json({ error: "Failed to fetch packages" }, { status: 500 });
