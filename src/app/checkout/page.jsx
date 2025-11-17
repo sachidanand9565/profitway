@@ -368,18 +368,23 @@ const handlePayNow = async () => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    const response = await fetch("/api/checkout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(orderData),
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timeoutId));
+    let response = null;
+    let result = null;
+    try {
+      response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+        signal: controller.signal,
+      });
+      result = await response.json();
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
-    const result = await response.json();
-
-    if (response.ok && result.success) {
+    if (response && response.ok && result && result.success) {
       // Success handling
       const id = "ORD" + Date.now().toString().slice(-6);
       const finalPrice = form.price || pkgData.price;
@@ -408,33 +413,31 @@ const handlePayNow = async () => {
         sessionStorage.removeItem("checkout_pkg");
       } catch (e) {}
     } else {
-      throw new Error(result.error || "Failed to process order");
+      throw new Error((result && result.error) || "Failed to process order");
     }
   } catch (error) {
     console.error("Payment error:", error);
-    
+
     // Better error handling
     let errorMessage = "Payment submit करने में error हुआ। कृपया फिर से try करें।";
-    
+
     if (error.name === 'AbortError') {
       errorMessage = "Request timeout हो गया। कृपया अपना internet connection check करें और फिर से try करें।";
     } else if (!navigator.onLine) {
       errorMessage = "Internet connection नहीं है। कृपया अपना connection check करें।";
-    } else if (error.message.includes("Failed to process image")) {
+    } else if (error.message && error.message.includes('Failed to process image')) {
       errorMessage = "Image process नहीं हो पाई। कृपया छोटी image select करें (max 5MB) और फिर से try करें।";
-    } else if (error.message.includes("File size")) {
+    } else if (error.message && error.message.includes('File size')) {
       errorMessage = "File बहुत बड़ी है। कृपया छोटी image select करें (max 5MB)।";
-    } else if (error.message.includes("Failed to load image")) {
+    } else if (error.message && (error.message.includes('Failed to load image') || error.message.includes('Failed to read file'))) {
       errorMessage = "Invalid image file। कृपया valid image file select करें।";
-    } else if (error.message.includes("Failed to read file")) {
-      errorMessage = "File read नहीं हो पाई। कृपया फिर से image select करें।";
-    } else if (error.message.includes("Failed to fetch") || error.message.includes("Network")) {
+    } else if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('Network'))) {
       errorMessage = "Network error। कृपया अपना internet connection check करें।";
-    } else if (response && !response.ok) {
-      // Server returned an error
+    } else if (error.response && !error.response.ok) {
       errorMessage = error.message || "Server error। कृपया कुछ देर बाद फिर से try करें।";
     }
-    
+
+    // Show a friendly alert and revert to review step so user can retry
     alert(errorMessage);
     setStep("review");
     setStatus(null);
