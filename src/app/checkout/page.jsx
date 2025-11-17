@@ -281,25 +281,42 @@ function CheckoutPageContent() {
   // Helper function to convert file to base64, with compression for images
   const fileToBase64 = async (file) => {
     try {
+      console.log('[checkout] fileToBase64 start', { name: file.name, size: file.size, type: file.type });
       let processedFile = file;
-      // If it's an image, compress it
-      if (file.type.startsWith('image/')) {
-        processedFile = await compressImage(file);
-        // Check final size after compression
-        if (processedFile.size > 5 * 1024 * 1024) {
-          throw new Error('File size is too large even after compression. Please select a smaller image (max 5MB).');
+      if (file && file.type && file.type.indexOf('image/') === 0) {
+        try {
+          const compressed = await compressImage(file);
+          // compressed may be a Blob
+          if (compressed && compressed.size) {
+            processedFile = compressed;
+            console.log('[checkout] image compressed', { original: file.size, compressed: processedFile.size });
+          }
+        } catch (compErr) {
+          console.warn('[checkout] image compression failed, using original file', compErr);
+          processedFile = file;
         }
       }
-      return new Promise((resolve, reject) => {
+
+      return await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(processedFile);
-        reader.onload = () => resolve(reader.result);
+        reader.onload = () => {
+          try {
+            const res = reader.result;
+            console.log('[checkout] file read complete', { length: res ? res.length : 0 });
+            resolve(res);
+          } catch (e) {
+            reject(e);
+          }
+        };
         reader.onerror = (error) => {
+          console.error('[checkout] file read error', error);
           reject(new Error('Failed to read file. Please try again.'));
         };
       });
     } catch (error) {
-      throw new Error('Failed to process image: ' + error.message);
+      console.error('[checkout] fileToBase64 error', error);
+      throw new Error('Failed to process image: ' + (error && error.message ? error.message : String(error)));
     }
   };
 
@@ -321,14 +338,16 @@ const handlePayNow = async () => {
   setStatus("sending");
 
   try {
+    console.log('[checkout] handlePayNow start', { name: form.name, email: form.email, phone: form.phone, hasScreenshot: !!form.paymentScreenshot });
     // Convert payment screenshot to base64
     let paymentScreenshotBase64 = null;
     if (form.paymentScreenshot) {
       try {
         paymentScreenshotBase64 = await fileToBase64(form.paymentScreenshot);
+        console.log('[checkout] paymentScreenshotBase64 length', paymentScreenshotBase64 ? paymentScreenshotBase64.length : 0);
       } catch (imageError) {
-        console.error("Image processing error:", imageError);
-        throw new Error("Failed to process image: " + imageError.message);
+        console.error('[checkout] Image processing error:', imageError);
+        throw new Error("Failed to process image: " + (imageError && imageError.message ? imageError.message : String(imageError)));
       }
     }
 
@@ -371,6 +390,7 @@ const handlePayNow = async () => {
     let response = null;
     let result = null;
     try {
+      console.log('[checkout] sending orderData', { packageId, packageTitle: pkgData.title, price: form.price });
       response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
@@ -380,6 +400,7 @@ const handlePayNow = async () => {
         signal: controller.signal,
       });
       result = await response.json();
+      console.log('[checkout] api response', { status: response.status, ok: response.ok, result });
     } finally {
       clearTimeout(timeoutId);
     }
@@ -742,6 +763,7 @@ const handlePayNow = async () => {
                           <input
                             type="file"
                             accept="image/*"
+                            capture="environment"
                             onChange={(e) => {
                               const file = e.target.files[0];
                               if (file && file.size > 5 * 1024 * 1024) {
@@ -771,6 +793,7 @@ const handlePayNow = async () => {
                             <input
                               type="file"
                               accept="image/*"
+                              capture="environment"
                               onChange={(e) => {
                                 const file = e.target.files[0];
                                 if (file && file.size > 5 * 1024 * 1024) {
