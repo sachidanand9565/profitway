@@ -8,6 +8,7 @@ export default function UsersManagement() {
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [visiblePasswords, setVisiblePasswords] = useState({});
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -74,7 +75,7 @@ export default function UsersManagement() {
       setMessage('Failed to save user');
       setMessageType('error');
     }
-  };
+    };
 
   const handleEdit = (user) => {
     setEditingUser(user);
@@ -220,7 +221,16 @@ export default function UsersManagement() {
                   User
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Phone
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Password
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -249,7 +259,26 @@ export default function UsersManagement() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{user.name || '-'}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{user.email}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{user.phone || '-'}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-900">
+                        {visiblePasswords[user.id] ? user.password : '••••••••'}
+                      </span>
+                      <button
+                        onClick={() => setVisiblePasswords(prev => ({ ...prev, [user.id]: !prev[user.id] }))}
+                        className="text-xs text-cyan-600 hover:text-cyan-800"
+                      >
+                        {visiblePasswords[user.id] ? 'Hide' : 'Show'}
+                      </button>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

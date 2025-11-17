@@ -1,16 +1,16 @@
 /*
-  Clean user dashboard component
-  - client component
-  - loads user from localStorage and redirects to /login if not present
-  - shows a left menu with tabs and simple content for each tab
-  - minimal profile form and packages list (frontend-only)
+  Redesigned User Dashboard - Profitway Theme
+  - Modern blue gradient design matching Profitway brand
+  - Enhanced visual hierarchy with professional cards
+  - Improved mobile responsiveness
+  - Client component with localStorage authentication
 */
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../component/include/header';
 import Footer from '../../component/include/footer';
-import { FaUser, FaBook, FaChartLine, FaMoneyBillWave, FaUsers, FaComments } from 'react-icons/fa';
+import { FaUser, FaBook, FaChartLine, FaMoneyBillWave, FaUsers, FaComments, FaCopy, FaEdit, FaCheck, FaTrophy, FaGraduationCap, FaRocket } from 'react-icons/fa';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -19,10 +19,18 @@ export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState('profile');
   const [packages, setPackages] = useState([]);
 
-  // profile form simple state
-  const [profileForm, setProfileForm] = useState({ name: '', phone: '', state: '', gender: '', photoPreview: null, photoFile: null });
+  // profile form state
+  const [profileForm, setProfileForm] = useState({ 
+    name: '', 
+    phone: '', 
+    state: '', 
+    gender: '', 
+    photoPreview: null, 
+    photoFile: null 
+  });
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     try {
@@ -33,280 +41,628 @@ export default function UserDashboard() {
       }
       const parsed = JSON.parse(raw);
       setUser(parsed);
-      setProfileForm(f => ({ ...f, name: parsed.username || '', phone: parsed.phone || '', state: parsed.state || '', gender: parsed.gender || '', photoPreview: parsed.photo || null }));
-      // fetch packages list (best-effort)
-      fetch('/api/packages').then(r => r.json()).then(list => {
-        const ups = list.filter(p => (parsed.approved_packages || []).includes(p.id));
-        setPackages(ups);
-      }).catch(() => {})
-      .finally(() => setLoading(false));
+      setProfileForm(f => ({ 
+        ...f, 
+        name: parsed.username || '', 
+        phone: parsed.phone || '', 
+        state: parsed.state || '', 
+        gender: parsed.gender || '', 
+        photoPreview: parsed.photo || null 
+      }));
+      
+      // fetch packages
+      fetch('/api/packages')
+        .then(r => r.json())
+        .then(list => {
+          const ups = list.filter(p => (parsed.approved_packages || []).includes(p.id));
+          setPackages(ups);
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+
+      if (parsed.approved_packages_details) {
+        setPackages(parsed.approved_packages_details);
+      }
     } catch (e) {
       router.push('/login');
     }
   }, [router]);
 
-  const handleLogout = () => { localStorage.removeItem('user'); router.push('/'); };
+  const handleLogout = () => { 
+    localStorage.removeItem('user'); 
+    router.push('/'); 
+  };
 
-  const fileToBase64 = (file) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+  const fileToBase64 = (file) => new Promise((res, rej) => { 
+    const r = new FileReader(); 
+    r.onload = () => res(r.result); 
+    r.onerror = rej; 
+    r.readAsDataURL(file); 
+  });
 
   const handleSaveProfile = async () => {
-    setSavingProfile(true); setProfileMessage('');
+    setSavingProfile(true); 
+    setProfileMessage('');
     try {
       let photo = null;
       if (profileForm.photoFile) photo = await fileToBase64(profileForm.photoFile);
-      const payload = { name: profileForm.name, phone: profileForm.phone, state: profileForm.state, gender: profileForm.gender, photo };
-      // POST to server endpoint (server must exist)
-      const res = await fetch('/api/users/update-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const payload = { 
+        name: profileForm.name, 
+        phone: profileForm.phone, 
+        state: profileForm.state, 
+        gender: profileForm.gender, 
+        photo 
+      };
+      
+      const res = await fetch('/api/users/update-profile', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify(payload) 
+      });
+      
       if (res.ok) {
         const updated = await res.json();
-        const newUser = { ...user, username: payload.name, phone: payload.phone, state: payload.state, gender: payload.gender, photo: updated.photo || profileForm.photoPreview };
+        const newUser = { 
+          ...user, 
+          username: payload.name, 
+          phone: payload.phone, 
+          state: payload.state, 
+          gender: payload.gender, 
+          photo: updated.photo || profileForm.photoPreview 
+        };
         setUser(newUser);
         try { localStorage.setItem('user', JSON.stringify(newUser)); } catch (e) {}
-        setProfileMessage('Profile saved');
+        setProfileMessage('Profile updated successfully!');
+        setTimeout(() => setProfileMessage(''), 3000);
       } else {
         setProfileMessage('Failed to save profile');
       }
-    } catch (e) { setProfileMessage('Failed to save profile'); }
-    finally { setSavingProfile(false); }
+    } catch (e) { 
+      setProfileMessage('Failed to save profile'); 
+    } finally { 
+      setSavingProfile(false); 
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard?.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (loading) return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
       <Header />
-      <main className="py-24"><div className="max-w-4xl mx-auto px-4 text-center">Loading dashboard...</div></main>
+      <main className="py-24">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+        </div>
+      </main>
       <Footer />
     </div>
   );
 
   if (!user) return null;
 
+  const menuItems = [
+    { k: 'profile', l: 'Dashboard', i: <FaUser /> },
+    { k: 'mycourses', l: 'My Courses', i: <FaBook /> },
+    { k: 'affiliate', l: 'Affiliate', i: <FaChartLine /> },
+    { k: 'withdraw', l: 'Withdrawals', i: <FaMoneyBillWave /> },
+    { k: 'team', l: 'My Team', i: <FaUsers /> },
+    { k: 'community', l: 'Community', i: <FaComments /> }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
       <Header />
-      <main className="py-24">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="mb-8 flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user.username}</h1>
-              <p className="text-gray-600 mt-2">Your account dashboard</p>
-            </div>
-            <div className="flex items-center gap-4">
-              {/* Mobile Menu Button */}
-              <div className="lg:hidden">
-                <button
-                  onClick={() => setActiveTab(activeTab === 'menu' ? 'profile' : 'menu')}
-                  className="text-gray-900 hover:text-blue-600 transition-colors"
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
+      
+      <main className="py-8 lg:py-12">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6" style={{ marginTop: "50px" }}>
+          
+          {/* Welcome Banner */}
+          <div className="mb-6 lg:mb-8">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 p-6 lg:p-8 shadow-xl">
+              <div className="absolute inset-0 bg-black opacity-5"></div>
+              <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+                    Welcome back, {user?.username || 'User'}! 👋
+                  </h1>
+                  <p className="text-blue-100">Track your progress and manage your learning journey</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {user?.package_name && (
+                    <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
+                      <div className="text-xs text-blue-100">Current Package</div>
+                      <div className="text-sm font-semibold text-white mt-1">{user.package_name}</div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Desktop Sidebar */}
-            <aside className="hidden lg:block lg:col-span-1 bg-white rounded p-4 border">
-              <nav className="space-y-2">
-                {[{k:'profile',l:'My Profile',i:<FaUser/>},{k:'mycourses',l:'My Courses',i:<FaBook/>},{k:'affiliate',l:'Affiliate Dashboard',i:<FaChartLine/>},{k:'withdraw',l:'Withdrawals',i:<FaMoneyBillWave/>},{k:'team',l:'My Team',i:<FaUsers/>},{k:'community',l:'Community',i:<FaComments/>}].map(item=> (
-                  <button key={item.k} onClick={()=>setActiveTab(item.k)} className={`w-full text-left flex items-center gap-3 p-2 rounded hover:bg-blue-50 ${activeTab===item.k?'bg-blue-50 font-semibold':''}`}>
-                    <span className="text-blue-600">{item.i}</span>
-                    <span className="text-sm">{item.l}</span>
-                  </button>
-                ))}
-              </nav>
-            </aside>
-
-            {/* Mobile Menu Overlay */}
-            {activeTab === 'menu' && (
-              <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-end pt-20">
-                <div className="bg-white w-80 max-w-full h-full shadow-lg">
-                  <div className="p-4 border-b">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold">Menu</h3>
-                      <button
-                        onClick={() => setActiveTab('profile')}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+            
+            {/* Sidebar Navigation */}
+            <aside className="lg:col-span-1">
+              {/* Desktop Sidebar */}
+              <div className="hidden lg:block sticky top-24">
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                  <div className="p-6 bg-gradient-to-br from-blue-600 to-cyan-600">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="w-20 h-20 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg">
+                        {user?.photo ? (
+                          <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600 bg-blue-50">
+                            {(user?.username || 'U').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="mt-3 text-lg font-bold text-white">{user?.username || 'User'}</h3>
+                      {user?.referral_code && (
+                        <div className="mt-2 px-3 py-1 bg-white/20 rounded-full text-xs text-white font-medium">
+                          ID: {user.referral_code}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <nav className="p-4 space-y-2">
-                    {[{k:'profile',l:'My Profile',i:<FaUser/>},{k:'mycourses',l:'My Courses',i:<FaBook/>},{k:'affiliate',l:'Affiliate Dashboard',i:<FaChartLine/>},{k:'withdraw',l:'Withdrawals',i:<FaMoneyBillWave/>},{k:'team',l:'My Team',i:<FaUsers/>},{k:'community',l:'Community',i:<FaComments/>}].map(item=> (
-                      <button key={item.k} onClick={()=>{setActiveTab(item.k)}} className={`w-full text-left flex items-center gap-3 p-3 rounded hover:bg-blue-50 ${activeTab===item.k?'bg-blue-50 font-semibold':''}`}>
-                        <span className="text-blue-600">{item.i}</span>
-                        <span className="text-sm">{item.l}</span>
+
+                  <nav className="p-3">
+                    {menuItems.map(item => (
+                      <button
+                        key={item.k}
+                        onClick={() => setActiveTab(item.k)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-2 transition-all ${
+                          activeTab === item.k
+                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md transform scale-[1.02]'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className={activeTab === item.k ? 'text-white' : 'text-blue-600'}>
+                          {item.i}
+                        </span>
+                        <span className="text-sm font-medium">{item.l}</span>
                       </button>
                     ))}
                   </nav>
+
+                  <div className="p-4 border-t border-gray-100">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+                    >
+                      Logout
+                    </button>
+                  </div>
                 </div>
               </div>
-            )}
 
+              {/* Mobile Navigation */}
+              <div className="lg:hidden bg-white rounded-xl shadow-md p-2 mb-4 overflow-x-auto">
+                <div className="flex gap-2">
+                  {menuItems.map(item => (
+                    <button
+                      key={item.k}
+                      onClick={() => setActiveTab(item.k)}
+                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        activeTab === item.k
+                          ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                          : 'bg-gray-50 text-gray-700'
+                      }`}
+                    >
+                      <span>{item.i}</span>
+                      <span className="whitespace-nowrap">{item.l}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </aside>
+
+            {/* Main Content */}
             <section className="lg:col-span-3">
-                {activeTab === 'profile' && (
-                  <div className="bg-white rounded p-6">
-                    <h2 className="text-xl font-bold mb-4">Profile</h2>
-                    {/* Sponsor info (non-editable) */}
-                    <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 bg-gray-50 rounded border">
-                        <div className="text-sm text-gray-600">Sponsor</div>
-                        <div className="font-semibold mt-1">{user.sponsor || user.upline || user.referred_by || '—'}</div>
-                      </div>
-                      <div className="p-4 bg-gray-50 rounded border">
-                        <div className="text-sm text-gray-600">Referral Code</div>
-                        <div className="font-semibold mt-1">{user.referral_code || '-'}</div>
-                      </div>
-                      <div className="p-4 bg-gray-50 rounded border">
-                        <div className="text-sm text-gray-600">Account Type</div>
-                        <div className="font-semibold mt-1">{user.type || 'Student'}</div>
+              
+              {/* Dashboard/Profile Tab */}
+              {activeTab === 'profile' && (
+                <div className="space-y-6">
+                  
+                  {/* Earnings Overview Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <EarningCard
+                      title="Today's Earning"
+                      amount={user?.earnings?.today || 0}
+                      gradient="from-pink-500 to-rose-600"
+                      icon={<FaRocket />}
+                    />
+                    <EarningCard
+                      title="7 Days"
+                      amount={user?.earnings?.week7 || 0}
+                      gradient="from-amber-500 to-orange-600"
+                      icon={<FaTrophy />}
+                    />
+                    <EarningCard
+                      title="30 Days"
+                      amount={user?.earnings?.month30 || 0}
+                      gradient="from-violet-500 to-purple-600"
+                      icon={<FaChartLine />}
+                    />
+                    <EarningCard
+                      title="All Time"
+                      amount={user?.earnings?.alltime || 0}
+                      gradient="from-emerald-500 to-teal-600"
+                      icon={<FaGraduationCap />}
+                    />
+                  </div>
+
+                  {/* Profile Information & Stats */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    {/* Left: Profile Card */}
+                    <div className="lg:col-span-1">
+                      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                        <div className="relative h-32 bg-gradient-to-br from-blue-600 to-cyan-600">
+                          <div className="absolute inset-0 bg-black opacity-10"></div>
+                        </div>
+                        <div className="px-6 pb-6">
+                          <div className="flex flex-col items-center -mt-16">
+                            <div className="w-28 h-28 rounded-full border-4 border-white overflow-hidden bg-white shadow-xl" style={{ zIndex: 9 }}>
+                              {user?.photo ? (
+                                <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-600 bg-blue-50">
+                                  {(user?.username || 'U').charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                            <h3 className="mt-4 text-xl font-bold text-gray-800">{user?.username || 'User'}</h3>
+                            {user?.package_name && (
+                              <div className="mt-2 px-4 py-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-semibold rounded-full">
+                                {user.package_name}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="mt-6 space-y-3">
+                            <div className="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                              <div className="text-xs text-gray-600 font-medium">Referral Code</div>
+                              <div className="flex items-center justify-between mt-1">
+                                <span className="font-bold text-blue-600">{user.referral_code || '—'}</span>
+                                <button
+                                  onClick={() => copyToClipboard(user.referral_code || '')}
+                                  className="text-blue-600 hover:text-blue-700"
+                                >
+                                  {copied ? <FaCheck className="text-green-600" /> : <FaCopy />}
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                              <div className="text-xs text-gray-600 font-medium">Sponsor Code</div>
+                              <div className="font-bold text-gray-800 mt-1">{user.sponsor_code || '—'}</div>
+                            </div>
+
+                            <div className="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
+                              <div className="text-xs text-gray-600 font-medium">Courses Completed</div>
+                              <div className="font-bold text-emerald-600 mt-1">{user.completed_courses || 0}</div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {profileMessage && <div className="mb-3 text-sm text-green-700">{profileMessage}</div>}
+                    {/* Right: Edit Profile Form */}
+                    <div className="lg:col-span-2 space-y-6">
+                      
+                      {/* Edit Profile */}
+                      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                        <div className="flex items-center gap-2 mb-4">
+                          <FaEdit className="text-blue-600" />
+                          <h3 className="text-lg font-bold text-gray-800">Edit Profile</h3>
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm text-gray-700">Name</label>
-                        <input value={profileForm.name} onChange={e=>setProfileForm(p=>({...p,name:e.target.value}))} className="mt-1 w-full border rounded px-3 py-2" />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-700">Phone</label>
-                        <input value={profileForm.phone} onChange={e=>setProfileForm(p=>({...p,phone:e.target.value}))} className="mt-1 w-full border rounded px-3 py-2" />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-700">State</label>
-                        <input value={profileForm.state} onChange={e=>setProfileForm(p=>({...p,state:e.target.value}))} className="mt-1 w-full border rounded px-3 py-2" />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-700">Gender</label>
-                        <select value={profileForm.gender} onChange={e=>setProfileForm(p=>({...p,gender:e.target.value}))} className="mt-1 w-full border rounded px-3 py-2">
-                          <option value="">Prefer not to say</option>
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                          <option value="other">Other</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-700">Profile photo</label>
-                        <input type="file" accept="image/*" onChange={e=>{ const f = e.target.files?.[0] || null; setProfileForm(p=>({...p,photoFile:f,photoPreview: f ? URL.createObjectURL(f) : p.photoPreview })); }} className="mt-1 w-full" />
-                        {profileForm.photoPreview && <img src={profileForm.photoPreview} alt="preview" className="mt-2 w-24 h-24 object-cover rounded-full" />}
-                      </div>
-                    </div>
+                        {profileMessage && (
+                          <div className={`mb-4 p-3 rounded-lg ${
+                            profileMessage.includes('success') 
+                              ? 'bg-green-50 text-green-700 border border-green-200' 
+                              : 'bg-red-50 text-red-700 border border-red-200'
+                          }`}>
+                            {profileMessage}
+                          </div>
+                        )}
 
-                    <div className="mt-4 flex flex-wrap gap-2 items-center">
-                      <button disabled={savingProfile} onClick={handleSaveProfile} className="px-4 py-2 bg-blue-600 text-white rounded">{savingProfile? 'Saving...':'Save Profile'}</button>
-                      <button onClick={()=>{ navigator.clipboard?.writeText(user.referral_code||'') }} className="px-3 py-2 bg-gray-100 rounded">Copy Referral</button>
-                    </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                            <input
+                              type="text"
+                              value={profileForm.name}
+                              onChange={e => setProfileForm(p => ({ ...p, name: e.target.value }))}
+                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              placeholder="Enter your name"
+                            />
+                          </div>
 
-                    {/* Change password panel */}
-                    <div className="mt-8 bg-gray-50 p-4 rounded border">
-                      <h3 className="font-semibold mb-3">Change Password</h3>
-                      <ChangePasswordForm />
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                            <input
+                              type="tel"
+                              value={profileForm.phone}
+                              onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value }))}
+                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              placeholder="Enter phone number"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                            <input
+                              type="text"
+                              value={profileForm.state}
+                              onChange={e => setProfileForm(p => ({ ...p, state: e.target.value }))}
+                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              placeholder="Enter your state"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                            <select
+                              value={profileForm.gender}
+                              onChange={e => setProfileForm(p => ({ ...p, gender: e.target.value }))}
+                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                              <option value="">Prefer not to say</option>
+                              <option value="male">Male</option>
+                              <option value="female">Female</option>
+                              <option value="other">Other</option>
+                            </select>
+                          </div>
+
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={e => {
+                                const f = e.target.files?.[0] || null;
+                                setProfileForm(p => ({
+                                  ...p,
+                                  photoFile: f,
+                                  photoPreview: f ? URL.createObjectURL(f) : p.photoPreview
+                                }));
+                              }}
+                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            />
+                            {profileForm.photoPreview && (
+                              <div className="mt-3">
+                                <img
+                                  src={profileForm.photoPreview}
+                                  alt="preview"
+                                  className="w-24 h-24 object-cover rounded-full border-4 border-gray-100 shadow-md"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="mt-6 flex gap-3">
+                          <button
+                            disabled={savingProfile}
+                            onClick={handleSaveProfile}
+                            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {savingProfile ? 'Saving...' : 'Save Profile'}
+                          </button>
+                          <button
+                            onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
+                            className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                          >
+                            Copy Referral Link
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Change Password */}
+                      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">Change Password</h3>
+                        <ChangePasswordForm />
+                      </div>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
+              {/* My Courses Tab */}
               {activeTab === 'mycourses' && (
-                <div className="bg-white rounded p-6">
-                  <h2 className="text-xl font-bold mb-4">My Courses</h2>
-                  {packages.length>0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {packages.map(p=> (
-                        <div key={p.id} className="border rounded overflow-hidden bg-white">
-                          {p.image && <img src={p.image} alt={p.title} className="w-full h-40 object-cover" />}
-                          <div className="p-4"><h3 className="font-semibold">{p.title}</h3><p className="text-sm text-gray-600">{p.subtitle}</p></div>
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                  <div className="flex items-center gap-2 mb-6">
+                    <FaBook className="text-blue-600 text-xl" />
+                    <h2 className="text-2xl font-bold text-gray-800">My Courses</h2>
+                  </div>
+                  
+                  {packages.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {packages.map(p => (
+                        <div key={p.id} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1">
+                          {p.image && (
+                            <div className="relative h-48 overflow-hidden">
+                              <img
+                                src={p.image}
+                                alt={p.title}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                            </div>
+                          )}
+                          <div className="p-4">
+                            <h3 className="font-bold text-gray-800 text-lg mb-2">{p.title}</h3>
+                            <p className="text-sm text-gray-600 mb-3">{p.subtitle}</p>
+                            <button className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all">
+                              Continue Learning
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-12">No courses available</div>
+                    <div className="text-center py-16">
+                      <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <FaBook className="text-4xl text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 text-lg">No courses available yet</p>
+                      <p className="text-gray-400 text-sm mt-2">Start your learning journey by purchasing a package</p>
+                    </div>
                   )}
                 </div>
               )}
 
+              {/* Affiliate Dashboard Tab */}
               {activeTab === 'affiliate' && (
-                <div className="bg-white rounded p-6">
-                  <h2 className="text-xl font-bold mb-4">Affiliate Dashboard</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="p-4 rounded border bg-gray-50">
-                      <div className="text-sm text-gray-600">Total Earnings</div>
-                      <div className="text-2xl font-bold">₹0</div>
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                    <div className="flex items-center gap-2 mb-6">
+                      <FaChartLine className="text-blue-600 text-xl" />
+                      <h2 className="text-2xl font-bold text-gray-800">Affiliate Dashboard</h2>
                     </div>
-                    <div className="p-4 rounded border bg-gray-50">
-                      <div className="text-sm text-gray-600">Pending</div>
-                      <div className="text-2xl font-bold">₹0</div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="p-6 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 text-white">
+                        <div className="text-sm opacity-90 mb-2">Total Earnings</div>
+                        <div className="text-3xl font-bold">₹0</div>
+                      </div>
+                      <div className="p-6 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+                        <div className="text-sm opacity-90 mb-2">Pending</div>
+                        <div className="text-3xl font-bold">₹0</div>
+                      </div>
+                      <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+                        <div className="text-sm opacity-90 mb-2">Withdrawn</div>
+                        <div className="text-3xl font-bold">₹0</div>
+                      </div>
                     </div>
-                    <div className="p-4 rounded border bg-gray-50">
-                      <div className="text-sm text-gray-600">Withdrawn</div>
-                      <div className="text-2xl font-bold">₹0</div>
+
+                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-100">
+                      <div className="text-sm font-medium text-gray-700 mb-3">Your Referral Link</div>
+                      <div className="flex gap-2">
+                        <input
+                          readOnly
+                          value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`}
+                          className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 bg-white"
+                        />
+                        <button
+                          onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
+                          className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all flex items-center gap-2"
+                        >
+                          {copied ? <FaCheck /> : <FaCopy />}
+                          {copied ? 'Copied!' : 'Copy'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-6">
+                      <h3 className="font-bold text-gray-800 mb-4">Recent Referrals</h3>
+                      <div className="text-center py-12 bg-gray-50 rounded-xl">
+                        <FaUsers className="text-4xl text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500">No referrals yet</p>
+                        <p className="text-sm text-gray-400 mt-1">Share your link to start earning</p>
+                      </div>
                     </div>
                   </div>
+                </div>
+              )}
 
-                  <div className="mb-4">
-                    <div className="text-sm text-gray-600">Your referral link</div>
-                    <div className="mt-2 flex gap-2 items-center">
-                      <input readOnly value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code||''}`} className="flex-1 border rounded px-3 py-2" />
-                      <button onClick={()=>navigator.clipboard?.writeText(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code||''}`)} className="px-3 py-2 bg-blue-600 text-white rounded">Copy</button>
+              {/* Withdrawals Tab */}
+              {activeTab === 'withdraw' && (
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                  <div className="flex items-center gap-2 mb-6">
+                    <FaMoneyBillWave className="text-blue-600 text-xl" />
+                    <h2 className="text-2xl font-bold text-gray-800">Withdrawals</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+                      <div className="text-sm opacity-90 mb-2">Available Balance</div>
+                      <div className="text-3xl font-bold">₹0</div>
+                    </div>
+                    <div className="p-6 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50">
+                      <WithdrawForm balance={0} onNewRequest={() => {}} />
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold mb-2">Recent referrals</h3>
-                    <div className="text-sm text-gray-500">No referrals yet</div>
+                    <h3 className="font-bold text-gray-800 mb-4">Withdrawal History</h3>
+                    <div className="text-center py-12 bg-gray-50 rounded-xl">
+                      <FaMoneyBillWave className="text-4xl text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500">No withdrawal history</p>
+                    </div>
                   </div>
                 </div>
               )}
 
-              {activeTab === 'withdraw' && (
-                <div className="bg-white rounded p-6">
-                  <h2 className="text-xl font-bold mb-4">Withdrawals</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 border rounded bg-gray-50">
-                      <div className="text-sm text-gray-600">Available Balance</div>
-                      <div className="text-2xl font-bold">₹0</div>
-                    </div>
-                    <div className="p-4 border rounded">
-                      <WithdrawForm balance={0} onNewRequest={()=>{}} />
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <h3 className="font-semibold mb-3">Withdrawal history</h3>
-                    <div className="text-sm text-gray-500">No withdrawal history</div>
-                  </div>
-                </div>
-              )}
-
+              {/* My Team Tab */}
               {activeTab === 'team' && (
-                <div className="bg-white rounded p-6">
-                  <h2 className="text-xl font-bold mb-4">My Team</h2>
-                  <div className="text-sm text-gray-500">No team members yet</div>
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                  <div className="flex items-center gap-2 mb-6">
+                    <FaUsers className="text-blue-600 text-xl" />
+                    <h2 className="text-2xl font-bold text-gray-800">My Team</h2>
+                  </div>
+                  <div className="text-center py-16">
+                    <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                      <FaUsers className="text-4xl text-gray-400" />
+                    </div>
+                    <p className="text-gray-500 text-lg">No team members yet</p>
+                    <p className="text-gray-400 text-sm mt-2">Build your team by sharing your referral link</p>
+                  </div>
                 </div>
               )}
 
+              {/* Community Tab */}
               {activeTab === 'community' && (
-                <div className="bg-white rounded p-6">
-                  <h2 className="text-xl font-bold mb-4">Community</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 border rounded">
-                      <h3 className="font-semibold">Join our channels</h3>
-                      <ul className="mt-2 space-y-2 text-sm">
-                        <li><a className="text-blue-600" href="#">WhatsApp Group</a></li>
-                        <li><a className="text-blue-600" href="#">Telegram Channel</a></li>
-                        <li><a className="text-blue-600" href="#">Facebook Group</a></li>
-                        <li><a className="text-blue-600" href="#">Instagram</a></li>
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                  <div className="flex items-center gap-2 mb-6">
+                    <FaComments className="text-blue-600 text-xl" />
+                    <h2 className="text-2xl font-bold text-gray-800">Community</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 transition-colors">
+                      <h3 className="font-bold text-gray-800 mb-4">Join Our Channels</h3>
+                      <ul className="space-y-3">
+                        {[
+                          { name: 'WhatsApp Group', color: 'from-green-500 to-emerald-600' },
+                          { name: 'Telegram Channel', color: 'from-blue-500 to-cyan-600' },
+                          { name: 'Facebook Group', color: 'from-blue-600 to-indigo-600' },
+                          { name: 'Instagram', color: 'from-pink-500 to-rose-600' }
+                        ].map((channel, idx) => (
+                          <li key={idx}>
+                            <a
+                              href="#"
+                              className={`block px-4 py-3 rounded-lg bg-gradient-to-r ${channel.color} text-white font-medium hover:shadow-lg transition-all transform hover:scale-[1.02]`}
+                            >
+                              {channel.name} →
+                            </a>
+                          </li>
+                        ))}
                       </ul>
                     </div>
-                    <div className="p-4 border rounded">
-                      <h3 className="font-semibold">Share your referral</h3>
-                      <div className="mt-2 flex gap-2">
-                        <input readOnly value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code||''}`} className="flex-1 border rounded px-3 py-2" />
-                        <button onClick={()=>navigator.clipboard?.writeText(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code||''}`)} className="px-3 py-2 bg-blue-600 text-white rounded">Copy</button>
+
+                    <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                      <h3 className="font-bold text-gray-800 mb-4">Share Your Referral</h3>
+                      <div className="space-y-3">
+                        <input
+                          readOnly
+                          value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`}
+                          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white"
+                        />
+                        <button
+                          onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all flex items-center justify-center gap-2"
+                        >
+                          {copied ? <FaCheck /> : <FaCopy />}
+                          {copied ? 'Copied to Clipboard!' : 'Copy Referral Link'}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -316,71 +672,210 @@ export default function UserDashboard() {
           </div>
         </div>
       </main>
+      
       <Footer />
     </div>
   );
 }
 
-// Small nested components used by dashboard
-function ChangePasswordForm(){
-  const [oldPass,setOld]=useState('');
-  const [newPass,setNew]=useState('');
-  const [confirm,setConfirm]=useState('');
-  const [msg,setMsg]=useState('');
-  const [saving,setSaving]=useState(false);
-  const handle = async ()=>{
-    setMsg('');
-    if(!oldPass||!newPass) return setMsg('Please fill both fields');
-    if(newPass!==confirm) return setMsg('Passwords do not match');
-    setSaving(true);
-    try{
-      const res = await fetch('/api/users/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({oldPassword:oldPass,newPassword:newPass})});
-      if(res.ok){ setMsg('Password changed'); setOld(''); setNew(''); setConfirm(''); }
-      else setMsg('Failed to change password');
-    }catch(e){ setMsg('Failed to change password'); }
-    finally{ setSaving(false); }
-  };
+// Earning Card Component
+function EarningCard({ title, amount, gradient, icon }) {
   return (
-    <div className="space-y-2">
-      {msg && <div className="text-sm text-gray-700">{msg}</div>}
-      <input type="password" value={oldPass} onChange={e=>setOld(e.target.value)} placeholder="Current password" className="w-full border rounded px-3 py-2" />
-      <input type="password" value={newPass} onChange={e=>setNew(e.target.value)} placeholder="New password" className="w-full border rounded px-3 py-2" />
-      <input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Confirm new password" className="w-full border rounded px-3 py-2" />
-      <div><button disabled={saving} onClick={handle} className="px-4 py-2 bg-blue-600 text-white rounded">{saving? 'Saving...':'Change password'}</button></div>
+    <div className={`p-6 rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all`}>
+      <div className="flex items-start justify-between mb-3">
+        <div className="text-sm opacity-90 font-medium">{title}</div>
+        <div className="text-2xl opacity-80">{icon}</div>
+      </div>
+      <div className="text-2xl lg:text-3xl font-bold">
+        ₹{Number(amount || 0).toLocaleString('en-IN')}
+      </div>
+      <div className="mt-3 text-xs opacity-90">View details →</div>
     </div>
   );
 }
 
-function WithdrawForm({balance=0,onNewRequest=()=>{}}){
-  const [amount,setAmount]=useState('');
-  const [method,setMethod]=useState('UPI');
-  const [dest,setDest]=useState('');
-  const [msg,setMsg]=useState('');
-  const [sending,setSending]=useState(false);
-  const submit = async ()=>{
+// Change Password Form Component
+function ChangePasswordForm() {
+  const [oldPass, setOld] = useState('');
+  const [newPass, setNew] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [msg, setMsg] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handle = async () => {
     setMsg('');
-    const a = Number(amount||0);
-    if(!a || a<=0) return setMsg('Enter a valid amount');
-    if(a>balance) return setMsg('Amount exceeds balance');
-    setSending(true);
-    try{
-      const res = await fetch('/api/users/withdraw-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:a,method,destination:dest})});
-      if(res.ok){ const r = await res.json(); onNewRequest(r); setMsg('Request submitted'); setAmount(''); setDest(''); }
-      else setMsg('Failed to submit');
-    }catch(e){ setMsg('Failed to submit'); }
-    finally{ setSending(false); }
+    if (!oldPass || !newPass) return setMsg('Please fill all fields');
+    if (newPass !== confirm) return setMsg('Passwords do not match');
+    if (newPass.length < 6) return setMsg('Password must be at least 6 characters');
+
+    setSaving(true);
+    try {
+      const res = await fetch('/api/users/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
+      });
+
+      if (res.ok) {
+        setMsg('Password changed successfully!');
+        setOld('');
+        setNew('');
+        setConfirm('');
+      } else {
+        setMsg('Failed to change password');
+      }
+    } catch (e) {
+      setMsg('Failed to change password');
+    } finally {
+      setSaving(false);
+    }
   };
+
   return (
-    <div className="space-y-2">
-      {msg && <div className="text-sm text-gray-700">{msg}</div>}
-      <div className="text-sm text-gray-600">Available: ₹{balance}</div>
-      <input value={amount} onChange={e=>setAmount(e.target.value)} placeholder="Amount" className="w-full border rounded px-3 py-2" />
-      <select value={method} onChange={e=>setMethod(e.target.value)} className="w-full border rounded px-3 py-2">
+    <div className="space-y-4">
+      {msg && (
+        <div className={`p-3 rounded-lg text-sm ${
+          msg.includes('success') 
+            ? 'bg-green-50 text-green-700 border border-green-200' 
+            : 'bg-red-50 text-red-700 border border-red-200'
+        }`}>
+          {msg}
+        </div>
+      )}
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+        <input
+          type="password"
+          value={oldPass}
+          onChange={e => setOld(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          placeholder="Enter current password"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+        <input
+          type="password"
+          value={newPass}
+          onChange={e => setNew(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          placeholder="Enter new password"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+        <input
+          type="password"
+          value={confirm}
+          onChange={e => setConfirm(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          placeholder="Confirm new password"
+        />
+      </div>
+
+      <button
+        disabled={saving}
+        onClick={handle}
+        className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {saving ? 'Changing Password...' : 'Change Password'}
+      </button>
+    </div>
+  );
+}
+
+// Withdraw Form Component
+function WithdrawForm({ balance = 0, onNewRequest = () => {} }) {
+  const [amount, setAmount] = useState('');
+  const [method, setMethod] = useState('UPI');
+  const [dest, setDest] = useState('');
+  const [msg, setMsg] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const submit = async () => {
+    setMsg('');
+    const a = Number(amount || 0);
+    if (!a || a <= 0) return setMsg('Enter a valid amount');
+    if (a > balance) return setMsg('Amount exceeds balance');
+    if (!dest) return setMsg('Enter payment details');
+
+    setSending(true);
+    try {
+      const res = await fetch('/api/users/withdraw-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: a, method, destination: dest })
+      });
+
+      if (res.ok) {
+        const r = await res.json();
+        onNewRequest(r);
+        setMsg('Request submitted successfully!');
+        setAmount('');
+        setDest('');
+      } else {
+        setMsg('Failed to submit request');
+      }
+    } catch (e) {
+      setMsg('Failed to submit request');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <h4 className="font-semibold text-gray-800">Request Withdrawal</h4>
+      
+      {msg && (
+        <div className={`p-3 rounded-lg text-sm ${
+          msg.includes('success') 
+            ? 'bg-green-50 text-green-700 border border-green-200' 
+            : 'bg-red-50 text-red-700 border border-red-200'
+        }`}>
+          {msg}
+        </div>
+      )}
+
+      <div className="text-sm text-gray-600">
+        Available: <span className="font-bold text-gray-800">₹{balance}</span>
+      </div>
+
+      <input
+        type="number"
+        value={amount}
+        onChange={e => setAmount(e.target.value)}
+        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+        placeholder="Enter amount"
+      />
+
+      <select
+        value={method}
+        onChange={e => setMethod(e.target.value)}
+        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+      >
         <option value="UPI">UPI</option>
-        <option value="Bank">Bank transfer</option>
+        <option value="Bank">Bank Transfer</option>
       </select>
-      <input value={dest} onChange={e=>setDest(e.target.value)} placeholder={method==='UPI'?'Enter UPI id':'Enter account details'} className="w-full border rounded px-3 py-2" />
-      <div><button disabled={sending} onClick={submit} className="px-4 py-2 bg-green-600 text-white rounded">{sending? 'Submitting...':'Request Withdraw'}</button></div>
+
+      <input
+        type="text"
+        value={dest}
+        onChange={e => setDest(e.target.value)}
+        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+        placeholder={method === 'UPI' ? 'Enter UPI ID' : 'Enter account details'}
+      />
+
+      <button
+        disabled={sending}
+        onClick={submit}
+        className="w-full px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {sending ? 'Submitting...' : 'Request Withdrawal'}
+      </button>
     </div>
   );
 }

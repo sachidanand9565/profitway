@@ -64,13 +64,15 @@ function Header() {
                   </a>
                 </div>
 
-              {/* Desktop Menu */}
-              <div className="hidden md:flex space-x-8">
-                <a href="/" className="text-gray-900 hover:text-blue-600 transition-colors">Home</a>
-                <a href="/about" className="text-gray-900 hover:text-blue-600 transition-colors">About</a>
-                <a href="/packages" className="text-gray-900 hover:text-blue-600 transition-colors">Courses Packages</a>
-                <a href="/contact" className="text-gray-900 hover:text-blue-600 transition-colors">Contact</a>
-              </div>
+              {/* Desktop Menu: hide general links when user is logged in */}
+              {!user && (
+                <div className="hidden md:flex space-x-8">
+                  <a href="/" className="text-gray-900 hover:text-blue-600 transition-colors">Home</a>
+                  <a href="/about" className="text-gray-900 hover:text-blue-600 transition-colors">About</a>
+                  <a href="/packages" className="text-gray-900 hover:text-blue-600 transition-colors">Courses Packages</a>
+                  <a href="/contact" className="text-gray-900 hover:text-blue-600 transition-colors">Contact</a>
+                </div>
+              )}
 
               <div className="hidden md:flex items-center space-x-4">
                 {user ? (
@@ -86,7 +88,7 @@ function Header() {
                     </button>
 
                     {isUserMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                         <div className="px-4 py-2 border-b border-gray-200">
                           <p className="text-sm font-medium text-gray-900">{user.username}</p>
                           <p className="text-xs text-gray-500">{user.email}</p>
@@ -94,29 +96,9 @@ function Header() {
                         <nav className="py-2">
                           <a href="/user/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                             <FaUser className="w-4 h-4" />
-                            <span>My Profile</span>
+                            <span>Dashboard</span>
                           </a>
-                          <a href="/user/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                            <FaBook className="w-4 h-4" />
-                            <span>My Courses</span>
-                          </a>
-                          <a href="/user/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                            <FaChartLine className="w-4 h-4" />
-                            <span>Affiliate Dashboard</span>
-                          </a>
-                          <a href="/user/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                            <FaMoneyBillWave className="w-4 h-4" />
-                            <span>Withdrawals</span>
-                          </a>
-                          <a href="/user/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                            <FaUsers className="w-4 h-4" />
-                            <span>My Team</span>
-                          </a>
-                          <a href="/user/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                            <FaComments className="w-4 h-4" />
-                            <span>Community</span>
-                          </a>
-                          <div className="border-t border-gray-200 mt-2 pt-2">
+                          <div className="border-t border-gray-200 mt-2 pt-2 px-4">
                             <button
                               onClick={() => {
                                 localStorage.removeItem('user');
@@ -124,7 +106,7 @@ function Header() {
                                 setIsUserMenuOpen(false);
                                 router.push('/');
                               }}
-                              className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                              className="flex items-center gap-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
                             >
                               <FaSignOutAlt className="w-4 h-4" />
                               <span>Logout</span>
@@ -168,69 +150,54 @@ function Header() {
             </div>
 
             {/* Mobile Menu */}
-            {isMenuOpen && (
-              <div className="md:hidden bg-white/95 backdrop-blur-lg rounded-lg mt-2 py-4 shadow-lg border border-gray-200">
-                <div className="flex flex-col space-y-4 px-4">
-                  <a href="/" className="text-gray-900 hover:text-blue-600 transition-colors">Home</a>
-                  <a href="/about" className="text-gray-900 hover:text-blue-600 transition-colors">About</a>
-                  <a href="/packages" className="text-gray-900 hover:text-blue-600 transition-colors">Courses Packages</a>
-                  <a href="/contact" className="text-gray-900 hover:text-blue-600 transition-colors">Contact</a>
-                  <div className="pt-4 border-t border-gray-300">
-                    {user ? (
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2 pb-2">
-                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center">
-                            <FaUser className="w-4 h-4 text-white" />
+                    {isMenuOpen && (
+                      <div className="md:hidden bg-white/95 backdrop-blur-lg rounded-lg mt-2 py-4 shadow-lg border border-gray-200">
+                        <div className="flex flex-col space-y-4 px-4">
+                          {/* general links hidden when logged in */}
+                          {!user && (
+                            <>
+                              <a href="/" className="text-gray-900 hover:text-blue-600 transition-colors">Home</a>
+                              <a href="/about" className="text-gray-900 hover:text-blue-600 transition-colors">About</a>
+                              <a href="/packages" className="text-gray-900 hover:text-blue-600 transition-colors">Courses Packages</a>
+                              <a href="/contact" className="text-gray-900 hover:text-blue-600 transition-colors">Contact</a>
+                            </>
+                          )}
+                          <div className="pt-4 border-t border-gray-300">
+                            {user ? (
+                              <div className="space-y-2">
+                                <div className="flex items-center space-x-2 pb-2">
+                                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center">
+                                    <FaUser className="w-4 h-4 text-white" />
+                                  </div>
+                                  <span className="text-sm font-medium">{user.username}</span>
+                                </div>
+                                <a href="/user/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded">
+                                  <FaUser className="w-4 h-4" />
+                                  <span>Dashboard</span>
+                                </a>
+                                <button
+                                  onClick={() => {
+                                    localStorage.removeItem('user');
+                                    setUser(null);
+                                    setIsMenuOpen(false);
+                                    router.push('/');
+                                  }}
+                                  className="flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left rounded"
+                                >
+                                  <FaSignOutAlt className="w-4 h-4" />
+                                  <span>Logout</span>
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                <a href="/login" className="text-gray-900 hover:text-blue-600 transition-colors mb-2 block">Login</a>
+                                <a href="/signup" className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-2 rounded-full w-full text-center hover:from-blue-600 hover:to-cyan-700 transition-all">Get Started</a>
+                              </>
+                            )}
                           </div>
-                          <span className="text-sm font-medium">{user.username}</span>
                         </div>
-                        <a href="/user/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded">
-                          <FaUser className="w-4 h-4" />
-                          <span>My Profile</span>
-                        </a>
-                        <a href="/user/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded">
-                          <FaBook className="w-4 h-4" />
-                          <span>My Courses</span>
-                        </a>
-                        <a href="/user/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded">
-                          <FaChartLine className="w-4 h-4" />
-                          <span>Affiliate Dashboard</span>
-                        </a>
-                        <a href="/user/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded">
-                          <FaMoneyBillWave className="w-4 h-4" />
-                          <span>Withdrawals</span>
-                        </a>
-                        <a href="/user/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded">
-                          <FaUsers className="w-4 h-4" />
-                          <span>My Team</span>
-                        </a>
-                        <a href="/user/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded">
-                          <FaComments className="w-4 h-4" />
-                          <span>Community</span>
-                        </a>
-                        <button
-                          onClick={() => {
-                            localStorage.removeItem('user');
-                            setUser(null);
-                            setIsMenuOpen(false);
-                            router.push('/');
-                          }}
-                          className="flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left rounded"
-                        >
-                          <FaSignOutAlt className="w-4 h-4" />
-                          <span>Logout</span>
-                        </button>
                       </div>
-                    ) : (
-                      <>
-                        <a href="/login" className="text-gray-900 hover:text-blue-600 transition-colors mb-2 block">Login</a>
-                        <a href="/signup" className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-2 rounded-full w-full text-center hover:from-blue-600 hover:to-cyan-700 transition-all">Get Started</a>
-                      </>
                     )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </nav>
       </div>

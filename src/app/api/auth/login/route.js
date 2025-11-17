@@ -9,23 +9,40 @@ export async function POST(request) {
       return NextResponse.json({ error: "Username and password required" }, { status: 400 });
     }
 
-    // Check user credentials
-    const users = await query("SELECT * FROM users WHERE username = ? AND password = ?", [username, password]);
+    // Get user by username
+    const users = await query("SELECT * FROM users WHERE email = ?", [username]);
 
     if (users.length === 0) {
-      return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
+      return NextResponse.json({ error: "Invalid Email or password" }, { status: 401 });
     }
 
     const user = users[0];
+
+    // Check password - plain text comparison only
+    if (user.password !== password) {
+      return NextResponse.json({ error: "Invalid Email or password" }, { status: 401 });
+    }
+
+    // Get approved packages from user_packages table
+    const userPackages = await query(`
+      SELECT p.id, p.title, p.slug, p.subtitle, p.price, p.image, up.approved_at
+      FROM user_packages up
+      JOIN packages p ON up.package_id = p.id
+      WHERE up.user_id = ?
+      ORDER BY up.approved_at DESC
+    `, [user.id]);
 
     // Return user data (excluding password)
     const userData = {
       id: user.id,
       username: user.username,
       email: user.email,
+      name: user.name,
+      phone: user.phone,
       sponsor_code: user.sponsor_code,
       referral_code: user.referral_code,
-      approved_packages: JSON.parse(user.approved_packages || '[]'),
+      approved_packages: userPackages.map(pkg => pkg.id),
+      approved_packages_details: userPackages,
       created_at: user.created_at
     };
 

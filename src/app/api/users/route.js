@@ -1,19 +1,75 @@
 import { NextResponse, NextRequest } from "next/server";
 import { query } from "../../../lib/mysqlClient";
 
-export async function GET() {
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const email = searchParams.get('email');
+  const code = searchParams.get('code');
+
+  // Check if email exists
+  if (email) {
+    try {
+      const users = await query("SELECT id FROM users WHERE email = ?", [email]);
+      return NextResponse.json({ exists: users.length > 0 });
+    } catch (err) {
+      console.error("Failed to check email:", err);
+      return NextResponse.json({ error: "Failed to check email" }, { status: 500 });
+    }
+  }
+
+  // Get sponsor name by referral code
+  if (code) {
+    try {
+      const users = await query("SELECT name FROM users WHERE referral_code = ?", [code]);
+      if (users.length > 0) {
+        return NextResponse.json({ name: users[0].name });
+      } else {
+        return NextResponse.json({ name: null });
+      }
+    } catch (err) {
+      console.error("Failed to get sponsor name:", err);
+      return NextResponse.json({ error: "Failed to get sponsor name" }, { status: 500 });
+    }
+  }
+
+  // Default: fetch all users
   try {
-    const users = await query("SELECT id, username, email, password, approved_packages, status, created_at FROM users ORDER BY created_at DESC");
-    return NextResponse.json(users || []);
+    const users = await query(`
+      SELECT u.id, u.username, u.email, u.password, u.name, u.phone, u.status, u.created_at,
+             GROUP_CONCAT(up.package_id) as approved_packages
+      FROM users u
+      LEFT JOIN user_packages up ON u.id = up.user_id
+      GROUP BY u.id
+      ORDER BY u.created_at DESC
+    `);
+
+    // Process the results to format approved_packages as array
+    const processedUsers = users.map(user => ({
+      ...user,
+      approved_packages: user.approved_packages ? user.approved_packages.split(',').map(id => parseInt(id)) : []
+    }));
+
+    return NextResponse.json(processedUsers || []);
   } catch (err) {
     console.error("Failed to fetch users:", err);
     // If status column doesn't exist, try without it
     if (err.code === 'ER_BAD_FIELD_ERROR' && err.sqlMessage.includes('status')) {
       try {
-        const users = await query("SELECT id, username, email, password, approved_packages, created_at FROM users ORDER BY created_at DESC");
+        const users = await query(`
+          SELECT u.id, u.username, u.email, u.password, u.name, u.phone, u.created_at,
+                 GROUP_CONCAT(up.package_id) as approved_packages
+          FROM users u
+          LEFT JOIN user_packages up ON u.id = up.user_id
+          GROUP BY u.id
+          ORDER BY u.created_at DESC
+        `);
         // Add default status to each user
-        const usersWithStatus = users.map(user => ({ ...user, status: 'active' }));
-        return NextResponse.json(usersWithStatus || []);
+        const processedUsers = users.map(user => ({
+          ...user,
+          status: 'active',
+          approved_packages: user.approved_packages ? user.approved_packages.split(',').map(id => parseInt(id)) : []
+        }));
+        return NextResponse.json(processedUsers || []);
       } catch (fallbackErr) {
         console.error("Fallback query also failed:", fallbackErr);
         return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });

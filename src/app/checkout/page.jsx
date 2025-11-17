@@ -42,6 +42,8 @@ function CheckoutPageContent() {
     sponsorCode: "",
     paymentScreenshot: null,
     utrNumber: "",
+    password: "",
+    confirmPassword: "",
   });
   const [status, setStatus] = useState(null);
 
@@ -51,6 +53,12 @@ function CheckoutPageContent() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [doneFade, setDoneFade] = useState(false);
   const [orderPrice, setOrderPrice] = useState(null);
+
+  // New state variables for validation
+  const [emailExists, setEmailExists] = useState(false);
+  const [sponsorName, setSponsorName] = useState(null);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [checkingSponsor, setCheckingSponsor] = useState(false);
 
   // comprehensive list of Indian states and union territories
   const states = [
@@ -115,9 +123,31 @@ function CheckoutPageContent() {
     } catch (e) {
       // ignore storage errors
     }
-    // fallback to query params
-    setPkgData({ title: packageTitle, price: qPrice, image: qImage, slug, id: null });
-    setForm((s) => ({ ...s, packageTitle: packageTitle, price: qPrice }));
+    // fallback to query params - try to get package ID from slug
+    const getPackageIdFromSlug = async (slug) => {
+      if (!slug) return null;
+      try {
+        const response = await fetch(`/api/packages?slug=${slug}`);
+        if (response.ok) {
+          const pkg = await response.json();
+          return pkg.id || null;
+        }
+      } catch (e) {
+        console.warn('Failed to fetch package ID from slug:', e);
+      }
+      return null;
+    };
+
+    const initializePackageData = async () => {
+      let packageId = null;
+      if (slug) {
+        packageId = await getPackageIdFromSlug(slug);
+      }
+      setPkgData({ title: packageTitle, price: qPrice, image: qImage, slug, id: packageId });
+      setForm((s) => ({ ...s, packageTitle: packageTitle, price: qPrice }));
+    };
+
+    initializePackageData();
   }, [slug, qTitle, qPrice, qImage, packageTitle]);
 
   // If user previously completed an order, allow showing the success panel from localStorage
@@ -135,6 +165,64 @@ function CheckoutPageContent() {
     } catch (e) {}
   }, []);
 
+  // Check if email exists
+  useEffect(() => {
+    if (!form.email || !form.email.includes('@')) {
+      setEmailExists(false);
+      return;
+    }
+
+    const checkEmail = async () => {
+      setCheckingEmail(true);
+      try {
+        const response = await fetch(`/api/check-email?email=${encodeURIComponent(form.email)}`);
+        if (response.ok) {
+          const result = await response.json();
+          setEmailExists(result.exists);
+        } else {
+          setEmailExists(false);
+        }
+      } catch (error) {
+        console.error('Error checking email:', error);
+        setEmailExists(false);
+      } finally {
+        setCheckingEmail(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(checkEmail, 500); // Debounce for 500ms
+    return () => clearTimeout(debounceTimer);
+  }, [form.email]);
+
+  // Check sponsor code
+  useEffect(() => {
+    if (!form.sponsorCode || form.sponsorCode.trim() === '') {
+      setSponsorName(null);
+      return;
+    }
+
+    const checkSponsor = async () => {
+      setCheckingSponsor(true);
+      try {
+        const response = await fetch(`/api/check-sponsor?code=${encodeURIComponent(form.sponsorCode)}`);
+        if (response.ok) {
+          const result = await response.json();
+          setSponsorName(result.name || null);
+        } else {
+          setSponsorName(null);
+        }
+      } catch (error) {
+        console.error('Error checking sponsor:', error);
+        setSponsorName(null);
+      } finally {
+        setCheckingSponsor(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(checkSponsor, 500); // Debounce for 500ms
+    return () => clearTimeout(debounceTimer);
+  }, [form.sponsorCode]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((s) => ({ ...s, [name]: value }));
@@ -146,6 +234,22 @@ function CheckoutPageContent() {
     // basic validation before review
     if (!form.name || !form.email || !form.phone) {
       alert("Please fill name, email and phone before proceeding.");
+      return;
+    }
+    if (!form.password || !form.confirmPassword) {
+      alert("Please fill password and confirm password before proceeding.");
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      alert("Passwords do not match. Please try again.");
+      return;
+    }
+    if (form.password.length < 6) {
+      alert("Password must be at least 6 characters long.");
+      return;
+    }
+    if (emailExists) {
+      alert("This email is already registered. Please use a different email address.");
       return;
     }
     setStep("review");
@@ -199,120 +303,143 @@ function CheckoutPageContent() {
     }
   };
 
-  // Handle payment submission
-  const handlePayNow = async () => {
-    // Validation for payment screenshot and UTR number
-    if (!form.paymentScreenshot) {
-      alert("Please upload a payment screenshot before proceeding.");
-      return;
-    }
-    if (!form.utrNumber || form.utrNumber.trim() === "") {
-      alert("Please enter the UTR number before proceeding.");
-      return;
-    }
+ // Key improvements for handlePayNow function
+// Replace your existing handlePayNow with this improved version
 
-    setStep("processing");
-    setStatus("sending");
+const handlePayNow = async () => {
+  // Validation
+  if (!form.paymentScreenshot) {
+    alert("कृपया payment screenshot upload करें");
+    return;
+  }
+  if (!form.utrNumber || form.utrNumber.trim() === "") {
+    alert("कृपया UTR number enter करें");
+    return;
+  }
 
-    try {
-      // Convert payment screenshot to base64 if exists
-      let paymentScreenshotBase64 = null;
-      if (form.paymentScreenshot) {
+  setStep("processing");
+  setStatus("sending");
+
+  try {
+    // Convert payment screenshot to base64
+    let paymentScreenshotBase64 = null;
+    if (form.paymentScreenshot) {
+      try {
         paymentScreenshotBase64 = await fileToBase64(form.paymentScreenshot);
+      } catch (imageError) {
+        console.error("Image processing error:", imageError);
+        throw new Error("Failed to process image: " + imageError.message);
       }
-
-      // Prepare data for API
-      const orderData = {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        address: form.address,
-        message: form.message,
-        packageId: pkgData.id || pkgData.slug || "unknown",
-        packageTitle: pkgData.title,
-        price: form.price,
-        state: form.state,
-        city: form.city,
-        sponsorCode: form.sponsorCode,
-        paymentScreenshot: paymentScreenshotBase64,
-        utrNumber: form.utrNumber,
-      };
-
-      // Send to API
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        // generate simple order id
-        const id = "ORD" + Date.now().toString().slice(-6);
-        const finalPrice = form.price || pkgData.price;
-        setOrderId(id);
-        setOrderPrice(finalPrice);
-        setStatus("paid");
-        setStep("done");
-
-        // persist order summary to localStorage for revisit
-        try {
-          localStorage.setItem('last_order', JSON.stringify({
-            orderId: id,
-            name: form.name,
-            packageTitle: pkgData.title,
-            price: finalPrice,
-            date: new Date().toISOString()
-          }));
-        } catch (e) {
-          console.warn('Could not persist order to localStorage', e);
-        }
-
-        // trigger fade animation for done panel
-        setTimeout(() => setDoneFade(true), 10);
-
-        // clear session storage package to avoid reuse
-        try {
-          sessionStorage.removeItem("checkout_pkg");
-        } catch (e) {}
-      } else {
-        throw new Error(result.error || "Failed to process order");
-      }
-    } catch (error) {
-      console.error("Payment error:", error);
-      let errorMessage = "Failed to process payment. Please try again.";
-      if (!navigator.onLine) {
-        errorMessage = "No internet connection. Please check your network and try again.";
-      } else if (error.message.includes("Failed to process image")) {
-        errorMessage = "Image processing failed. Please ensure the screenshot is a valid image file and try again.";
-      } else if (error.message.includes("File size")) {
-        errorMessage = "File size is too large. Please select a smaller image (max 5MB) and try again.";
-      } else if (error.message.includes("Failed to load image")) {
-        errorMessage = "Invalid image file. Please select a valid image file and try again.";
-      } else if (error.message.includes("Failed to read file")) {
-        errorMessage = "Failed to read the selected file. Please try selecting the image again.";
-      } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        errorMessage = "Network error occurred. Please check your connection and try again.";
-      } else if (error.message.includes("Failed to save order")) {
-        errorMessage = "Server error occurred while saving your order. Please try again in a few moments.";
-      } else if (/mobile|android|iphone/i.test(navigator.userAgent)) {
-        // More specific mobile error handling
-        if (error.message.includes("File size") || error.message.includes("Failed to process image")) {
-          errorMessage = "Image processing failed on mobile. Please ensure the screenshot is under 5MB and is a valid image file, then try again.";
-        } else if (!navigator.onLine) {
-          errorMessage = "No internet connection on mobile. Please check your mobile data or WiFi and try again.";
-        } else {
-          errorMessage = "Payment submission failed on mobile. Please ensure you have a stable connection and try again.";
-        }
-      }
-      alert(errorMessage);
-      setStep("review");
-      setStatus(null);
     }
-  };
+
+    // Prepare data for API - ensure packageId is numeric
+    let packageId = pkgData.id;
+    if (!packageId && pkgData.slug) {
+      // Try to get package ID from slug if not already available
+      try {
+        const pkgResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/packages?slug=${pkgData.slug}`);
+        if (pkgResponse.ok) {
+          const pkg = await pkgResponse.json();
+          packageId = pkg.id || null;
+        }
+      } catch (e) {
+        console.warn('Failed to fetch package ID from slug in checkout:', e);
+      }
+    }
+
+    const orderData = {
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      address: form.address,
+      message: form.message,
+      packageId: packageId || null,
+      packageTitle: pkgData.title,
+      price: form.price,
+      state: form.state,
+      city: form.city,
+      sponsorCode: form.sponsorCode,
+      paymentScreenshot: paymentScreenshotBase64,
+      utrNumber: form.utrNumber,
+      password: form.password,
+    };
+
+    // Send to API with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+    const response = await fetch("/api/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderData),
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
+
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      // Success handling
+      const id = "ORD" + Date.now().toString().slice(-6);
+      const finalPrice = form.price || pkgData.price;
+      setOrderId(id);
+      setOrderPrice(finalPrice);
+      setStatus("paid");
+      setStep("done");
+
+      // Persist order
+      try {
+        localStorage.setItem('last_order', JSON.stringify({
+          orderId: id,
+          name: form.name,
+          packageTitle: pkgData.title,
+          price: finalPrice,
+          date: new Date().toISOString()
+        }));
+      } catch (e) {
+        console.warn('Could not persist order to localStorage', e);
+      }
+
+      setTimeout(() => setDoneFade(true), 10);
+
+      // Clear session
+      try {
+        sessionStorage.removeItem("checkout_pkg");
+      } catch (e) {}
+    } else {
+      throw new Error(result.error || "Failed to process order");
+    }
+  } catch (error) {
+    console.error("Payment error:", error);
+    
+    // Better error handling
+    let errorMessage = "Payment submit करने में error हुआ। कृपया फिर से try करें।";
+    
+    if (error.name === 'AbortError') {
+      errorMessage = "Request timeout हो गया। कृपया अपना internet connection check करें और फिर से try करें।";
+    } else if (!navigator.onLine) {
+      errorMessage = "Internet connection नहीं है। कृपया अपना connection check करें।";
+    } else if (error.message.includes("Failed to process image")) {
+      errorMessage = "Image process नहीं हो पाई। कृपया छोटी image select करें (max 5MB) और फिर से try करें।";
+    } else if (error.message.includes("File size")) {
+      errorMessage = "File बहुत बड़ी है। कृपया छोटी image select करें (max 5MB)।";
+    } else if (error.message.includes("Failed to load image")) {
+      errorMessage = "Invalid image file। कृपया valid image file select करें।";
+    } else if (error.message.includes("Failed to read file")) {
+      errorMessage = "File read नहीं हो पाई। कृपया फिर से image select करें।";
+    } else if (error.message.includes("Failed to fetch") || error.message.includes("Network")) {
+      errorMessage = "Network error। कृपया अपना internet connection check करें।";
+    } else if (response && !response.ok) {
+      // Server returned an error
+      errorMessage = error.message || "Server error। कृपया कुछ देर बाद फिर से try करें।";
+    }
+    
+    alert(errorMessage);
+    setStep("review");
+    setStatus(null);
+  }
+};
 
   const handleBackToForm = () => {
     setStep("form");
@@ -377,8 +504,13 @@ function CheckoutPageContent() {
                           value={form.email}
                           onChange={handleChange}
                           required
-                          className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className={`w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 ${
+                            emailExists ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                          }`}
                         />
+                        {checkingEmail && <div className="text-sm text-blue-600 mt-1">Checking...</div>}
+                        {form.email && !checkingEmail && emailExists && <div className="text-sm text-red-600 mt-1">This email is already registered</div>}
+                        {form.email && !checkingEmail && !emailExists && form.email.includes('@') && <div className="text-sm text-green-600 mt-1">Email available</div>}
                       </div>
 
                       <div>
@@ -428,6 +560,35 @@ function CheckoutPageContent() {
                           value={form.sponsorCode}
                           onChange={handleChange}
                           placeholder="Enter sponsor / referral code"
+                          className={`w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 ${
+                            sponsorName === null && form.sponsorCode && !checkingSponsor ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                        />
+                        {checkingSponsor && <div className="text-sm text-blue-600 mt-1">Checking...</div>}
+                        {form.sponsorCode && !checkingSponsor && sponsorName && <div className="text-sm text-green-600 mt-1">Sponsor: {sponsorName}</div>}
+                        {form.sponsorCode && !checkingSponsor && sponsorName === null && <div className="text-sm text-red-600 mt-1">Invalid sponsor code</div>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Password</label>
+                        <input
+                          name="password"
+                          type="password"
+                          value={form.password}
+                          onChange={handleChange}
+                          required
+                          className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Confirm Password</label>
+                        <input
+                          name="confirmPassword"
+                          type="password"
+                          value={form.confirmPassword}
+                          onChange={handleChange}
+                          required
                           className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>

@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { query } from "../../../lib/mysqlClient";
+import bcrypt from "bcryptjs";
 
 export async function GET() {
   try {
@@ -30,20 +31,16 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const { getConnection } = await import("../../../lib/mysqlClient");
+  let connection;
   try {
-
-    const { id, action, username, password } = await request.json();
-   
+    const { id, action } = await request.json();
 
     if (!id || !action) {
       return NextResponse.json({ error: "Purchase ID and action required" }, { status: 400 });
     }
 
     if (action === 'approve') {
-      if (!username || !password) {
-        return NextResponse.json({ error: "Username and password required for approval" }, { status: 400 });
-      }
-
       // Get purchase details
       const purchases = await query("SELECT * FROM checkout WHERE id = ?", [id]);
       if (purchases.length === 0) {
@@ -57,7 +54,7 @@ export async function POST(request) {
       let packageId = purchase.packageid;
       if (typeof packageId === 'string' && packageId !== 'unknown') {
         // If it's a string (slug), fetch the numeric ID from packages table
-        const packages = await query("SELECT id FROM packages WHERE slug = ?", [packageId]);
+        const packages = await query("SELECT id FROM packages WHERE id = ?", [packageId]);
         if (packages.length > 0) {
           packageId = packages[0].id;
         } else {
@@ -68,28 +65,40 @@ export async function POST(request) {
         packageId = null;
       }
 
+      // Start transaction
+      connection = await getConnection();
+      await connection.beginTransaction();
+
       // Update purchase status
-      await query("UPDATE checkout SET status = 'approved' WHERE id = ?", [id]);
+      await connection.execute("UPDATE checkout SET status = 'approved' WHERE id = ?", [id]);
 
       // Check if user already exists
-      const existingUsers = await query("SELECT id, approved_packages FROM users WHERE email = ?", [purchase.email]);
+      const [existingUsersRows] = await connection.execute("SELECT id FROM users WHERE email = ?", [purchase.email]);
       let isNewUser = false;
+      let username, password; // Define here to be accessible for email
 
-      if (existingUsers.length > 0) {
-        // User exists, update approved packages
-        const user = existingUsers[0];
-        const currentPackages = JSON.parse(user.approved_packages || '[]');
+      if (existingUsersRows.length > 0) {
+        // User exists, add package to user_packages table
+        const user = existingUsersRows[0];
+        console.log("Existing user found:", user.id, "Package ID:", packageId);
         if (packageId) {
-          const updatedPackages = [...new Set([...currentPackages, packageId])]; // Avoid duplicates, ensure numeric IDs
-          await query(
-            "UPDATE users SET approved_packages = ? WHERE id = ?",
-            [JSON.stringify(updatedPackages), user.id]
+          const result = await connection.execute(
+            "INSERT INTO user_packages (user_id, package_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE approved_at = CURRENT_TIMESTAMP",
+            [user.id, packageId]
           );
+          console.log("Inserted package for existing user, result:", result);
+        } else {
+          console.log("No packageId to insert for existing user");
         }
       } else {
         // Create new user account
         isNewUser = true;
         const initialPackages = packageId ? [packageId] : [];
+
+        // SERVER-SIDE CREDENTIAL GENERATION
+        username = purchase.email;
+        password = purchase.password || Math.random().toString(36).slice(-8);
+        // const hashedPassword = await bcrypt.hash(password, 10);
 
         // Generate referral code: "PW" + 8 random alphanumeric characters
         const generateReferralCode = () => {
@@ -109,8 +118,8 @@ export async function POST(request) {
         // Ensure referral code is unique
         while (!isUnique && attempts < maxAttempts) {
           referralCode = generateReferralCode();
-          const existingCodes = await query("SELECT id FROM users WHERE referral_code = ?", [referralCode]);
-          if (existingCodes.length === 0) {
+          const [existingCodesRows] = await connection.execute("SELECT id FROM users WHERE referral_code = ?", [referralCode]);
+          if (existingCodesRows.length === 0) {
             isUnique = true;
           }
           attempts++;
@@ -120,11 +129,26 @@ export async function POST(request) {
           throw new Error("Failed to generate unique referral code");
         }
 
-        await query(
-          "INSERT INTO users (username, password, email, sponsor_code, referral_code, approved_packages, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-          [username, password, purchase.email, purchase.sponsorcode || null, referralCode, JSON.stringify(initialPackages), purchase.created_at]
+        await connection.execute(
+          "INSERT INTO users (username, password, email, name, phone, sponsor_code, referral_code, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          [username, password, purchase.email, purchase.name, purchase.phone, purchase.sponsorcode || null, referralCode, purchase.created_at]
         );
+
+        // Add initial package to user_packages table
+        if (packageId) {
+          const [userResult] = await connection.execute("SELECT LAST_INSERT_ID() as userId");
+          const userId = userResult[0].userId;
+          await connection.execute(
+            "INSERT INTO user_packages (user_id, package_id) VALUES (?, ?)",
+            [userId, packageId]
+          );
+        }
       }
+
+      // Commit transaction
+      await connection.commit();
+      connection.release();
+      connection = null;
 
       // Send email with credentials only for new users
       if (isNewUser) {
@@ -170,6 +194,10 @@ export async function POST(request) {
     }
 
   } catch (err) {
+    if (connection) {
+      await connection.rollback();
+      connection.release();
+    }
     console.error("Failed to process purchase action:", err);
     return NextResponse.json({ error: "Failed to process action" }, { status: 500 });
   }

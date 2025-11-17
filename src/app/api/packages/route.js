@@ -1,15 +1,32 @@
 import { NextResponse, NextRequest } from "next/server";
 import { query } from "../../../lib/mysqlClient";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const packages = await query("SELECT * FROM packages");
-    // Fetch videos for each package
-    for (let pkg of packages) {
+    const { searchParams } = new URL(request.url);
+    const slug = searchParams.get('slug');
+
+    if (slug) {
+      // Fetch single package by slug
+      const packages = await query("SELECT * FROM packages WHERE slug = ?", [slug]);
+      if (packages.length === 0) {
+        return NextResponse.json({ error: "Package not found" }, { status: 404 });
+      }
+      const pkg = packages[0];
+      // Fetch videos for the package
       const videos = await query("SELECT * FROM packages_content WHERE package_id = ? ORDER BY created_at DESC", [pkg.id]);
       pkg.videos = videos;
+      return NextResponse.json(pkg);
+    } else {
+      // Fetch all packages
+      const packages = await query("SELECT * FROM packages");
+      // Fetch videos for each package
+      for (let pkg of packages) {
+        const videos = await query("SELECT * FROM packages_content WHERE package_id = ? ORDER BY created_at DESC", [pkg.id]);
+        pkg.videos = videos;
+      }
+      return NextResponse.json(packages);
     }
-    return NextResponse.json(packages);
   } catch (err) {
     return NextResponse.json({ error: "Failed to fetch packages" }, { status: 500 });
   }

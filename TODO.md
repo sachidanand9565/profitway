@@ -1,9 +1,13 @@
-# TODO: Fix Mobile Payment Submission Error
+# Checkout Password Integration Tasks
 
-## Tasks
-- [ ] Improve error handling in checkout page to provide specific error messages instead of generic mobile fallback
-- [ ] Add better image processing checks for mobile devices
-- [ ] Enhance file size validation after compression
-- [ ] Add network connectivity checks
-- [ ] Test mobile-specific error scenarios
-- [ ] Update error messages to be more actionable for users
+## Completed Tasks
+- [x] Analyze current codebase and understand authentication flow
+
+## Pending Tasks
+- [ ] Add password and confirm password fields to checkout form with validation
+- [ ] Update checkout API to save password field
+- [ ] Change login form to use email instead of username
+- [ ] Update login API to authenticate with email/password
+- [ ] Remove username/password generation modal from admin purchases page
+- [ ] Update admin approval API to use checkout credentials instead of generating new ones
+- [ ] Test complete flow from checkout to login after approval

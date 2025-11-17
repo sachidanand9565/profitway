@@ -8,7 +8,6 @@ export default function PurchasesManagement() {
   const [selectedPurchase, setSelectedPurchase] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
-  const [approvalData, setApprovalData] = useState({ username: '', password: '' });
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,12 +38,33 @@ export default function PurchasesManagement() {
   };
 
   const handleApprove = async (purchase) => {
-    setSelectedPurchase(purchase);
-    setApprovalData({
-      username: `user_${purchase.id}_${Date.now().toString().slice(-4)}`,
-      password: Math.random().toString(36).slice(-8)
-    });
-    setShowApprovalModal(true);
+    try {
+      const username = purchase.email;
+      const password = purchase.password || Math.random().toString(36).slice(-8);
+   console.log('Approving purchase id:', purchase);
+      const response = await fetch('/api/purchases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: purchase.id,
+          action: 'approve',
+          username: username,
+          password: password
+        })
+      });
+
+      if (response.ok) {
+        setMessage('Purchase approved and user account created successfully');
+        setMessageType('success');
+        fetchPurchases();
+      } else {
+        throw new Error('Failed to approve purchase');
+      }
+    } catch (error) {
+      console.error('Failed to approve purchase:', error);
+      setMessage('Failed to approve purchase');
+      setMessageType('error');
+    }
   };
 
   const handleReject = async (id) => {
@@ -71,43 +91,7 @@ export default function PurchasesManagement() {
     }
   };
 
-  const submitApproval = async () => {
-    if (!approvalData.username || !approvalData.password) {
-      alert('Please provide username and password');
-      return;
-    }
 
-    setIsSubmitting(true);
-    try {
-      const response = await fetch('/api/purchases', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: selectedPurchase.id,
-          action: 'approve',
-          username: approvalData.username,
-          password: approvalData.password
-        })
-      });
-console.log(response);
-
-      if (response.ok) {
-        setMessage('Purchase approved and user account created successfully');
-        setMessageType('success');
-        setShowApprovalModal(false);
-        setSelectedPurchase(null);
-        fetchPurchases();
-      } else {
-        throw new Error('Failed to approve purchase');
-      }
-    } catch (error) {
-      console.error('Failed to approve purchase:', error);
-      setMessage('Failed to approve purchase');
-      setMessageType('error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -325,54 +309,7 @@ console.log(response);
         </div>
       )}
 
-      {/* Approval Modal */}
-      {showApprovalModal && selectedPurchase && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-4">Approve Purchase</h2>
-            <p className="mb-4 text-gray-600">
-              Create user account for {selectedPurchase.name} ({selectedPurchase.email})
-            </p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Username</label>
-                <input
-                  type="text"
-                  value={approvalData.username}
-                  onChange={(e) => setApprovalData(prev => ({ ...prev, username: e.target.value }))}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Password</label>
-                <input
-                  type="text"
-                  value={approvalData.password}
-                  onChange={(e) => setApprovalData(prev => ({ ...prev, password: e.target.value }))}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                  required
-                />
-              </div>
-            </div>
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setShowApprovalModal(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={submitApproval}
-                disabled={isSubmitting}
-                className={`px-4 py-2 text-white rounded ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
-              >
-                {isSubmitting ? 'Processing...' : 'Approve & Create Account'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

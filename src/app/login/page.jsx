@@ -56,7 +56,7 @@ export default function LoginPage() {
               <h1 className="text-2xl font-bold text-gray-900 mb-4">Login to your account</h1>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">Username</label>
+                  <label className="block text-sm text-gray-700 mb-1">Email</label>
                   <input name="username" value={form.username} onChange={handleChange} required className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300" />
                 </div>
                 <div>

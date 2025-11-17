@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { query } from '../../../../lib/mysqlClient';
-import bcrypt from 'bcryptjs';
 
 export async function POST(request) {
   try {
@@ -26,13 +25,10 @@ export async function POST(request) {
 
     const user = users[0];
 
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Update password and clear reset token
+    // Store new password as plain text
     await query(
       'UPDATE users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?',
-      [hashedPassword, user.id]
+      [password, user.id]
     );
 
     return NextResponse.json({ message: 'Password reset successfully' });
