@@ -8,8 +8,13 @@ export async function GET(req) {
     if (!email) return NextResponse.json({ exists: false });
 
     const rows = await query('SELECT id, username, email FROM users WHERE email = ? LIMIT 1', [email]);
+    const rows_checkout = await query('SELECT email FROM checkout WHERE email = ? LIMIT 1', [email]);
     if (rows && rows.length > 0) {
       const u = rows[0];
+      return NextResponse.json({ exists: true, user: { id: u.id, username: u.username, email: u.email } });
+    }
+    if (rows_checkout && rows_checkout.length > 0) {
+      const u = rows_checkout[0];
       return NextResponse.json({ exists: true, user: { id: u.id, username: u.username, email: u.email } });
     }
     return NextResponse.json({ exists: false });
