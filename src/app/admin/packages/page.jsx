@@ -131,6 +131,7 @@ export default function PackagesManagement() {
       slug: pkg.slug,
       videos: pkg.videos || []
     });
+    setSelectedFile(null);
     setCurrentPackageVideos(pkg.videos || []);
     setShowModal(true);
     setMessage('');
@@ -393,11 +394,16 @@ export default function PackagesManagement() {
                   type="file"
                   accept="image/*"
                   onChange={(e) => setSelectedFile(e.target.files[0])}
-                  className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm p-2 bg-gray-700 text-white"
+                  className="mt-1 block w-full border border-gray-600 rounded-md shadow-sm p-2 bg-gray-700 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100"
                 />
-                {formData.image && (
-                  <p className="mt-1 text-sm text-gray-300">Current: {formData.image}</p>
+                {selectedFile && (
+                  <p className="mt-1 text-sm text-green-400">New file selected: {selectedFile.name}</p>
                 )}
+                {formData.image && !selectedFile && (
+                  <div className="mt-2 hidden lg:block">
+                    <p className="text-sm text-gray-300 mb-2">Current image:</p>
+                    <img
+                      src={formData.image}
               </div>
 
               <div>
