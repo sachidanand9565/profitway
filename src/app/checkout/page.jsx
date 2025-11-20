@@ -338,59 +338,62 @@ const handlePayNow = async () => {
   setStatus("sending");
 
   try {
-    console.log('[checkout] handlePayNow start', { name: form.name, email: form.email, phone: form.phone, hasScreenshot: !!form.paymentScreenshot });
-    // Convert payment screenshot to base64
-    let paymentScreenshotBase64 = null;
-    if (form.paymentScreenshot) {
-      try {
-        paymentScreenshotBase64 = await fileToBase64(form.paymentScreenshot);
-        console.log('[checkout] paymentScreenshotBase64 length', paymentScreenshotBase64 ? paymentScreenshotBase64.length : 0);
-      } catch (imageError) {
-        console.error('[checkout] Image processing error:', imageError);
-        throw new Error("Failed to process image: " + (imageError && imageError.message ? imageError.message : String(imageError)));
-      }
-    }
+    console.log('[checkout] handlePayNow start', { 
+      name: form.name, 
+      email: form.email, 
+      phone: form.phone, 
+      hasScreenshot: !!form.paymentScreenshot 
+    });
 
-    // Prepare data for API - ensure packageId is numeric
+    // Get package ID if needed
     let packageId = pkgData.id;
     if (!packageId && pkgData.slug) {
-      // Try to get package ID from slug if not already available
       try {
-        const pkgResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/packages?slug=${pkgData.slug}`);
+        const pkgResponse = await fetch(`/api/packages?slug=${pkgData.slug}`);
         if (pkgResponse.ok) {
           const pkg = await pkgResponse.json();
           packageId = pkg.id || null;
         }
       } catch (e) {
-        console.warn('Failed to fetch package ID from slug in checkout:', e);
+        console.warn('Failed to fetch package ID from slug:', e);
       }
     }
 
+    // Convert image to base64
+    console.log('[checkout] Converting image to base64');
+    let base64Image;
+    try {
+      base64Image = await fileToBase64(form.paymentScreenshot);
+      console.log('[checkout] Base64 conversion complete', { length: base64Image.length });
+    } catch (convErr) {
+      throw new Error('Image conversion failed: ' + convErr.message);
+    }
+
+    // Create order data
     const orderData = {
       name: form.name,
       email: form.email,
       phone: form.phone,
-      address: form.address,
-      message: form.message,
-      packageId: packageId || null,
+      address: form.address || '',
+      message: form.message || '',
+      packageId: packageId || '',
       packageTitle: pkgData.title,
-      price: form.price,
-      state: form.state,
-      city: form.city,
-      sponsorCode: form.sponsorCode,
-      paymentScreenshot: paymentScreenshotBase64,
+      price: form.price || '',
+      state: form.state || '',
+      sponsorCode: form.sponsorCode || '',
       utrNumber: form.utrNumber,
       password: form.password,
+      paymentScreenshot: base64Image
     };
 
-    // Send to API with timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    console.log('[checkout] Sending order data');
 
-    let response = null;
-    let result = null;
+    // Send with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+
+    let response, result;
     try {
-      console.log('[checkout] sending orderData', { packageId, packageTitle: pkgData.title, price: form.price });
       response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
@@ -400,13 +403,17 @@ const handlePayNow = async () => {
         signal: controller.signal,
       });
       result = await response.json();
-      console.log('[checkout] api response', { status: response.status, ok: response.ok, result });
+      console.log('[checkout] API response', { 
+        status: response.status, 
+        ok: response.ok, 
+        result 
+      });
     } finally {
       clearTimeout(timeoutId);
     }
 
     if (response && response.ok && result && result.success) {
-      // Success handling
+      // Success
       const id = "ORD" + Date.now().toString().slice(-6);
       const finalPrice = form.price || pkgData.price;
       setOrderId(id);
@@ -414,7 +421,7 @@ const handlePayNow = async () => {
       setStatus("paid");
       setStep("done");
 
-      // Persist order
+      // Save to localStorage
       try {
         localStorage.setItem('last_order', JSON.stringify({
           orderId: id,
@@ -424,12 +431,11 @@ const handlePayNow = async () => {
           date: new Date().toISOString()
         }));
       } catch (e) {
-        console.warn('Could not persist order to localStorage', e);
+        console.warn('localStorage save failed', e);
       }
 
       setTimeout(() => setDoneFade(true), 10);
 
-      // Clear session
       try {
         sessionStorage.removeItem("checkout_pkg");
       } catch (e) {}
@@ -437,28 +443,18 @@ const handlePayNow = async () => {
       throw new Error((result && result.error) || "Failed to process order");
     }
   } catch (error) {
-    console.error("Payment error:", error);
+    console.error("[checkout] Payment error:", error);
 
-    // Better error handling
     let errorMessage = "Payment submit करने में error हुआ। कृपया फिर से try करें।";
 
     if (error.name === 'AbortError') {
-      errorMessage = "Request timeout हो गया। कृपया अपना internet connection check करें और फिर से try करें।";
+      errorMessage = "Request timeout हो गया। कृपया internet check करें।";
     } else if (!navigator.onLine) {
-      errorMessage = "Internet connection नहीं है। कृपया अपना connection check करें।";
-    } else if (error.message && error.message.includes('Failed to process image')) {
-      errorMessage = "Image process नहीं हो पाई। कृपया छोटी image select करें (max 5MB) और फिर से try करें।";
-    } else if (error.message && error.message.includes('File size')) {
-      errorMessage = "File बहुत बड़ी है। कृपया छोटी image select करें (max 5MB)।";
-    } else if (error.message && (error.message.includes('Failed to load image') || error.message.includes('Failed to read file'))) {
-      errorMessage = "Invalid image file। कृपया valid image file select करें।";
-    } else if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('Network'))) {
-      errorMessage = "Network error। कृपया अपना internet connection check करें।";
-    } else if (error.response && !error.response.ok) {
-      errorMessage = error.message || "Server error। कृपया कुछ देर बाद फिर से try करें।";
+      errorMessage = "Internet connection नहीं है।";
+    } else if (error.message) {
+      errorMessage = `Error: ${error.message}`;
     }
 
-    // Show a friendly alert and revert to review step so user can retry
     alert(errorMessage);
     setStep("review");
     setStatus(null);

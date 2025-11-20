@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { query } from "../../../lib/mysqlClient";
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { put } from '@vercel/blob';
 
 // Force Node.js runtime instead of Edge
 export const runtime = 'nodejs';
@@ -48,46 +47,44 @@ export async function POST(request) {
           throw new Error('Invalid image format');
         }
 
-        // Extract base64 data
-        const base64Data = data.paymentScreenshot.split(',')[1];
+        // Extract mime type and base64 data
+        const [mimePart, base64Data] = data.paymentScreenshot.split(',');
+        const mimeType = mimePart.split(':')[1].split(';')[0]; // e.g., image/jpeg
         if (!base64Data) {
           throw new Error('Invalid base64 data');
         }
 
-        // Create unique filename
-        const timestamp = Date.now();
-        const randomStr = Math.random().toString(36).substr(2, 9);
-        const filename = `payment_${timestamp}_${randomStr}.jpg`;
-        
-        // Setup paths
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'payments');
-        const filePath = path.join(uploadDir, filename);
-
-        // Ensure directory exists
-        try {
-          await mkdir(uploadDir, { recursive: true });
-        } catch (err) {
-          if (err.code !== 'EEXIST') throw err;
-        }
-
-        // Convert base64 to buffer and save
+        // Convert base64 to buffer
         const buffer = Buffer.from(base64Data, 'base64');
-        
-        // Validate file size (max 5MB for the final saved file)
+
+        // Validate file size (max 5MB)
         if (buffer.length > 5 * 1024 * 1024) {
-          return NextResponse.json({ 
-            error: "Compressed image is still too large. Please select a smaller image." 
+          return NextResponse.json({
+            error: "Compressed image is still too large. Please select a smaller image."
           }, { status: 400 });
         }
 
-        await writeFile(filePath, buffer);
-        imagePath = `/uploads/payments/${filename}`;
+        // Create unique filename with correct extension
+        const timestamp = Date.now();
+        const randomStr = Math.random().toString(36).substr(2, 9);
+        const extension = mimeType.split('/')[1]; // e.g., jpeg, png
+        const filename = `payment_${timestamp}_${randomStr}.${extension}`;
+
+        // Upload to Vercel Blob
+        const blob = await put(filename, buffer, {
+          access: 'public',
+          contentType: mimeType,
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        });
+
+        imagePath = blob.url;
 
       } catch (imageError) {
         console.error("Image upload error:", imageError);
-        return NextResponse.json({ 
-          error: "Failed to upload payment screenshot", 
-          details: imageError.message 
+        console.error("Error details:", JSON.stringify(imageError, null, 2));
+        return NextResponse.json({
+          error: "Failed to upload payment screenshot",
+          details: imageError.message || 'Unknown error'
         }, { status: 400 });
       }
     }
