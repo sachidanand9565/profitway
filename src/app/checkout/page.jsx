@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { query } from "../../../lib/mysqlClient";
+import { query } from "../../lib/mysqlClient";
 
 // Force Node.js runtime instead of Edge
 export const runtime = 'nodejs';
