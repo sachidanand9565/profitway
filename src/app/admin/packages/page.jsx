@@ -404,6 +404,11 @@ export default function PackagesManagement() {
                     <p className="text-sm text-gray-300 mb-2">Current image:</p>
                     <img
                       src={formData.image}
+                      alt="Current package image"
+                      className="max-w-32 max-h-32 object-cover rounded border border-gray-600"
+                    />
+                  </div>
+                )}
               </div>
 
               <div>
