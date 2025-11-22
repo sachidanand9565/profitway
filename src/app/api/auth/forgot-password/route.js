@@ -1,64 +1,69 @@
-import { NextResponse } from 'next/server';
-import { query } from '../../../../lib/mysqlClient';
-import { Resend } from 'resend';
-import crypto from 'crypto';
+export const runtime = 'nodejs';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
+import { query } from "../../../../lib/mysqlClient";
+
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+}
 
 export async function POST(request) {
   try {
-    const { email } = await request.json();
-
+    const body = await request.json();
+    const email = (body.email || "");
+    //  return NextResponse.json({ success: true, message: email });
     if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Email required" }, { status: 400 });
     }
 
-    // Check if user exists
-    const users = await query('SELECT id, username FROM users WHERE email = ?', [email]);
-
+    // find user
+    const users = await query("SELECT id, name FROM users WHERE email = ?", [email]);
     if (users.length === 0) {
-      // Don't reveal if email exists or not for security
-      return NextResponse.json({ message: 'If the email exists, a reset link has been sent.' });
+      // Security: respond success but do not reveal existence
+      return NextResponse.json({ success: true, message: "OTP sent if email exists" });
     }
 
     const user = users[0];
+    
+    const otp = generateOtp();
+    const minutes = parseInt(process.env.OTP_EXP_MIN || "15", 10);
+    const expiresAt = new Date(Date.now() + minutes * 60 * 1000);
 
-    // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
+    // store otp and expiry
+    await query("UPDATE users SET otp = ?, otp_expires = ? WHERE id = ?", [otp, expiresAt, user.id]);
 
-    // Store reset token in database
-    await query(
-      'UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?',
-      [resetToken, resetTokenExpiry, user.id]
-    );
-
-    // Send reset email
-    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
-
-    const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #333;">Password Reset Request</h2>
-        <p>Hello ${user.username},</p>
-        <p>You requested a password reset for your ProfitWay account.</p>
-        <p>Click the link below to reset your password:</p>
-        <a href="${resetUrl}" style="background-color: #00bcd4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 16px 0;">Reset Password</a>
-        <p>This link will expire in 1 hour.</p>
-        <p>If you didn't request this reset, please ignore this email.</p>
-        <p>Best regards,<br>ProfitWay Team</p>
-      </div>
-    `;
-
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'ProfitWay <noreply@yourdomain.com>',
-      to: [email],
-      subject: 'Password Reset - ProfitWay',
-      html: emailHtml,
+    // prepare transporter
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: process.env.SMTP_SECURE === "true", 
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
     });
 
-    return NextResponse.json({ message: 'If the email exists, a reset link has been sent.' });
-  } catch (error) {
-    console.error('Forgot password error:', error);
-    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
-  }
+
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || process.env.SMTP_USER,
+      to: email,
+      subject: "Your OTP for password reset",
+      text: `Hello ${user.name || ""}\n\nYour OTP for password reset is: ${otp}\nIt expires in ${minutes} minutes.\n\nIf you didn't request this, ignore this email.`,
+      html: `<p>Hello ${user.name || ""},</p>
+             <p>Your OTP for password reset is: <strong>${otp}</strong></p>
+             <p>It will expire in ${minutes} minutes.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return NextResponse.json({ success: true, message: "OTP sent (if email exists)" });
+  } catch (err) {
+  console.error("[forgot-password] Error:", err);
+  return NextResponse.json({
+    success: false,
+    error: err.message || "Failed to send OTP",
+    detail: err,  // full raw error
+  }, { status: 500 });
+}
 }

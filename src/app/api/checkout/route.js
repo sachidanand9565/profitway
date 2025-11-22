@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { query } from "../../../lib/mysqlClient";
-import { put } from '@vercel/blob';
+import { put } from "@vercel/blob";
 
 // Force Node.js runtime instead of Edge
 export const runtime = 'nodejs';
