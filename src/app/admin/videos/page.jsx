@@ -1,14 +1,28 @@
 'use client';
+
 import { useState, useEffect } from 'react';
-import { FaPlus, FaTrash, FaPlay, FaEdit } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaPlay } from 'react-icons/fa';
+
+function Spinner() {
+  return (
+    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+  );
+}
 
 export default function VideosManagement() {
   const [videos, setVideos] = useState([]);
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [loadingVideos, setLoadingVideos] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState('');
   const [newVideoUrl, setNewVideoUrl] = useState('');
+  const [newImageFile, setNewImageFile] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [addVideoLoading, setAddVideoLoading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState('');
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
 
@@ -38,12 +52,47 @@ export default function VideosManagement() {
   };
 
   const fetchPackageVideos = async (packageId) => {
+    setLoadingVideos(true);
     try {
       const response = await fetch(`/api/packages/${packageId}/videos`);
       const data = await response.json();
       setVideos(data);
     } catch (error) {
       console.error('Failed to fetch videos:', error);
+    } finally {
+      setLoadingVideos(false);
+    }
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setNewImageFile(file);
+    setUploadingImage(true);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUploadedImageUrl(data.url);
+        setMessage('Image uploaded successfully');
+        setMessageType('success');
+      } else {
+        setMessage(data.error || 'Image upload failed');
+        setMessageType('error');
+      }
+    } catch (err) {
+      setMessage('Image upload failed');
+      setMessageType('error');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -54,11 +103,13 @@ export default function VideosManagement() {
       const response = await fetch(`/api/packages/${selectedPackage}/videos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ video: newVideoUrl.trim() })
+        body: JSON.stringify({ video: newVideoUrl.trim(), image: uploadedImageUrl || null }),
       });
 
       if (response.ok) {
         setNewVideoUrl('');
+        setNewImageFile(null);
+        setUploadedImageUrl('');
         fetchPackageVideos(selectedPackage);
         setMessage('Video added successfully');
         setMessageType('success');
@@ -68,18 +119,24 @@ export default function VideosManagement() {
         setMessageType('error');
       }
     } catch (error) {
-      console.error('Failed to add video:', error);
       setMessage('Failed to add video');
       setMessageType('error');
     }
   };
+
+  // Loader component for indicating loading state during uploads or data fetch
+  const Loader = () => (
+    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
+      <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-16 w-16"></div>
+    </div>
+  );
 
   const removeVideo = async (videoId) => {
     if (!confirm('Are you sure you want to delete this video?')) return;
 
     try {
       const response = await fetch(`/api/packages/${selectedPackage}/videos/${videoId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
 
       if (response.ok) {
@@ -91,8 +148,7 @@ export default function VideosManagement() {
         setMessage('Failed to delete video');
         setMessageType('error');
       }
-    } catch (error) {
-      console.error('Failed to delete video:', error);
+    } catch {
       setMessage('Failed to delete video');
       setMessageType('error');
     }
@@ -109,12 +165,15 @@ export default function VideosManagement() {
       </div>
 
       {message && (
-        <div className={`mb-4 p-4 rounded-lg ${messageType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <div
+          className={`mb-4 p-4 rounded-lg ${
+            messageType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}
+        >
           {message}
         </div>
       )}
 
-      {/* Package Selector */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Select Package</label>
         <select
@@ -130,10 +189,9 @@ export default function VideosManagement() {
         </select>
       </div>
 
-      {/* Add Video Section */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-lg font-semibold mb-4">Add New Video</h2>
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
           <input
             type="url"
             value={newVideoUrl}
@@ -141,9 +199,16 @@ export default function VideosManagement() {
             placeholder="Enter YouTube video URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)"
             className="flex-1 border border-gray-300 rounded-md shadow-sm p-2"
           />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="border border-gray-300 rounded-md shadow-sm p-2"
+            disabled={uploadingImage}
+          />
           <button
             onClick={addVideo}
-            disabled={!newVideoUrl.trim()}
+            disabled={!newVideoUrl.trim() || uploadingImage}
             className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-cyan-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
           >
             <FaPlus />
@@ -152,31 +217,32 @@ export default function VideosManagement() {
         </div>
       </div>
 
-      {/* Videos List */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold">
-            Videos for {packages.find(p => p.id.toString() === selectedPackage)?.name || 'Selected Package'} ({videos.length})
+            Videos for {packages.find((p) => p.id.toString() === selectedPackage)?.name || 'Selected Package'} ({videos.length})
           </h2>
         </div>
 
         {videos.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            No videos found for this package. Add some videos above.
-          </div>
+          <div className="p-8 text-center text-gray-500">No videos found for this package. Add some videos above.</div>
         ) : (
           <div className="divide-y divide-gray-200">
             {videos.map((video) => (
               <div key={video.id} className="p-6 flex items-center justify-between">
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  <FaPlay className="text-cyan-500 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {video.video}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Added: {new Date(video.created_at).toLocaleDateString()}
-                    </p>
+                  {video.image ? (
+                    <img
+                      src={video.image}
+                      alt="Video thumbnail"
+                      className="w-16 h-9 rounded object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <FaPlay className="text-cyan-500 flex-shrink-0 w-6 h-6" />
+                  )}
+                  <div className="flex-1 min-w-0 ml-2">
+                    <p className="text-sm font-medium text-gray-900 truncate">{video.video}</p>
+                    <p className="text-xs text-gray-500">Added: {new Date(video.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">

@@ -10,6 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../component/include/header';
 import Footer from '../../component/include/footer';
+import VideoPlayerModal from '../../component/VideoPlayerModal';
 import { FaUser, FaBook, FaChartLine, FaMoneyBillWave, FaUsers, FaComments, FaCopy, FaEdit, FaCheck, FaTrophy, FaGraduationCap, FaRocket } from 'react-icons/fa';
 
 export default function UserDashboard() {
@@ -18,6 +19,16 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
   const [packages, setPackages] = useState([]);
+
+  // Add state for course viewing and video player
+  const [selectedPackageId, setSelectedPackageId] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [playerVideoUrl, setPlayerVideoUrl] = useState(null);
+
+  const closeVideoPlayer = () => {
+    setPlayerVideoUrl(null);
+  };
 
   // profile form state
   const [profileForm, setProfileForm] = useState({ 
@@ -31,6 +42,33 @@ export default function UserDashboard() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Function to toggle course listing for a package
+  const toggleCourses = (packageId) => {
+    if (selectedPackageId === packageId) {
+      setSelectedPackageId(null);
+      setCourses([]);
+    } else {
+      setSelectedPackageId(packageId);
+      loadCourses(packageId);
+    }
+  };
+
+  // Function to load courses for a package
+  const loadCourses = (packageId) => {
+    setLoadingCourses(true);
+    fetch(`/api/packages/${packageId}/videos`)
+      .then(res => res.json())
+      .then(data => {
+        setCourses(data);
+      })
+      .catch(() => {
+        setCourses([]);
+      })
+      .finally(() => {
+        setLoadingCourses(false);
+      });
+  };
 
   useEffect(() => {
     try {
@@ -155,526 +193,578 @@ export default function UserDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
-      <Header />
-      
-      <main className="py-8 lg:py-12">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6" style={{ marginTop: "50px" }}>
-          
-          {/* Welcome Banner */}
-          <div className="mb-6 lg:mb-8">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 p-6 lg:p-8 shadow-xl">
-              <div className="absolute inset-0 bg-black opacity-5"></div>
-              <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">
-                    Welcome back, {user?.username || 'User'}! 👋
-                  </h1>
-                  <p className="text-blue-100">Track your progress and manage your learning journey</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  {user?.package_name && (
-                    <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
-                      <div className="text-xs text-blue-100">Current Package</div>
-                      <div className="text-sm font-semibold text-white mt-1">{user.package_name}</div>
-                    </div>
-                  )}
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
+        <Header />
+        
+        <main className="py-8 lg:py-12">
+          <div className="max-w-7xl mx-auto px-4 lg:px-6" style={{ marginTop: "50px" }}>
+            
+            {/* Welcome Banner */}
+            <div className="mb-6 lg:mb-8">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 p-6 lg:p-8 shadow-xl">
+                <div className="absolute inset-0 bg-black opacity-5"></div>
+                <div className="relative z-10">
+                  <div className="mb-4">
+                    <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+                      Welcome back, {user?.username || 'User'}! 👋
+                    </h2>
+                    <p className="text-blue-100">Track your progress and manage your learning journey</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {user?.package_name && (
+                      <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
+                        <div className="text-xs text-blue-100">Current Package</div>
+                        <div className="text-sm font-semibold text-white mt-1">{user.package_name}</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            
-            {/* Sidebar Navigation */}
-            <aside className="lg:col-span-1">
-              {/* Desktop Sidebar */}
-              <div className="hidden lg:block sticky top-24">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                  <div className="p-6 bg-gradient-to-br from-blue-600 to-cyan-600">
-                    <div className="flex flex-col items-center text-center">
-                      <div className="w-20 h-20 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg">
-                        {user?.photo ? (
-                          <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600 bg-blue-50">
-                            {(user?.username || 'U').charAt(0).toUpperCase()}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              
+              {/* Sidebar Navigation */}
+              <aside className="lg:col-span-1">
+                {/* Desktop Sidebar */}
+                <div className="hidden lg:block sticky top-24">
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div className="p-6 bg-gradient-to-br from-blue-600 to-cyan-600">
+                      <div className="flex flex-col items-center text-center">
+                        <div className="w-20 h-20 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg">
+                          {user?.photo ? (
+                            <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600 bg-blue-50">
+                              {(user?.username || 'U').charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <h3 className="mt-3 text-lg font-bold text-white">{user?.username || 'User'}</h3>
+                        {user?.referral_code && (
+                          <div className="mt-2 px-3 py-1 bg-white/20 rounded-full text-xs text-white font-medium">
+                            ID: {user.referral_code}
                           </div>
                         )}
                       </div>
-                      <h3 className="mt-3 text-lg font-bold text-white">{user?.username || 'User'}</h3>
-                      {user?.referral_code && (
-                        <div className="mt-2 px-3 py-1 bg-white/20 rounded-full text-xs text-white font-medium">
-                          ID: {user.referral_code}
-                        </div>
-                      )}
+                    </div>
+
+                    <nav className="p-3">
+                      {menuItems.map(item => (
+                        <button
+                          key={item.k}
+                          onClick={() => setActiveTab(item.k)}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-2 transition-all ${
+                            activeTab === item.k
+                              ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md transform scale-[1.02]'
+                              : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span className={activeTab === item.k ? 'text-white' : 'text-blue-600'}>
+                            {item.i}
+                          </span>
+                          <span className="text-sm font-medium">{item.l}</span>
+                        </button>
+                      ))}
+                    </nav>
+
+                    <div className="p-4 border-t border-gray-100">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+                      >
+                        Logout
+                      </button>
                     </div>
                   </div>
+                </div>
 
-                  <nav className="p-3">
+                {/* Mobile Navigation */}
+                <div className="lg:hidden bg-white rounded-xl shadow-md p-2 mb-4 overflow-x-auto">
+                  <div className="flex gap-2">
                     {menuItems.map(item => (
                       <button
                         key={item.k}
                         onClick={() => setActiveTab(item.k)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-2 transition-all ${
+                        className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                           activeTab === item.k
-                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md transform scale-[1.02]'
-                            : 'text-gray-700 hover:bg-gray-50'
+                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
+                            : 'bg-gray-50 text-gray-700'
                         }`}
                       >
-                        <span className={activeTab === item.k ? 'text-white' : 'text-blue-600'}>
-                          {item.i}
-                        </span>
-                        <span className="text-sm font-medium">{item.l}</span>
+                        <span>{item.i}</span>
+                        <span className="whitespace-nowrap">{item.l}</span>
                       </button>
                     ))}
-                  </nav>
-
-                  <div className="p-4 border-t border-gray-100">
-                    <button
-                      onClick={handleLogout}
-                      className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
-                    >
-                      Logout
-                    </button>
                   </div>
                 </div>
-              </div>
+              </aside>
 
-              {/* Mobile Navigation */}
-              <div className="lg:hidden bg-white rounded-xl shadow-md p-2 mb-4 overflow-x-auto">
-                <div className="flex gap-2">
-                  {menuItems.map(item => (
-                    <button
-                      key={item.k}
-                      onClick={() => setActiveTab(item.k)}
-                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        activeTab === item.k
-                          ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                          : 'bg-gray-50 text-gray-700'
-                      }`}
-                    >
-                      <span>{item.i}</span>
-                      <span className="whitespace-nowrap">{item.l}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </aside>
-
-            {/* Main Content */}
-            <section className="lg:col-span-3">
-              
-              {/* Dashboard/Profile Tab */}
-              {activeTab === 'profile' && (
-                <div className="space-y-6">
-                  
-                  {/* Earnings Overview Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <EarningCard
-                      title="Today's Earning"
-                      amount={user?.earnings?.today || 0}
-                      gradient="from-pink-500 to-rose-600"
-                      icon={<FaRocket />}
-                    />
-                    <EarningCard
-                      title="7 Days"
-                      amount={user?.earnings?.week7 || 0}
-                      gradient="from-amber-500 to-orange-600"
-                      icon={<FaTrophy />}
-                    />
-                    <EarningCard
-                      title="30 Days"
-                      amount={user?.earnings?.month30 || 0}
-                      gradient="from-violet-500 to-purple-600"
-                      icon={<FaChartLine />}
-                    />
-                    <EarningCard
-                      title="All Time"
-                      amount={user?.earnings?.alltime || 0}
-                      gradient="from-emerald-500 to-teal-600"
-                      icon={<FaGraduationCap />}
-                    />
-                  </div>
-
-                  {/* Profile Information & Stats */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Content */}
+              <section className="lg:col-span-3">
+                
+                {/* Dashboard/Profile Tab */}
+                {activeTab === 'profile' && (
+                  <div className="space-y-6">
                     
-                    {/* Left: Profile Card */}
-                    <div className="lg:col-span-1">
-                      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-                        <div className="relative h-32 bg-gradient-to-br from-blue-600 to-cyan-600">
-                          <div className="absolute inset-0 bg-black opacity-10"></div>
-                        </div>
-                        <div className="px-6 pb-6">
-                          <div className="flex flex-col items-center -mt-16">
-                            <div className="w-28 h-28 rounded-full border-4 border-white overflow-hidden bg-white shadow-xl" style={{ zIndex: 9 }}>
-                              {user?.photo ? (
-                                <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-600 bg-blue-50">
-                                  {(user?.username || 'U').charAt(0).toUpperCase()}
+                    {/* Earnings Overview Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <EarningCard
+                        title="Today's Earning"
+                        amount={user?.earnings?.today || 0}
+                        gradient="from-pink-500 to-rose-600"
+                        icon={<FaRocket />}
+                      />
+                      <EarningCard
+                        title="7 Days"
+                        amount={user?.earnings?.week7 || 0}
+                        gradient="from-amber-500 to-orange-600"
+                        icon={<FaTrophy />}
+                      />
+                      <EarningCard
+                        title="30 Days"
+                        amount={user?.earnings?.month30 || 0}
+                        gradient="from-violet-500 to-purple-600"
+                        icon={<FaChartLine />}
+                      />
+                      <EarningCard
+                        title="All Time"
+                        amount={user?.earnings?.alltime || 0}
+                        gradient="from-emerald-500 to-teal-600"
+                        icon={<FaGraduationCap />}
+                      />
+                    </div>
+
+                    {/* Profile Information & Stats */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      
+                      {/* Left: Profile Card */}
+                      <div className="lg:col-span-1">
+                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                          <div className="relative h-32 bg-gradient-to-br from-blue-600 to-cyan-600">
+                            <div className="absolute inset-0 bg-black opacity-10"></div>
+                          </div>
+                          <div className="px-6 pb-6">
+                            <div className="flex flex-col items-center -mt-16">
+                              <div className="w-28 h-28 rounded-full border-4 border-white overflow-hidden bg-white shadow-xl" style={{ zIndex: 9 }}>
+                                {user?.photo ? (
+                                  <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-600 bg-blue-50">
+                                    {(user?.username || 'U').charAt(0).toUpperCase()}
+                                  </div>
+                                )}
+                              </div>
+                              <h3 className="mt-4 text-xl font-bold text-gray-800">{user?.username || 'User'}</h3>
+                              {user?.package_name && (
+                                <div className="mt-2 px-4 py-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-semibold rounded-full">
+                                  {user.package_name}
                                 </div>
                               )}
                             </div>
-                            <h3 className="mt-4 text-xl font-bold text-gray-800">{user?.username || 'User'}</h3>
-                            {user?.package_name && (
-                              <div className="mt-2 px-4 py-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-semibold rounded-full">
-                                {user.package_name}
+
+                            <div className="mt-6 space-y-3">
+                              <div className="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                                <div className="text-xs text-gray-600 font-medium">Referral Code</div>
+                                <div className="flex items-center justify-between mt-1">
+                                  <span className="font-bold text-blue-600">{user.referral_code || '—'}</span>
+                                  <button
+                                    onClick={() => copyToClipboard(user.referral_code || '')}
+                                    className="text-blue-600 hover:text-blue-700"
+                                  >
+                                    {copied ? <FaCheck className="text-green-600" /> : <FaCopy />}
+                                  </button>
+                                </div>
                               </div>
-                            )}
-                          </div>
 
-                          <div className="mt-6 space-y-3">
-                            <div className="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
-                              <div className="text-xs text-gray-600 font-medium">Referral Code</div>
-                              <div className="flex items-center justify-between mt-1">
-                                <span className="font-bold text-blue-600">{user.referral_code || '—'}</span>
-                                <button
-                                  onClick={() => copyToClipboard(user.referral_code || '')}
-                                  className="text-blue-600 hover:text-blue-700"
-                                >
-                                  {copied ? <FaCheck className="text-green-600" /> : <FaCopy />}
-                                </button>
+                              <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <div className="text-xs text-gray-600 font-medium">Sponsor Code</div>
+                                <div className="font-bold text-gray-800 mt-1">{user.sponsor_code || '—'}</div>
                               </div>
-                            </div>
 
-                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                              <div className="text-xs text-gray-600 font-medium">Sponsor Code</div>
-                              <div className="font-bold text-gray-800 mt-1">{user.sponsor_code || '—'}</div>
-                            </div>
-
-                            <div className="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
-                              <div className="text-xs text-gray-600 font-medium">Courses Completed</div>
-                              <div className="font-bold text-emerald-600 mt-1">{user.completed_courses || 0}</div>
+                              <div className="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
+                                <div className="text-xs text-gray-600 font-medium">Courses Completed</div>
+                                <div className="font-bold text-emerald-600 mt-1">{user.completed_courses || 0}</div>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Right: Edit Profile Form */}
-                    <div className="lg:col-span-2 space-y-6">
-                      
-                      {/* Edit Profile */}
-                      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                        <div className="flex items-center gap-2 mb-4">
-                          <FaEdit className="text-blue-600" />
-                          <h3 className="text-lg font-bold text-gray-800">Edit Profile</h3>
-                        </div>
-
-                        {profileMessage && (
-                          <div className={`mb-4 p-3 rounded-lg ${
-                            profileMessage.includes('success') 
-                              ? 'bg-green-50 text-green-700 border border-green-200' 
-                              : 'bg-red-50 text-red-700 border border-red-200'
-                          }`}>
-                            {profileMessage}
-                          </div>
-                        )}
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                            <input
-                              type="text"
-                              value={profileForm.name}
-                              onChange={e => setProfileForm(p => ({ ...p, name: e.target.value }))}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                              placeholder="Enter your name"
-                            />
+                      {/* Right: Edit Profile Form */}
+                      <div className="lg:col-span-2 space-y-6">
+                        
+                        {/* Edit Profile */}
+                        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                          <div className="flex items-center gap-2 mb-4">
+                            <FaEdit className="text-blue-600" />
+                            <h3 className="text-lg font-bold text-gray-800">Edit Profile</h3>
                           </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                            <input
-                              type="tel"
-                              value={profileForm.phone}
-                              onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value }))}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                              placeholder="Enter phone number"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
-                            <input
-                              type="text"
-                              value={profileForm.state}
-                              onChange={e => setProfileForm(p => ({ ...p, state: e.target.value }))}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                              placeholder="Enter your state"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                            <select
-                              value={profileForm.gender}
-                              onChange={e => setProfileForm(p => ({ ...p, gender: e.target.value }))}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            >
-                              <option value="">Prefer not to say</option>
-                              <option value="male">Male</option>
-                              <option value="female">Female</option>
-                              <option value="other">Other</option>
-                            </select>
-                          </div>
-
-                          <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={e => {
-                                const f = e.target.files?.[0] || null;
-                                setProfileForm(p => ({
-                                  ...p,
-                                  photoFile: f,
-                                  photoPreview: f ? URL.createObjectURL(f) : p.photoPreview
-                                }));
-                              }}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            />
-                            {profileForm.photoPreview && (
-                              <div className="mt-3">
-                                <img
-                                  src={profileForm.photoPreview}
-                                  alt="preview"
-                                  className="w-24 h-24 object-cover rounded-full border-4 border-gray-100 shadow-md"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="mt-6 flex gap-3">
-                          <button
-                            disabled={savingProfile}
-                            onClick={handleSaveProfile}
-                            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {savingProfile ? 'Saving...' : 'Save Profile'}
-                          </button>
-                          <button
-                            onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
-                            className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-                          >
-                            Copy Referral Link
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Change Password */}
-                      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Change Password</h3>
-                        <ChangePasswordForm />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* My Courses Tab */}
-              {activeTab === 'mycourses' && (
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                  <div className="flex items-center gap-2 mb-6">
-                    <FaBook className="text-blue-600 text-xl" />
-                    <h2 className="text-2xl font-bold text-gray-800">My Courses</h2>
-                  </div>
-                  
-                  {packages.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {packages.map(p => (
-                        <div key={p.id} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1">
-                          {p.image && (
-                            <div className="relative h-48 overflow-hidden">
-                              <img
-                                src={p.image}
-                                alt={p.title}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                          {profileMessage && (
+                            <div className={`mb-4 p-3 rounded-lg ${
+                              profileMessage.includes('success') 
+                                ? 'bg-green-50 text-green-700 border border-green-200' 
+                                : 'bg-red-50 text-red-700 border border-red-200'
+                            }`}>
+                              {profileMessage}
                             </div>
                           )}
-                          <div className="p-4">
-                            <h3 className="font-bold text-gray-800 text-lg mb-2">{p.title}</h3>
-                            <p className="text-sm text-gray-600 mb-3">{p.subtitle}</p>
-                            <button className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all">
-                              Continue Learning
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                              <input
+                                type="text"
+                                value={profileForm.name}
+                                onChange={e => setProfileForm(p => ({ ...p, name: e.target.value }))}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                placeholder="Enter your name"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                              <input
+                                type="tel"
+                                value={profileForm.phone}
+                                onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value }))}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                placeholder="Enter phone number"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                              <input
+                                type="text"
+                                value={profileForm.state}
+                                onChange={e => setProfileForm(p => ({ ...p, state: e.target.value }))}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                placeholder="Enter your state"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                              <select
+                                value={profileForm.gender}
+                                onChange={e => setProfileForm(p => ({ ...p, gender: e.target.value }))}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              >
+                                <option value="">Prefer not to say</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                              </select>
+                            </div>
+
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={e => {
+                                  const f = e.target.files?.[0] || null;
+                                  setProfileForm(p => ({
+                                    ...p,
+                                    photoFile: f,
+                                    photoPreview: f ? URL.createObjectURL(f) : p.photoPreview
+                                  }));
+                                }}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              />
+                              {profileForm.photoPreview && (
+                                <div className="mt-3">
+                                  <img
+                                    src={profileForm.photoPreview}
+                                    alt="preview"
+                                    className="w-24 h-24 object-cover rounded-full border-4 border-gray-100 shadow-md"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="mt-6 flex gap-3">
+                            <button
+                              disabled={savingProfile}
+                              onClick={handleSaveProfile}
+                              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {savingProfile ? 'Saving...' : 'Save Profile'}
+                            </button>
+                            <button
+                              onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
+                              className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                            >
+                              Copy Referral Link
                             </button>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-16">
-                      <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                        <FaBook className="text-4xl text-gray-400" />
-                      </div>
-                      <p className="text-gray-500 text-lg">No courses available yet</p>
-                      <p className="text-gray-400 text-sm mt-2">Start your learning journey by purchasing a package</p>
-                    </div>
-                  )}
-                </div>
-              )}
 
-              {/* Affiliate Dashboard Tab */}
-              {activeTab === 'affiliate' && (
-                <div className="space-y-6">
+                        {/* Change Password */}
+                        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                          <h3 className="text-lg font-bold text-gray-800 mb-4">Change Password</h3>
+                          <ChangePasswordForm />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* My Courses Tab */}
+                {activeTab === 'mycourses' && (
                   <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
                     <div className="flex items-center gap-2 mb-6">
-                      <FaChartLine className="text-blue-600 text-xl" />
-                      <h2 className="text-2xl font-bold text-gray-800">Affiliate Dashboard</h2>
+                      <FaBook className="text-blue-600 text-xl" />
+                      <h2 className="text-2xl font-bold text-gray-800">My Courses</h2>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                      <div className="p-6 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 text-white">
-                        <div className="text-sm opacity-90 mb-2">Total Earnings</div>
-                        <div className="text-3xl font-bold">₹0</div>
-                      </div>
-                      <div className="p-6 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-                        <div className="text-sm opacity-90 mb-2">Pending</div>
-                        <div className="text-3xl font-bold">₹0</div>
-                      </div>
-                      <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-                        <div className="text-sm opacity-90 mb-2">Withdrawn</div>
-                        <div className="text-3xl font-bold">₹0</div>
-                      </div>
-                    </div>
-
-                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-100">
-                      <div className="text-sm font-medium text-gray-700 mb-3">Your Referral Link</div>
-                      <div className="flex gap-2">
-                        <input
-                          readOnly
-                          value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`}
-                          className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 bg-white"
-                        />
-                        <button
-                          onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
-                          className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all flex items-center gap-2"
-                        >
-                          {copied ? <FaCheck /> : <FaCopy />}
-                          {copied ? 'Copied!' : 'Copy'}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="mt-6">
-                      <h3 className="font-bold text-gray-800 mb-4">Recent Referrals</h3>
-                      <div className="text-center py-12 bg-gray-50 rounded-xl">
-                        <FaUsers className="text-4xl text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500">No referrals yet</p>
-                        <p className="text-sm text-gray-400 mt-1">Share your link to start earning</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Withdrawals Tab */}
-              {activeTab === 'withdraw' && (
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                  <div className="flex items-center gap-2 mb-6">
-                    <FaMoneyBillWave className="text-blue-600 text-xl" />
-                    <h2 className="text-2xl font-bold text-gray-800">Withdrawals</h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-                      <div className="text-sm opacity-90 mb-2">Available Balance</div>
-                      <div className="text-3xl font-bold">₹0</div>
-                    </div>
-                    <div className="p-6 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50">
-                      <WithdrawForm balance={0} onNewRequest={() => {}} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-bold text-gray-800 mb-4">Withdrawal History</h3>
-                    <div className="text-center py-12 bg-gray-50 rounded-xl">
-                      <FaMoneyBillWave className="text-4xl text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500">No withdrawal history</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* My Team Tab */}
-              {activeTab === 'team' && (
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                  <div className="flex items-center gap-2 mb-6">
-                    <FaUsers className="text-blue-600 text-xl" />
-                    <h2 className="text-2xl font-bold text-gray-800">My Team</h2>
-                  </div>
-                  <div className="text-center py-16">
-                    <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                      <FaUsers className="text-4xl text-gray-400" />
-                    </div>
-                    <p className="text-gray-500 text-lg">No team members yet</p>
-                    <p className="text-gray-400 text-sm mt-2">Build your team by sharing your referral link</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Community Tab */}
-              {activeTab === 'community' && (
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                  <div className="flex items-center gap-2 mb-6">
-                    <FaComments className="text-blue-600 text-xl" />
-                    <h2 className="text-2xl font-bold text-gray-800">Community</h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 transition-colors">
-                      <h3 className="font-bold text-gray-800 mb-4">Join Our Channels</h3>
-                      <ul className="space-y-3">
-                        {[
-                          { name: 'WhatsApp Group', color: 'from-green-500 to-emerald-600' },
-                          { name: 'Telegram Channel', color: 'from-blue-500 to-cyan-600' },
-                          { name: 'Facebook Group', color: 'from-blue-600 to-indigo-600' },
-                          { name: 'Instagram', color: 'from-pink-500 to-rose-600' }
-                        ].map((channel, idx) => (
-                          <li key={idx}>
-                            <a
-                              href="#"
-                              className={`block px-4 py-3 rounded-lg bg-gradient-to-r ${channel.color} text-white font-medium hover:shadow-lg transition-all transform hover:scale-[1.02]`}
-                            >
-                              {channel.name} →
-                            </a>
-                          </li>
+                    
+                    {packages.length > 0 ? (
+                      <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {packages.map(p => (
+                          <div key={p.id} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1">
+                            {p.image && (
+                              <div className="relative h-48 overflow-hidden">
+                                <img
+                                  src={p.image}
+                                  alt={p.title}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                              </div>
+                            )}
+                            <div className="p-4">
+                              <h3 className="font-bold text-gray-800 text-lg mb-2">{p.title}</h3>
+                              <p className="text-sm text-gray-600 mb-3">{p.subtitle}</p>
+                              <button 
+                                className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all"
+                                onClick={() => toggleCourses(p.id)}
+                              >
+                                Continue Learning
+                              </button>
+                            </div>
+                          </div>
                         ))}
-                      </ul>
-                    </div>
+                      </div>
 
-                    <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
-                      <h3 className="font-bold text-gray-800 mb-4">Share Your Referral</h3>
-                      <div className="space-y-3">
-                        <input
-                          readOnly
-                          value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`}
-                          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white"
-                        />
-                        <button
-                          onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
-                          className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all flex items-center justify-center gap-2"
-                        >
-                          {copied ? <FaCheck /> : <FaCopy />}
-                          {copied ? 'Copied to Clipboard!' : 'Copy Referral Link'}
-                        </button>
+                      <div className="mt-6">
+                        {selectedPackageId !== null && (
+                          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+                            <h3 className="text-xl font-semibold mb-4">
+                              Courses for {packages.find(pkg => pkg.id === selectedPackageId)?.title}
+                            </h3>
+                            {loadingCourses ? (
+                              <p>Loading courses...</p>
+                            ) : courses.length === 0 ? (
+                              <p>No courses available for this package.</p>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {courses.map(course => (
+                                  <div key={course.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition duration-300">
+                                    {course.image ? (
+                                      <img src={course.image} alt={course.title} className="w-full h-40 object-cover" />
+                                    ) : (
+                                      <div className="w-full h-40 bg-gray-200 flex items-center justify-center text-gray-500">
+                                        No Image
+                                      </div>
+                                    )}
+                                    <div className="p-3">
+                                      <h4 className="font-semibold mb-2 truncate">{course.title || 'Course'}</h4>
+                                      <button
+                                        className="w-full px-3 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded hover:shadow-md transition"
+                                        onClick={() => setPlayerVideoUrl(course.video)}
+                                      >
+                                        Play Now
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-16">
+                        <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                          <FaBook className="text-4xl text-gray-400" />
+                        </div>
+                        <p className="text-gray-500 text-lg">No courses available yet</p>
+                        <p className="text-gray-400 text-sm mt-2">Start your learning journey by purchasing a package</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Affiliate Dashboard Tab */}
+                {activeTab === 'affiliate' && (
+                  <div className="space-y-6">
+                    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                      <div className="flex items-center gap-2 mb-6">
+                        <FaChartLine className="text-blue-600 text-xl" />
+                        <h2 className="text-2xl font-bold text-gray-800">Affiliate Dashboard</h2>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="p-6 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 text-white">
+                          <div className="text-sm opacity-90 mb-2">Total Earnings</div>
+                          <div className="text-3xl font-bold">₹0</div>
+                        </div>
+                        <div className="p-6 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+                          <div className="text-sm opacity-90 mb-2">Pending</div>
+                          <div className="text-3xl font-bold">₹0</div>
+                        </div>
+                        <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+                          <div className="text-sm opacity-90 mb-2">Withdrawn</div>
+                          <div className="text-3xl font-bold">₹0</div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-100">
+                        <div className="text-sm font-medium text-gray-700 mb-3">Your Referral Link</div>
+                        <div className="flex gap-2">
+                          <input
+                            readOnly
+                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`}
+                            className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 bg-white"
+                          />
+                          <button
+                            onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
+                            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all flex items-center gap-2"
+                          >
+                            {copied ? <FaCheck /> : <FaCopy />}
+                            {copied ? 'Copied!' : 'Copy'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mt-6">
+                        <h3 className="font-bold text-gray-800 mb-4">Recent Referrals</h3>
+                        <div className="text-center py-12 bg-gray-50 rounded-xl">
+                          <FaUsers className="text-4xl text-gray-300 mx-auto mb-3" />
+                          <p className="text-gray-500">No referrals yet</p>
+                          <p className="text-sm text-gray-400 mt-1">Share your link to start earning</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </section>
+                )}
+
+                {/* Withdrawals Tab */}
+                {activeTab === 'withdraw' && (
+                  <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                    <div className="flex items-center gap-2 mb-6">
+                      <FaMoneyBillWave className="text-blue-600 text-xl" />
+                      <h2 className="text-2xl font-bold text-gray-800">Withdrawals</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+                        <div className="text-sm opacity-90 mb-2">Available Balance</div>
+                        <div className="text-3xl font-bold">₹0</div>
+                      </div>
+                      <div className="p-6 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50">
+                        <WithdrawForm balance={0} onNewRequest={() => {}} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="font-bold text-gray-800 mb-4">Withdrawal History</h3>
+                      <div className="text-center py-12 bg-gray-50 rounded-xl">
+                        <FaMoneyBillWave className="text-4xl text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500">No withdrawal history</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* My Team Tab */}
+                {activeTab === 'team' && (
+                  <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                    <div className="flex items-center gap-2 mb-6">
+                      <FaUsers className="text-blue-600 text-xl" />
+                      <h2 className="text-2xl font-bold text-gray-800">My Team</h2>
+                    </div>
+                    <div className="text-center py-16">
+                      <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <FaUsers className="text-4xl text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 text-lg">No team members yet</p>
+                      <p className="text-gray-400 text-sm mt-2">Build your team by sharing your referral link</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Community Tab */}
+                {activeTab === 'community' && (
+                  <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                    <div className="flex items-center gap-2 mb-6">
+                      <FaComments className="text-blue-600 text-xl" />
+                      <h2 className="text-2xl font-bold text-gray-800">Community</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 transition-colors">
+                        <h3 className="font-bold text-gray-800 mb-4">Join Our Channels</h3>
+                        <ul className="space-y-3">
+                          {[
+                            { name: 'WhatsApp Group', color: 'from-green-500 to-emerald-600' },
+                            { name: 'Telegram Channel', color: 'from-blue-500 to-cyan-600' },
+                            { name: 'Facebook Group', color: 'from-blue-600 to-indigo-600' },
+                            { name: 'Instagram', color: 'from-pink-500 to-rose-600' }
+                          ].map((channel, idx) => (
+                            <li key={idx}>
+                              <a
+                                href="#"
+                                className={`block px-4 py-3 rounded-lg bg-gradient-to-r ${channel.color} text-white font-medium hover:shadow-lg transition-all transform hover:scale-[1.02]`}
+                              >
+                                {channel.name} →
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                        <h3 className="font-bold text-gray-800 mb-4">Share Your Referral</h3>
+                        <div className="space-y-3">
+                          <input
+                            readOnly
+                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white"
+                          />
+                          <button
+                            onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
+                            className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all flex items-center justify-center gap-2"
+                          >
+                            {copied ? <FaCheck /> : <FaCopy />}
+                            {copied ? 'Copied to Clipboard!' : 'Copy Referral Link'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </section>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+        
+        <Footer />
+      </div>
       
-      <Footer />
-    </div>
+      {playerVideoUrl && (
+        <VideoPlayerModal 
+          videoUrl={playerVideoUrl} 
+          onClose={closeVideoPlayer} 
+        />
+      )}
+    </>
   );
 }
 

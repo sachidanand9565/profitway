@@ -5,7 +5,7 @@ import { query } from "../../../../../lib/mysqlClient";
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
-    const videos = await query("SELECT * FROM packages_content WHERE package_id = ? ORDER BY created_at DESC", [id]);
+const videos = await query("SELECT id, package_id, video, image, title, created_at FROM packages_content WHERE package_id = ? ORDER BY created_at DESC", [id]);
     return NextResponse.json(videos);
   } catch (err) {
     console.error("Failed to fetch package videos:", err);
@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const { id } = await params;
-    const { video } = await request.json();
+    const { video, image } = await request.json();
 
     if (!video) {
       return NextResponse.json({ error: "Video URL is required" }, { status: 400 });
@@ -30,8 +30,8 @@ export async function POST(request, { params }) {
     }
 
     const result = await query(
-      "INSERT INTO packages_content (package_id, video) VALUES (?, ?)",
-      [id, video]
+      "INSERT INTO packages_content (package_id, video, image) VALUES (?, ?, ?)",
+      [id, video, image || null]
     );
 
     return NextResponse.json({
