@@ -17,7 +17,7 @@ export default function UserDashboard() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [packages, setPackages] = useState([]);
 
   // Add state for course viewing and video player
@@ -25,6 +25,18 @@ export default function UserDashboard() {
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [playerVideoUrl, setPlayerVideoUrl] = useState(null);
+
+  // Add wallet state
+  const [walletData, setWalletData] = useState({
+    wallet: { balance: 0, totalEarned: 0, totalWithdrawn: 0 },
+    commissions: { activeIncome: 0, passiveIncome: 0, totalIncome: 0 },
+    recentCommissions: []
+  });
+  const [loadingWallet, setLoadingWallet] = useState(false);
+
+  // Add withdrawal history state
+  const [withdrawalHistory, setWithdrawalHistory] = useState([]);
+  const [loadingWithdrawals, setLoadingWithdrawals] = useState(false);
 
   const closeVideoPlayer = () => {
     setPlayerVideoUrl(null);
@@ -70,6 +82,39 @@ export default function UserDashboard() {
       });
   };
 
+  // Function to load wallet data
+  const loadWalletData = async (userId) => {
+    setLoadingWallet(true);
+    try {
+      const response = await fetch(`/api/users/wallet?userId=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setWalletData(data);
+      }
+    } catch (error) {
+      console.error('Failed to load wallet data:', error);
+    } finally {
+      setLoadingWallet(false);
+    }
+  };
+
+  // Function to load withdrawal history
+  const loadWithdrawalHistory = async (userId) => {
+    setLoadingWithdrawals(true);
+    try {
+      const response = await fetch(`/api/users/withdraw-history?userId=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setWithdrawalHistory(data.history || []);
+      }
+    } catch (error) {
+      console.error('Failed to load withdrawal history:', error);
+      setWithdrawalHistory([]);
+    } finally {
+      setLoadingWithdrawals(false);
+    }
+  };
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem('user');
@@ -79,15 +124,15 @@ export default function UserDashboard() {
       }
       const parsed = JSON.parse(raw);
       setUser(parsed);
-      setProfileForm(f => ({ 
-        ...f, 
-        name: parsed.username || '', 
-        phone: parsed.phone || '', 
-        state: parsed.state || '', 
-        gender: parsed.gender || '', 
-        photoPreview: parsed.photo || null 
+      setProfileForm(f => ({
+        ...f,
+        name: parsed.username || '',
+        phone: parsed.phone || '',
+        state: parsed.state || '',
+        gender: parsed.gender || '',
+        photoPreview: parsed.photo || null
       }));
-      
+
       // fetch packages
       fetch('/api/packages')
         .then(r => r.json())
@@ -101,10 +146,20 @@ export default function UserDashboard() {
       if (parsed.approved_packages_details) {
         setPackages(parsed.approved_packages_details);
       }
+
+      // Load wallet data
+      loadWalletData(parsed.id);
     } catch (e) {
       router.push('/login');
     }
   }, [router]);
+
+  // Load withdrawal history when withdraw tab is active
+  useEffect(() => {
+    if (activeTab === 'withdraw' && user?.id) {
+      loadWithdrawalHistory(user.id);
+    }
+  }, [activeTab, user?.id]);
 
   const handleLogout = () => { 
     localStorage.removeItem('user'); 
@@ -184,7 +239,8 @@ export default function UserDashboard() {
   if (!user) return null;
 
   const menuItems = [
-    { k: 'profile', l: 'Dashboard', i: <FaUser /> },
+    { k: 'dashboard', l: 'Dashboard', i: <FaUser /> },
+    { k: 'myprofile', l: 'My Profile', i: <FaEdit /> },
     { k: 'mycourses', l: 'My Courses', i: <FaBook /> },
     { k: 'affiliate', l: 'Affiliate', i: <FaChartLine /> },
     { k: 'withdraw', l: 'Withdrawals', i: <FaMoneyBillWave /> },
@@ -304,212 +360,213 @@ export default function UserDashboard() {
               {/* Main Content */}
               <section className="lg:col-span-3">
                 
-                {/* Dashboard/Profile Tab */}
-                {activeTab === 'profile' && (
-                  <div className="space-y-6">
-                    
+                {/* Dashboard Tab */}
+                {activeTab === 'dashboard' && (
+                  <>
+                    {/* Profile Information & Stats - Move to top for mobile */}
+                    <div className="block lg:hidden mb-4">
+                      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                        <div className="relative h-32 bg-gradient-to-br from-blue-600 to-cyan-600">
+                          <div className="absolute inset-0 bg-black opacity-10"></div>
+                        </div>
+                        <div className="px-6 pb-6">
+                          <div className="flex flex-col items-center -mt-16">
+                            <div className="w-28 h-28 rounded-full border-4 border-white overflow-hidden bg-white shadow-xl" style={{ zIndex: 9 }}>
+                              {user?.photo ? (
+                                <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-600 bg-blue-50">
+                                  {(user?.username || 'U').charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                            <h3 className="mt-4 text-xl font-bold text-gray-800">{user?.username || 'User'}</h3>
+                            {user?.package_name && (
+                              <div className="mt-2 px-4 py-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-semibold rounded-full">
+                                {user.package_name}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="mt-6 space-y-3">
+                            <div className="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                              <div className="text-xs text-gray-600 font-medium">Referral Code</div>
+                              <div className="flex items-center justify-between mt-1">
+                                <span className="font-bold text-blue-600">{user.referral_code || '—'}</span>
+                                <button
+                                  onClick={() => copyToClipboard(user.referral_code || '')}
+                                  className="text-blue-600 hover:text-blue-700"
+                                >
+                                  {copied ? <FaCheck className="text-green-600" /> : <FaCopy />}
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                              <div className="text-xs text-gray-600 font-medium">Sponsor Code</div>
+                              <div className="font-bold text-gray-800 mt-1">{user.sponsor_code || '—'}</div>
+                            </div>
+
+                            <div className="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
+                              <div className="text-xs text-gray-600 font-medium">Courses Completed</div>
+                              <div className="font-bold text-emerald-600 mt-1">{user.completed_courses || 0}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Earnings Overview Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <EarningCard
-                        title="Today's Earning"
-                        amount={user?.earnings?.today || 0}
+                        title="Total Earned"
+                        amount={walletData.wallet.totalEarned}
                         gradient="from-pink-500 to-rose-600"
                         icon={<FaRocket />}
+                        loading={loadingWallet}
                       />
                       <EarningCard
-                        title="7 Days"
-                        amount={user?.earnings?.week7 || 0}
+                        title="Active Income"
+                        amount={walletData.commissions.activeIncome}
                         gradient="from-amber-500 to-orange-600"
                         icon={<FaTrophy />}
+                        loading={loadingWallet}
                       />
                       <EarningCard
-                        title="30 Days"
-                        amount={user?.earnings?.month30 || 0}
+                        title="Passive Income"
+                        amount={walletData.commissions.passiveIncome}
                         gradient="from-violet-500 to-purple-600"
                         icon={<FaChartLine />}
+                        loading={loadingWallet}
                       />
                       <EarningCard
-                        title="All Time"
-                        amount={user?.earnings?.alltime || 0}
+                        title="Available Balance"
+                        amount={walletData.wallet.balance}
                         gradient="from-emerald-500 to-teal-600"
                         icon={<FaGraduationCap />}
+                        loading={loadingWallet}
                       />
                     </div>
+                  </>
+                )}
 
-                    {/* Profile Information & Stats */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      
-                      {/* Left: Profile Card */}
-                      <div className="lg:col-span-1">
-                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-                          <div className="relative h-32 bg-gradient-to-br from-blue-600 to-cyan-600">
-                            <div className="absolute inset-0 bg-black opacity-10"></div>
-                          </div>
-                          <div className="px-6 pb-6">
-                            <div className="flex flex-col items-center -mt-16">
-                              <div className="w-28 h-28 rounded-full border-4 border-white overflow-hidden bg-white shadow-xl" style={{ zIndex: 9 }}>
-                                {user?.photo ? (
-                                  <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-600 bg-blue-50">
-                                    {(user?.username || 'U').charAt(0).toUpperCase()}
-                                  </div>
-                                )}
-                              </div>
-                              <h3 className="mt-4 text-xl font-bold text-gray-800">{user?.username || 'User'}</h3>
-                              {user?.package_name && (
-                                <div className="mt-2 px-4 py-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-semibold rounded-full">
-                                  {user.package_name}
-                                </div>
-                              )}
-                            </div>
+                {/* My Profile Tab */}
+                {activeTab === 'myprofile' && (
+                  <div className="lg:col-span-2 space-y-6">
 
-                            <div className="mt-6 space-y-3">
-                              <div className="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
-                                <div className="text-xs text-gray-600 font-medium">Referral Code</div>
-                                <div className="flex items-center justify-between mt-1">
-                                  <span className="font-bold text-blue-600">{user.referral_code || '—'}</span>
-                                  <button
-                                    onClick={() => copyToClipboard(user.referral_code || '')}
-                                    className="text-blue-600 hover:text-blue-700"
-                                  >
-                                    {copied ? <FaCheck className="text-green-600" /> : <FaCopy />}
-                                  </button>
-                                </div>
-                              </div>
-
-                              <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                <div className="text-xs text-gray-600 font-medium">Sponsor Code</div>
-                                <div className="font-bold text-gray-800 mt-1">{user.sponsor_code || '—'}</div>
-                              </div>
-
-                              <div className="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
-                                <div className="text-xs text-gray-600 font-medium">Courses Completed</div>
-                                <div className="font-bold text-emerald-600 mt-1">{user.completed_courses || 0}</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                    {/* Edit Profile */}
+                    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                      <div className="flex items-center gap-2 mb-4">
+                        <FaEdit className="text-blue-600" />
+                        <h3 className="text-lg font-bold text-gray-800">Edit Profile</h3>
                       </div>
 
-                      {/* Right: Edit Profile Form */}
-                      <div className="lg:col-span-2 space-y-6">
-                        
-                        {/* Edit Profile */}
-                        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                          <div className="flex items-center gap-2 mb-4">
-                            <FaEdit className="text-blue-600" />
-                            <h3 className="text-lg font-bold text-gray-800">Edit Profile</h3>
-                          </div>
+                      {profileMessage && (
+                        <div className={`mb-4 p-3 rounded-lg ${
+                          profileMessage.includes('success')
+                            ? 'bg-green-50 text-green-700 border border-green-200'
+                            : 'bg-red-50 text-red-700 border border-red-200'
+                        }`}>
+                          {profileMessage}
+                        </div>
+                      )}
 
-                          {profileMessage && (
-                            <div className={`mb-4 p-3 rounded-lg ${
-                              profileMessage.includes('success') 
-                                ? 'bg-green-50 text-green-700 border border-green-200' 
-                                : 'bg-red-50 text-red-700 border border-red-200'
-                            }`}>
-                              {profileMessage}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                          <input
+                            type="text"
+                            value={profileForm.name}
+                            onChange={e => setProfileForm(p => ({ ...p, name: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            placeholder="Enter your name"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                          <input
+                            type="tel"
+                            value={profileForm.phone}
+                            onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            placeholder="Enter phone number"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                          <input
+                            type="text"
+                            value={profileForm.state}
+                            onChange={e => setProfileForm(p => ({ ...p, state: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            placeholder="Enter your state"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                          <select
+                            value={profileForm.gender}
+                            onChange={e => setProfileForm(p => ({ ...p, gender: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          >
+                            <option value="">Prefer not to say</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={e => {
+                              const f = e.target.files?.[0] || null;
+                              setProfileForm(p => ({
+                                ...p,
+                                photoFile: f,
+                                photoPreview: f ? URL.createObjectURL(f) : p.photoPreview
+                              }));
+                            }}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          />
+                          {profileForm.photoPreview && (
+                            <div className="mt-3">
+                              <img
+                                src={profileForm.photoPreview}
+                                alt="preview"
+                                className="w-24 h-24 object-cover rounded-full border-4 border-gray-100 shadow-md"
+                              />
                             </div>
                           )}
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                              <input
-                                type="text"
-                                value={profileForm.name}
-                                onChange={e => setProfileForm(p => ({ ...p, name: e.target.value }))}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                placeholder="Enter your name"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                              <input
-                                type="tel"
-                                value={profileForm.phone}
-                                onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value }))}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                placeholder="Enter phone number"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
-                              <input
-                                type="text"
-                                value={profileForm.state}
-                                onChange={e => setProfileForm(p => ({ ...p, state: e.target.value }))}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                placeholder="Enter your state"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                              <select
-                                value={profileForm.gender}
-                                onChange={e => setProfileForm(p => ({ ...p, gender: e.target.value }))}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                              >
-                                <option value="">Prefer not to say</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                              </select>
-                            </div>
-
-                            <div className="md:col-span-2">
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={e => {
-                                  const f = e.target.files?.[0] || null;
-                                  setProfileForm(p => ({
-                                    ...p,
-                                    photoFile: f,
-                                    photoPreview: f ? URL.createObjectURL(f) : p.photoPreview
-                                  }));
-                                }}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                              />
-                              {profileForm.photoPreview && (
-                                <div className="mt-3">
-                                  <img
-                                    src={profileForm.photoPreview}
-                                    alt="preview"
-                                    className="w-24 h-24 object-cover rounded-full border-4 border-gray-100 shadow-md"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="mt-6 flex gap-3">
-                            <button
-                              disabled={savingProfile}
-                              onClick={handleSaveProfile}
-                              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {savingProfile ? 'Saving...' : 'Save Profile'}
-                            </button>
-                            <button
-                              onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
-                              className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-                            >
-                              Copy Referral Link
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Change Password */}
-                        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                          <h3 className="text-lg font-bold text-gray-800 mb-4">Change Password</h3>
-                          <ChangePasswordForm />
                         </div>
                       </div>
+
+                      <div className="mt-6 flex gap-3">
+                        <button
+                          disabled={savingProfile}
+                          onClick={handleSaveProfile}
+                          className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {savingProfile ? 'Saving...' : 'Save Profile'}
+                        </button>
+                        <button
+                          onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
+                          className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                        >
+                          Copy Referral Link
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Change Password */}
+                    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                      <h3 className="text-lg font-bold text-gray-800 mb-4">Change Password</h3>
+                      <ChangePasswordForm />
                     </div>
                   </div>
                 )}
@@ -666,19 +723,60 @@ export default function UserDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
                         <div className="text-sm opacity-90 mb-2">Available Balance</div>
-                        <div className="text-3xl font-bold">₹0</div>
+                        <div className="text-3xl font-bold">
+                          {loadingWallet ? '...' : `₹${Number(walletData.wallet.balance || 0).toLocaleString('en-IN')}`}
+                        </div>
                       </div>
                       <div className="p-6 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50">
-                        <WithdrawForm balance={0} onNewRequest={() => {}} />
+                        <WithdrawForm balance={walletData.wallet.balance || 0} onNewRequest={() => {}} />
                       </div>
                     </div>
 
                     <div>
                       <h3 className="font-bold text-gray-800 mb-4">Withdrawal History</h3>
-                      <div className="text-center py-12 bg-gray-50 rounded-xl">
-                        <FaMoneyBillWave className="text-4xl text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500">No withdrawal history</p>
-                      </div>
+                      {loadingWithdrawals ? (
+                        <div className="text-center py-12 bg-gray-50 rounded-xl">
+                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                          <p className="mt-4 text-gray-600">Loading withdrawal history...</p>
+                        </div>
+                      ) : withdrawalHistory.length > 0 ? (
+                        <div className="space-y-4">
+                          {withdrawalHistory.map((withdrawal) => (
+                            <div key={withdrawal.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                                    <FaMoneyBillWave className="text-white text-sm" />
+                                  </div>
+                                  <div>
+                                    <div className="font-semibold text-gray-800">₹{Number(withdrawal.amount || 0).toLocaleString('en-IN')}</div>
+                                    <div className="text-sm text-gray-500">
+                                      {new Date(withdrawal.created_at).toLocaleDateString('en-IN', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })} • {withdrawal.method}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  withdrawal.status === 'approved' ? 'bg-green-100 text-green-700' :
+                                  withdrawal.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                  withdrawal.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {withdrawal.status || 'pending'}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 bg-gray-50 rounded-xl">
+                          <FaMoneyBillWave className="text-4xl text-gray-300 mx-auto mb-3" />
+                          <p className="text-gray-500">No withdrawal history</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -881,7 +979,11 @@ function ChangePasswordForm() {
 function WithdrawForm({ balance = 0, onNewRequest = () => {} }) {
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState('UPI');
-  const [dest, setDest] = useState('');
+  const [upiId, setUpiId] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [confirmAccountNumber, setConfirmAccountNumber] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [ifscCode, setIfscCode] = useState('');
   const [msg, setMsg] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -890,14 +992,35 @@ function WithdrawForm({ balance = 0, onNewRequest = () => {} }) {
     const a = Number(amount || 0);
     if (!a || a <= 0) return setMsg('Enter a valid amount');
     if (a > balance) return setMsg('Amount exceeds balance');
-    if (!dest) return setMsg('Enter payment details');
+
+    let paymentData = {};
+
+    if (method === 'UPI') {
+      if (!upiId) return setMsg('Enter UPI ID');
+      paymentData = { upiId };
+    } else if (method === 'Bank') {
+      if (!accountNumber) return setMsg('Enter bank account number');
+      if (!confirmAccountNumber) return setMsg('Confirm bank account number');
+      if (accountNumber !== confirmAccountNumber) return setMsg('Account numbers do not match');
+      if (!bankName) return setMsg('Enter bank name');
+      if (!ifscCode) return setMsg('Enter IFSC code');
+      paymentData = { accountNumber, bankName, ifscCode };
+    }
 
     setSending(true);
     try {
-      const res = await fetch('/api/users/withdraw-request', {
+      // Get user from localStorage to get userId
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+        setMsg('User not authenticated');
+        return;
+      }
+      const user = JSON.parse(userData);
+
+      const res = await fetch(`/api/users/withdraw-request?userId=${user.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: a, method, destination: dest })
+        body: JSON.stringify({ amount: a, method, ...paymentData })
       });
 
       if (res.ok) {
@@ -905,7 +1028,11 @@ function WithdrawForm({ balance = 0, onNewRequest = () => {} }) {
         onNewRequest(r);
         setMsg('Request submitted successfully!');
         setAmount('');
-        setDest('');
+        setUpiId('');
+        setAccountNumber('');
+        setConfirmAccountNumber('');
+        setBankName('');
+        setIfscCode('');
       } else {
         setMsg('Failed to submit request');
       }
@@ -919,11 +1046,11 @@ function WithdrawForm({ balance = 0, onNewRequest = () => {} }) {
   return (
     <div className="space-y-4">
       <h4 className="font-semibold text-gray-800">Request Withdrawal</h4>
-      
+
       {msg && (
         <div className={`p-3 rounded-lg text-sm ${
-          msg.includes('success') 
-            ? 'bg-green-50 text-green-700 border border-green-200' 
+          msg.includes('success')
+            ? 'bg-green-50 text-green-700 border border-green-200'
             : 'bg-red-50 text-red-700 border border-red-200'
         }`}>
           {msg}
@@ -951,13 +1078,51 @@ function WithdrawForm({ balance = 0, onNewRequest = () => {} }) {
         <option value="Bank">Bank Transfer</option>
       </select>
 
-      <input
-        type="text"
-        value={dest}
-        onChange={e => setDest(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-        placeholder={method === 'UPI' ? 'Enter UPI ID' : 'Enter account details'}
-      />
+      {method === 'UPI' && (
+        <input
+          type="text"
+          value={upiId}
+          onChange={e => setUpiId(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          placeholder="Enter UPI ID"
+        />
+      )}
+
+      {method === 'Bank' && (
+        <>
+          <input
+            type="text"
+            value={accountNumber}
+            onChange={e => setAccountNumber(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            placeholder="Enter bank account number"
+          />
+
+          <input
+            type="text"
+            value={confirmAccountNumber}
+            onChange={e => setConfirmAccountNumber(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            placeholder="Confirm bank account number"
+          />
+
+          <input
+            type="text"
+            value={bankName}
+            onChange={e => setBankName(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            placeholder="Enter bank name"
+          />
+
+          <input
+            type="text"
+            value={ifscCode}
+            onChange={e => setIfscCode(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            placeholder="Enter IFSC code"
+          />
+        </>
+      )}
 
       <button
         disabled={sending}

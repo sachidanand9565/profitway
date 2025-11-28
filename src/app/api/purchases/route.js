@@ -72,6 +72,71 @@ export async function POST(request) {
       // Update purchase status
       await connection.execute("UPDATE checkout SET status = 'approved' WHERE id = ?", [id]);
 
+      // COMMISSION CALCULATION AND DISTRIBUTION
+      // Get package details for commission calculation
+      const packageDetails = await connection.execute("SELECT name, price FROM packages WHERE id = ?", [packageId]);
+      if (packageDetails[0].length === 0) {
+        throw new Error("Package not found for commission calculation");
+      }
+      const pkg = packageDetails[0][0];
+      const packagePrice = parseFloat(pkg.price.replace(/[₹,]/g, ''));
+
+      // Determine commission rates based on package type
+      const isPremiumPackage = ['Royal Package', 'Crown Package'].includes(pkg.name);
+      const activeCommissionRate = isPremiumPackage ? 0.75 : 0.70; // 75% for Royal/Crown, 70% for others
+      const passiveCommissionRate = 0.10; // 10% for passive
+
+      // Find the direct referrer (active income earner)
+      let directReferrerId = null;
+      if (purchase.sponsorcode) {
+        const referrerResult = await connection.execute("SELECT id FROM users WHERE referral_code = ?", [purchase.sponsorcode]);
+        if (referrerResult[0].length > 0) {
+          directReferrerId = referrerResult[0][0].id;
+        }
+      }
+
+      // Calculate and distribute commissions
+      if (directReferrerId) {
+        // Active commission for direct referrer
+        const activeCommission = packagePrice * activeCommissionRate;
+
+        // Insert active commission record
+        await connection.execute(
+          "INSERT INTO commissions (purchase_id, earner_user_id, referrer_user_id, package_name, package_price, commission_type, commission_percentage, commission_amount, status) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, 'credited')",
+          [id, directReferrerId, directReferrerId, pkg.name, packagePrice, activeCommissionRate * 100, activeCommission]
+        );
+
+        // Update wallet for active commission
+        await connection.execute(
+          "UPDATE user_wallets SET balance = balance + ?, total_earned = total_earned + ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
+          [activeCommission, activeCommission, directReferrerId]
+        );
+
+        // Check for passive commission (referrer's referrer)
+        const referrerDetails = await connection.execute("SELECT sponsor_code FROM users WHERE id = ?", [directReferrerId]);
+        if (referrerDetails[0].length > 0 && referrerDetails[0][0].sponsor_code) {
+          const grandReferrerResult = await connection.execute("SELECT id FROM users WHERE referral_code = ?", [referrerDetails[0][0].sponsor_code]);
+          if (grandReferrerResult[0].length > 0) {
+            const grandReferrerId = grandReferrerResult[0][0].id;
+
+            // Passive commission for grand referrer
+            const passiveCommission = packagePrice * passiveCommissionRate;
+
+            // Insert passive commission record
+            await connection.execute(
+              "INSERT INTO commissions (purchase_id, earner_user_id, referrer_user_id, package_name, package_price, commission_type, commission_percentage, commission_amount, status) VALUES (?, ?, ?, ?, ?, 'passive', ?, ?, 'credited')",
+              [id, grandReferrerId, directReferrerId, pkg.name, packagePrice, passiveCommissionRate * 100, passiveCommission]
+            );
+
+            // Update wallet for passive commission
+            await connection.execute(
+              "UPDATE user_wallets SET balance = balance + ?, total_earned = total_earned + ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
+              [passiveCommission, passiveCommission, grandReferrerId]
+            );
+          }
+        }
+      }
+
       // Check if user already exists
       const [existingUsersRows] = await connection.execute("SELECT id FROM users WHERE email = ?", [purchase.email]);
       let isNewUser = false;
