@@ -144,15 +144,11 @@ export default function WithdrawalsManagement() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10">
-                      {withdrawal.photo ? (
-                        <img className="h-10 w-10 rounded-full" src={withdrawal.photo} alt="" />
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-700">
-                            {withdrawal.username.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
+                      <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                        <span className="text-sm font-medium text-gray-700">
+                          {withdrawal.username.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">{withdrawal.username}</div>
@@ -211,15 +207,11 @@ export default function WithdrawalsManagement() {
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center">
                 <div className="flex-shrink-0 h-10 w-10">
-                  {withdrawal.photo ? (
-                    <img className="h-10 w-10 rounded-full" src={withdrawal.photo} alt="" />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-700">
-                        {withdrawal.username.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                  <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                    <span className="text-sm font-medium text-gray-700">
+                      {withdrawal.username.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
                 </div>
                 <div className="ml-3">
                   <h3 className="text-lg font-medium text-gray-900">{withdrawal.username}</h3>
@@ -285,14 +277,6 @@ export default function WithdrawalsManagement() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Email</label>
                   <p className="mt-1 text-sm text-gray-900">{selectedWithdrawal.email}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedWithdrawal.phone || 'Not provided'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">State</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedWithdrawal.state || 'Not provided'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Referral Code</label>
