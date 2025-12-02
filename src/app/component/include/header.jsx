@@ -84,13 +84,13 @@ function Header() {
                       <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center">
                         <FaUser className="w-4 h-4 text-white" />
                       </div>
-                      <span>{user.username}</span>
+                      <span>{user.name}</span>
                     </button>
 
                     {isUserMenuOpen && (
                       <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                         <div className="px-4 py-2 border-b border-gray-200">
-                          <p className="text-sm font-medium text-gray-900">{user.username}</p>
+                          <p className="text-sm font-medium text-gray-900">{user.name}</p>
                           <p className="text-xs text-gray-500">{user.email}</p>
                         </div>
                         <nav className="py-2">

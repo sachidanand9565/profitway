@@ -42,14 +42,53 @@ export default function UserDashboard() {
     setPlayerVideoUrl(null);
   };
 
+  // comprehensive list of Indian states and union territories
+  const states = [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+    "Andaman and Nicobar Islands",
+    "Chandigarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi",
+    "Jammu and Kashmir",
+    "Ladakh",
+    "Lakshadweep",
+    "Puducherry",
+  ];
+
   // profile form state
-  const [profileForm, setProfileForm] = useState({ 
-    name: '', 
-    phone: '', 
-    state: '', 
-    gender: '', 
-    photoPreview: null, 
-    photoFile: null 
+  const [profileForm, setProfileForm] = useState({
+    name: '',
+    phone: '',
+    state: '',
+    photoPreview: null,
+    photoFile: null
   });
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
@@ -129,7 +168,6 @@ export default function UserDashboard() {
         name: parsed.username || '',
         phone: parsed.phone || '',
         state: parsed.state || '',
-        gender: parsed.gender || '',
         photoPreview: parsed.photo || null
       }));
 
@@ -179,12 +217,12 @@ export default function UserDashboard() {
     try {
       let photo = null;
       if (profileForm.photoFile) photo = await fileToBase64(profileForm.photoFile);
-      const payload = { 
-        name: profileForm.name, 
-        phone: profileForm.phone, 
-        state: profileForm.state, 
-        gender: profileForm.gender, 
-        photo 
+      const payload = {
+        userId: user.id,
+        name: profileForm.name,
+        phone: profileForm.phone,
+        state: profileForm.state,
+        photo
       };
       
       const res = await fetch('/api/users/update-profile', { 
@@ -195,13 +233,12 @@ export default function UserDashboard() {
       
       if (res.ok) {
         const updated = await res.json();
-        const newUser = { 
-          ...user, 
-          username: payload.name, 
-          phone: payload.phone, 
-          state: payload.state, 
-          gender: payload.gender, 
-          photo: updated.photo || profileForm.photoPreview 
+        const newUser = {
+          ...user,
+          username: payload.name,
+          phone: payload.phone,
+          state: payload.state,
+          photo: updated.photo || profileForm.photoPreview
         };
         setUser(newUser);
         try { localStorage.setItem('user', JSON.stringify(newUser)); } catch (e) {}
@@ -496,26 +533,15 @@ export default function UserDashboard() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
-                          <input
-                            type="text"
+                          <select
                             value={profileForm.state}
                             onChange={e => setProfileForm(p => ({ ...p, state: e.target.value }))}
                             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            placeholder="Enter your state"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                          <select
-                            value={profileForm.gender}
-                            onChange={e => setProfileForm(p => ({ ...p, gender: e.target.value }))}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                           >
-                            <option value="">Prefer not to say</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
+                            <option value="">Select your state</option>
+                            {states.map(state => (
+                              <option key={state} value={state}>{state}</option>
+                            ))}
                           </select>
                         </div>
 
