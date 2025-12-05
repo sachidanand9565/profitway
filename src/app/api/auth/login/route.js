@@ -39,6 +39,8 @@ export async function POST(request) {
       email: user.email,
       name: user.name,
       phone: user.phone,
+      state: user.state,
+      photo: user.image, // Include profile image
       sponsor_code: user.sponsor_code,
       referral_code: user.referral_code,
       approved_packages: userPackages.map(pkg => pkg.id),

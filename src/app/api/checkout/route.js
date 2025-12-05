@@ -134,7 +134,7 @@ export async function POST(request) {
       errorMessage = "Database connection failed";
     }
     
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: errorMessage, 
       details: process.env.NODE_ENV === 'development' ? err.message : undefined 
     }, { status: 500 });

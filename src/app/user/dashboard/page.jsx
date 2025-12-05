@@ -924,10 +924,22 @@ function ChangePasswordForm() {
 
     setSaving(true);
     try {
+      // Get user from localStorage to get userId
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+        setMsg('User not authenticated');
+        return;
+      }
+      const user = JSON.parse(userData);
+
       const res = await fetch('/api/users/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
+        body: JSON.stringify({
+          userId: user.id,
+          currentPassword: oldPass,
+          newPassword: newPass
+        })
       });
 
       if (res.ok) {
@@ -936,7 +948,8 @@ function ChangePasswordForm() {
         setNew('');
         setConfirm('');
       } else {
-        setMsg('Failed to change password');
+        const errorData = await res.json();
+        setMsg(errorData.error || 'Failed to change password');
       }
     } catch (e) {
       setMsg('Failed to change password');
