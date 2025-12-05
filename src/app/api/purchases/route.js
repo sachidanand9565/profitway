@@ -97,8 +97,18 @@ export async function POST(request) {
 
       // Calculate and distribute commissions
       if (directReferrerId) {
+        // Get referrer's maximum package price for commission adjustment
+        const referrerPackageResult = await connection.execute(
+          "SELECT MAX(CAST(REPLACE(REPLACE(p.price, '₹', ''), ',', '') AS DECIMAL(10,2))) as maxPrice FROM user_packages up JOIN packages p ON up.package_id = p.id WHERE up.user_id = ? AND up.approved_at IS NOT NULL",
+          [directReferrerId]
+        );
+        const referrerMaxPrice = referrerPackageResult[0][0].maxPrice ? parseFloat(referrerPackageResult[0][0].maxPrice) : 0;
+
+        // Adjust commission base: use referrer's price if purchased package is more expensive
+        const commissionBase = packagePrice > referrerMaxPrice ? referrerMaxPrice : packagePrice;
+
         // Active commission for direct referrer
-        const activeCommission = packagePrice * activeCommissionRate;
+        const activeCommission = commissionBase * activeCommissionRate;
 
         // Insert active commission record
         await connection.execute(
@@ -120,7 +130,7 @@ export async function POST(request) {
             const grandReferrerId = grandReferrerResult[0][0].id;
 
             // Passive commission for grand referrer
-            const passiveCommission = packagePrice * passiveCommissionRate;
+            const passiveCommission = commissionBase * passiveCommissionRate;
 
             // Insert passive commission record
             await connection.execute(
