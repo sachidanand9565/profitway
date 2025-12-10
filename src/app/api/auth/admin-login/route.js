@@ -44,7 +44,7 @@ export async function POST(request) {
         role: 'admin'
       },
       process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
+      { expiresIn: '12h' }
     );
 
     return NextResponse.json({
