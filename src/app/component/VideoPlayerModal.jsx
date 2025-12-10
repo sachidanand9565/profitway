@@ -49,6 +49,22 @@ export default function VideoPlayerModal({ videoUrl, onClose }) {
       autohide: 1,
       wmode: 'opaque',
       version: 3,
+      // Hide title and share completely
+      title: '',
+      byline: '',
+      portrait: '',
+      color: 'white',
+      theme: 'dark',
+      playlist: '',
+      // Prevent any external links
+      noCookie: false,
+      annotations: false,
+      // Additional privacy and branding controls
+      privacy: 1,
+      showshare: 0,
+      showlogo: 0,
+      showembed: 0,
+      showrelated: 0,
     },
   };
 
