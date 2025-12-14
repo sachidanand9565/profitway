@@ -177,12 +177,26 @@ export default function UserDashboard() {
         .then(list => {
           const ups = list.filter(p => (parsed.approved_packages || []).includes(p.id));
           setPackages(ups);
+
+          // Set package name from first approved package
+          if (ups.length > 0) {
+            parsed.package_name = ups[0].name || ups[0].title;
+            setUser(parsed);
+            try { localStorage.setItem('user', JSON.stringify(parsed)); } catch (e) {}
+          }
         })
         .catch(() => {})
         .finally(() => setLoading(false));
 
       if (parsed.approved_packages_details) {
         setPackages(parsed.approved_packages_details);
+
+        // Set package name from first approved package details
+        if (parsed.approved_packages_details.length > 0) {
+          parsed.package_name = parsed.approved_packages_details[0].name || parsed.approved_packages_details[0].title;
+          setUser(parsed);
+          try { localStorage.setItem('user', JSON.stringify(parsed)); } catch (e) {}
+        }
       }
 
       // Load wallet data
@@ -399,113 +413,105 @@ export default function UserDashboard() {
                 
                 {/* Dashboard Tab */}
                 {activeTab === 'dashboard' && (
-                  <div className="space-y-4">
-                    {/* Profile Card - Matching Wireframe Design */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                      <div className="flex flex-col sm:flex-row items-center gap-4">
-                        {/* Profile Photo Circle */}
-                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-blue-500 overflow-hidden bg-blue-50 shadow-lg flex-shrink-0">
-                          {user?.photo ? (
-                            <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-600 bg-gradient-to-br from-blue-100 to-cyan-100">
-                              {(user?.username || 'U').charAt(0).toUpperCase()}
+                  <>
+                    {/* Profile Card - Top Section */}
+                    <div className="mb-4">
+                      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                        <div className="relative h-32 bg-gradient-to-br from-blue-600 to-cyan-600">
+                          <div className="absolute inset-0 bg-black opacity-10"></div>
+                        </div>
+                        <div className="px-6 pb-6">
+                          <div className="flex flex-col sm:flex-row items-center gap-4 -mt-16">
+                            {/* Profile Photo */}
+                            <div className="w-28 h-28 rounded-full border-4 border-white overflow-hidden bg-white shadow-xl flex-shrink-0" style={{ zIndex: 9 }}>
+                              {user?.photo ? (
+                                <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-600 bg-blue-50">
+                                  {(user?.username || 'U').charAt(0).toUpperCase()}
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                        
-                        {/* Name & ID Info */}
-                        <div className="flex-1 text-center sm:text-left">
-                          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100">
-                            <div className="text-sm text-gray-500 font-medium">Name</div>
-                            <div className="text-xl font-bold text-gray-800">{user?.username || 'User'}</div>
-                            <div className="mt-2 text-sm text-gray-500 font-medium">ID</div>
-                            <div className="text-lg font-semibold text-blue-600">{user?.referral_code || '—'}</div>
+                            
+                            {/* Name & ID */}
+                            <div className="flex-1 text-center sm:text-left mt-4 sm:mt-8">
+                              <div className="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                                <div className="text-xs text-gray-600 font-medium">Name</div>
+                                <div className="text-lg font-bold text-gray-800">{user?.username || 'User'}</div>
+                                <div className="text-xs text-gray-600 font-medium mt-2">ID</div>
+                                <div className="font-bold text-blue-600">{user?.referral_code || '—'}</div>
+                              </div>
+                            </div>
+                            
+                            {/* Package Badge */}
+                            <div className="flex-shrink-0 mt-2 sm:mt-8">
+                              <div className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl shadow-md text-center">
+                                <div className="text-xs opacity-90 font-medium">Package</div>
+                                <div className="text-sm font-bold mt-1">{user?.package_name || 'No Package'}</div>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        
-                        {/* Package Badge */}
-                        <div className="flex-shrink-0">
-                          <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-4 rounded-xl shadow-md text-center">
-                            <div className="text-xs opacity-90 font-medium">Package</div>
-                            <div className="text-lg font-bold mt-1">{user?.package_name || 'No Package'}</div>
-                          </div>
-                        </div>
                       </div>
                     </div>
 
-                    {/* Today Earning */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
-                        <div className="text-white text-lg font-semibold">Today Earning</div>
-                      </div>
-                      <div className="px-6 py-5">
-                        <div className="text-3xl font-bold text-gray-800">
-                          ₹{loadingWallet ? '...' : Number(walletData.commissions?.todayEarning || 0).toLocaleString('en-IN')}
-                        </div>
-                      </div>
+                    {/* Earnings Cards - Vertical Layout as per wireframe */}
+                    <div className="space-y-4">
+                      {/* Today Earning */}
+                      <EarningCard
+                        title="Today Earning"
+                        amount={walletData.commissions?.todayEarning || 0}
+                        gradient="from-emerald-500 to-green-600"
+                        icon={<FaChartLine />}
+                        loading={loadingWallet}
+                      />
+                      
+                      {/* Last 7 Days Earning */}
+                      <EarningCard
+                        title="Last 7 Days Earning"
+                        amount={walletData.commissions?.last7DaysEarning || 0}
+                        gradient="from-blue-500 to-cyan-600"
+                        icon={<FaChartLine />}
+                        loading={loadingWallet}
+                      />
+                      
+                      {/* Last 30 Days Earning */}
+                      <EarningCard
+                        title="Last 30 Days Earning"
+                        amount={walletData.commissions?.last30DaysEarning || 0}
+                        gradient="from-violet-500 to-purple-600"
+                        icon={<FaChartLine />}
+                        loading={loadingWallet}
+                      />
+                      
+                      {/* All Time Earning */}
+                      <EarningCard
+                        title="All Time Earning"
+                        amount={walletData.wallet?.totalEarned || 0}
+                        gradient="from-amber-500 to-orange-600"
+                        icon={<FaTrophy />}
+                        loading={loadingWallet}
+                      />
+                      
+                      {/* Passive Income */}
+                      <EarningCard
+                        title="Passive Income"
+                        amount={walletData.commissions?.passiveIncome || 0}
+                        gradient="from-pink-500 to-rose-600"
+                        icon={<FaRocket />}
+                        loading={loadingWallet}
+                      />
+                      
+                      {/* Available Balance */}
+                      <EarningCard
+                        title="Available Balance"
+                        amount={walletData.wallet?.balance || 0}
+                        gradient="from-teal-500 to-cyan-600"
+                        icon={<FaGraduationCap />}
+                        loading={loadingWallet}
+                      />
                     </div>
-
-                    {/* Last 7 Days Earning */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="bg-gradient-to-r from-blue-500 to-cyan-600 px-6 py-4">
-                        <div className="text-white text-lg font-semibold">Last 7 Days Earning</div>
-                      </div>
-                      <div className="px-6 py-5">
-                        <div className="text-3xl font-bold text-gray-800">
-                          ₹{loadingWallet ? '...' : Number(walletData.commissions?.last7DaysEarning || 0).toLocaleString('en-IN')}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Last 30 Days Earning */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="bg-gradient-to-r from-purple-500 to-violet-600 px-6 py-4">
-                        <div className="text-white text-lg font-semibold">Last 30 Days Earning</div>
-                      </div>
-                      <div className="px-6 py-5">
-                        <div className="text-3xl font-bold text-gray-800">
-                          ₹{loadingWallet ? '...' : Number(walletData.commissions?.last30DaysEarning || 0).toLocaleString('en-IN')}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* All Time Earning */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-4">
-                        <div className="text-white text-lg font-semibold">All Time Earning</div>
-                      </div>
-                      <div className="px-6 py-5">
-                        <div className="text-3xl font-bold text-gray-800">
-                          ₹{loadingWallet ? '...' : Number(walletData.wallet?.totalEarned || 0).toLocaleString('en-IN')}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Passive Income */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="bg-gradient-to-r from-pink-500 to-rose-600 px-6 py-4">
-                        <div className="text-white text-lg font-semibold">Passive Income</div>
-                      </div>
-                      <div className="px-6 py-5">
-                        <div className="text-3xl font-bold text-gray-800">
-                          ₹{loadingWallet ? '...' : Number(walletData.commissions?.passiveIncome || 0).toLocaleString('en-IN')}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Available Balance */}
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                      <div className="bg-gradient-to-r from-teal-500 to-cyan-600 px-6 py-4">
-                        <div className="text-white text-lg font-semibold">Available Balance</div>
-                      </div>
-                      <div className="px-6 py-5">
-                        <div className="text-3xl font-bold text-emerald-600">
-                          ₹{loadingWallet ? '...' : Number(walletData.wallet?.balance || 0).toLocaleString('en-IN')}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  </>
                 )}
 
                 {/* My Profile Tab */}
