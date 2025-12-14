@@ -399,92 +399,113 @@ export default function UserDashboard() {
                 
                 {/* Dashboard Tab */}
                 {activeTab === 'dashboard' && (
-                  <>
-                    {/* Profile Information & Stats - Move to top for mobile */}
-                    <div className="block lg:hidden mb-4">
-                      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-                        <div className="relative h-32 bg-gradient-to-br from-blue-600 to-cyan-600">
-                          <div className="absolute inset-0 bg-black opacity-10"></div>
+                  <div className="space-y-4">
+                    {/* Profile Card - Matching Wireframe Design */}
+                    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                      <div className="flex flex-col sm:flex-row items-center gap-4">
+                        {/* Profile Photo Circle */}
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-blue-500 overflow-hidden bg-blue-50 shadow-lg flex-shrink-0">
+                          {user?.photo ? (
+                            <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-600 bg-gradient-to-br from-blue-100 to-cyan-100">
+                              {(user?.username || 'U').charAt(0).toUpperCase()}
+                            </div>
+                          )}
                         </div>
-                        <div className="px-6 pb-6">
-                          <div className="flex flex-col items-center -mt-16">
-                            <div className="w-28 h-28 rounded-full border-4 border-white overflow-hidden bg-white shadow-xl" style={{ zIndex: 9 }}>
-                              {user?.photo ? (
-                                <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-600 bg-blue-50">
-                                  {(user?.username || 'U').charAt(0).toUpperCase()}
-                                </div>
-                              )}
-                            </div>
-                            <h3 className="mt-4 text-xl font-bold text-gray-800">{user?.username || 'User'}</h3>
-                            {user?.package_name && (
-                              <div className="mt-2 px-4 py-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-semibold rounded-full">
-                                {user.package_name}
-                              </div>
-                            )}
+                        
+                        {/* Name & ID Info */}
+                        <div className="flex-1 text-center sm:text-left">
+                          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100">
+                            <div className="text-sm text-gray-500 font-medium">Name</div>
+                            <div className="text-xl font-bold text-gray-800">{user?.username || 'User'}</div>
+                            <div className="mt-2 text-sm text-gray-500 font-medium">ID</div>
+                            <div className="text-lg font-semibold text-blue-600">{user?.referral_code || '—'}</div>
                           </div>
-
-                          <div className="mt-6 space-y-3">
-                            <div className="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
-                              <div className="text-xs text-gray-600 font-medium">Referral Code</div>
-                              <div className="flex items-center justify-between mt-1">
-                                <span className="font-bold text-blue-600">{user.referral_code || '—'}</span>
-                                <button
-                                  onClick={() => copyToClipboard(user.referral_code || '')}
-                                  className="text-blue-600 hover:text-blue-700"
-                                >
-                                  {copied ? <FaCheck className="text-green-600" /> : <FaCopy />}
-                                </button>
-                              </div>
-                            </div>
-
-                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                              <div className="text-xs text-gray-600 font-medium">Sponsor Code</div>
-                              <div className="font-bold text-gray-800 mt-1">{user.sponsor_code || '—'}</div>
-                            </div>
-
-                            <div className="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
-                              <div className="text-xs text-gray-600 font-medium">Courses Completed</div>
-                              <div className="font-bold text-emerald-600 mt-1">{user.completed_courses || 0}</div>
-                            </div>
+                        </div>
+                        
+                        {/* Package Badge */}
+                        <div className="flex-shrink-0">
+                          <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-4 rounded-xl shadow-md text-center">
+                            <div className="text-xs opacity-90 font-medium">Package</div>
+                            <div className="text-lg font-bold mt-1">{user?.package_name || 'No Package'}</div>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Earnings Overview Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <EarningCard
-                        title="Total Earned"
-                        amount={walletData.wallet.totalEarned}
-                        gradient="from-pink-500 to-rose-600"
-                        icon={<FaRocket />}
-                        loading={loadingWallet}
-                      />
-                      <EarningCard
-                        title="Active Income"
-                        amount={walletData.commissions.activeIncome}
-                        gradient="from-amber-500 to-orange-600"
-                        icon={<FaTrophy />}
-                        loading={loadingWallet}
-                      />
-                      <EarningCard
-                        title="Passive Income"
-                        amount={walletData.commissions.passiveIncome}
-                        gradient="from-violet-500 to-purple-600"
-                        icon={<FaChartLine />}
-                        loading={loadingWallet}
-                      />
-                      <EarningCard
-                        title="Available Balance"
-                        amount={walletData.wallet.balance}
-                        gradient="from-emerald-500 to-teal-600"
-                        icon={<FaGraduationCap />}
-                        loading={loadingWallet}
-                      />
+                    {/* Today Earning */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
+                        <div className="text-white text-lg font-semibold">Today Earning</div>
+                      </div>
+                      <div className="px-6 py-5">
+                        <div className="text-3xl font-bold text-gray-800">
+                          ₹{loadingWallet ? '...' : Number(walletData.commissions?.todayEarning || 0).toLocaleString('en-IN')}
+                        </div>
+                      </div>
                     </div>
-                  </>
+
+                    {/* Last 7 Days Earning */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-blue-500 to-cyan-600 px-6 py-4">
+                        <div className="text-white text-lg font-semibold">Last 7 Days Earning</div>
+                      </div>
+                      <div className="px-6 py-5">
+                        <div className="text-3xl font-bold text-gray-800">
+                          ₹{loadingWallet ? '...' : Number(walletData.commissions?.last7DaysEarning || 0).toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Last 30 Days Earning */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-purple-500 to-violet-600 px-6 py-4">
+                        <div className="text-white text-lg font-semibold">Last 30 Days Earning</div>
+                      </div>
+                      <div className="px-6 py-5">
+                        <div className="text-3xl font-bold text-gray-800">
+                          ₹{loadingWallet ? '...' : Number(walletData.commissions?.last30DaysEarning || 0).toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* All Time Earning */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-4">
+                        <div className="text-white text-lg font-semibold">All Time Earning</div>
+                      </div>
+                      <div className="px-6 py-5">
+                        <div className="text-3xl font-bold text-gray-800">
+                          ₹{loadingWallet ? '...' : Number(walletData.wallet?.totalEarned || 0).toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Passive Income */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-pink-500 to-rose-600 px-6 py-4">
+                        <div className="text-white text-lg font-semibold">Passive Income</div>
+                      </div>
+                      <div className="px-6 py-5">
+                        <div className="text-3xl font-bold text-gray-800">
+                          ₹{loadingWallet ? '...' : Number(walletData.commissions?.passiveIncome || 0).toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Available Balance */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-teal-500 to-cyan-600 px-6 py-4">
+                        <div className="text-white text-lg font-semibold">Available Balance</div>
+                      </div>
+                      <div className="px-6 py-5">
+                        <div className="text-3xl font-bold text-emerald-600">
+                          ₹{loadingWallet ? '...' : Number(walletData.wallet?.balance || 0).toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* My Profile Tab */}

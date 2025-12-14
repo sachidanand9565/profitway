@@ -41,6 +41,33 @@ export async function GET(request) {
       }
     });
 
+    // Get time-based earnings
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const sevenDaysAgo = new Date(todayStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(todayStart.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Today's earnings
+    const todayEarnings = await query(`
+      SELECT SUM(commission_amount) as total
+      FROM commissions
+      WHERE earner_user_id = ? AND created_at >= ?
+    `, [userId, todayStart]);
+
+    // Last 7 days earnings
+    const last7DaysEarnings = await query(`
+      SELECT SUM(commission_amount) as total
+      FROM commissions
+      WHERE earner_user_id = ? AND created_at >= ?
+    `, [userId, sevenDaysAgo]);
+
+    // Last 30 days earnings
+    const last30DaysEarnings = await query(`
+      SELECT SUM(commission_amount) as total
+      FROM commissions
+      WHERE earner_user_id = ? AND created_at >= ?
+    `, [userId, thirtyDaysAgo]);
+
     // Get recent commissions (last 10)
     const recentCommissions = await query(`
       SELECT
@@ -67,7 +94,10 @@ export async function GET(request) {
       commissions: {
         activeIncome,
         passiveIncome,
-        totalIncome: activeIncome + passiveIncome
+        totalIncome: activeIncome + passiveIncome,
+        todayEarning: parseFloat(todayEarnings[0]?.total || 0),
+        last7DaysEarning: parseFloat(last7DaysEarnings[0]?.total || 0),
+        last30DaysEarning: parseFloat(last30DaysEarnings[0]?.total || 0)
       },
       recentCommissions: recentCommissions.map(c => ({
         amount: parseFloat(c.commission_amount),
