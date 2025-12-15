@@ -26,6 +26,11 @@ export default function UserDashboard() {
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [playerVideoUrl, setPlayerVideoUrl] = useState(null);
 
+  // State for module-based course view
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
+  const [moduleProgress, setModuleProgress] = useState({});
+
   // Add wallet state
   const [walletData, setWalletData] = useState({
     wallet: { balance: 0, totalEarned: 0, totalWithdrawn: 0 },
@@ -213,6 +218,27 @@ export default function UserDashboard() {
     }
   }, [activeTab, user?.id]);
 
+  // Load all courses from all packages when mycourses tab is active
+  useEffect(() => {
+    if (activeTab === 'mycourses' && packages.length > 0) {
+      setLoadingCourses(true);
+      // Fetch courses from all packages
+      Promise.all(
+        packages.map(pkg => 
+          fetch(`/api/packages/${pkg.id}/videos`)
+            .then(res => res.json())
+            .then(data => data.map(course => ({ ...course, packageName: pkg.title || pkg.name })))
+            .catch(() => [])
+        )
+      ).then(allCoursesArrays => {
+        const allCourses = allCoursesArrays.flat();
+        setCourses(allCourses);
+      }).finally(() => {
+        setLoadingCourses(false);
+      });
+    }
+  }, [activeTab, packages]);
+
   const handleLogout = () => { 
     localStorage.removeItem('user'); 
     router.push('/'); 
@@ -314,7 +340,7 @@ export default function UserDashboard() {
                 <div className="relative z-10">
                   <div className="mb-4">
                     <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">
-                      Welcome back, {user?.username || 'User'}! 👋
+                      Welcome back, {user?.name || 'User'}! 👋
                     </h2>
                     <p className="text-blue-100">Track your progress and manage your learning journey</p>
                   </div>
@@ -344,11 +370,11 @@ export default function UserDashboard() {
                             <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-600 bg-blue-50">
-                              {(user?.username || 'U').charAt(0).toUpperCase()}
+                              {(user?.name || 'U').charAt(0).toUpperCase()}
                             </div>
                           )}
                         </div>
-                        <h3 className="mt-3 text-lg font-bold text-white">{user?.username || 'User'}</h3>
+                        <h3 className="mt-3 text-lg font-bold text-white">{user?.name || 'User'}</h3>
                         {user?.referral_code && (
                           <div className="mt-2 px-3 py-1 bg-white/20 rounded-full text-xs text-white font-medium">
                             ID: {user.referral_code}
@@ -428,7 +454,7 @@ export default function UserDashboard() {
                                 <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-600 bg-blue-50">
-                                  {(user?.username || 'U').charAt(0).toUpperCase()}
+                                  {(user?.name || 'U').charAt(0).toUpperCase()}
                                 </div>
                               )}
                             </div>
@@ -437,7 +463,7 @@ export default function UserDashboard() {
                             <div className="flex-1 text-center sm:text-left mt-4 sm:mt-8">
                               <div className="p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
                                 <div className="text-xs text-gray-600 font-medium">Name</div>
-                                <div className="text-lg font-bold text-gray-800">{user?.username || 'User'}</div>
+                                <div className="text-lg font-bold text-gray-800">{user?.name || 'User'}</div>
                                 <div className="text-xs text-gray-600 font-medium mt-2">ID</div>
                                 <div className="font-bold text-blue-600">{user?.referral_code || '—'}</div>
                               </div>
@@ -626,89 +652,296 @@ export default function UserDashboard() {
 
                 {/* My Courses Tab */}
                 {activeTab === 'mycourses' && (
-                  <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                    <div className="flex items-center gap-2 mb-6">
-                      <FaBook className="text-blue-600 text-xl" />
-                      <h2 className="text-2xl font-bold text-gray-800">My Courses</h2>
-                    </div>
-                    
-                    {packages.length > 0 ? (
-                      <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {packages.map(p => (
-                          <div key={p.id} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1">
-                            {p.image && (
-                              <div className="relative h-48 overflow-hidden">
-                                <img
-                                  src={p.image}
-                                  alt={p.title}
-                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                              </div>
-                            )}
-                            <div className="p-4">
-                              <h3 className="font-bold text-gray-800 text-lg mb-2">{p.title}</h3>
-                              <p className="text-sm text-gray-600 mb-3">{p.subtitle}</p>
+                  <>
+                    {/* Course Module View - When a course is selected */}
+                    {selectedCourse ? (
+                      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                        {/* Back Button */}
+                        <div className="p-4 border-b border-gray-100">
+                          <button
+                            onClick={() => {
+                              setSelectedCourse(null);
+                              setCurrentModuleIndex(0);
+                            }}
+                            className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                            Back to Courses
+                          </button>
+                        </div>
+
+                        <div className="flex flex-col lg:flex-row">
+                          {/* Left Sidebar - Steps/Modules - Hidden on Mobile */}
+                          <div className="hidden lg:block lg:w-80 bg-gradient-to-b from-gray-50 to-white border-r border-gray-100 p-4">
+                            {/* Do It Later Button */}
+                            <button className="w-full mb-4 px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
+                              Do It Later »
+                            </button>
+
+                            {/* Steps List */}
+                            <div className="space-y-4">
+                              {(selectedCourse.modules || [selectedCourse]).map((module, index) => {
+                                const progress = moduleProgress[module.id] || 0;
+                                const isCompleted = progress === 100;
+                                const isActive = index === currentModuleIndex;
+                                const isLocked = index > 0 && (moduleProgress[(selectedCourse.modules || [selectedCourse])[index - 1]?.id] || 0) < 100;
+
+                                return (
+                                  <div key={module.id || index} className="relative">
+                                    {/* Step indicator line */}
+                                    {index < (selectedCourse.modules || [selectedCourse]).length - 1 && (
+                                      <div className="absolute left-5 top-14 w-0.5 h-8 bg-gray-200"></div>
+                                    )}
+                                    
+                                    <div className="flex items-start gap-3">
+                                      {/* Step Circle */}
+                                      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                                        isCompleted ? 'bg-green-500 text-white' :
+                                        isActive ? 'bg-blue-600 text-white' :
+                                        'bg-gray-200 text-gray-500'
+                                      }`}>
+                                        {isCompleted ? (
+                                          <FaCheck className="text-sm" />
+                                        ) : isLocked ? (
+                                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                          </svg>
+                                        ) : (
+                                          <span className="text-sm font-bold">{index + 1}</span>
+                                        )}
+                                      </div>
+
+                                      {/* Step Content */}
+                                      <div 
+                                        className={`flex-1 p-3 rounded-xl cursor-pointer transition-all ${
+                                          isActive ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300' :
+                                          'bg-white border border-gray-200 hover:border-blue-300'
+                                        } ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        onClick={() => !isLocked && setCurrentModuleIndex(index)}
+                                      >
+                                        <div className={`text-xs font-bold mb-1 ${isActive ? 'text-blue-600' : 'text-cyan-600'}`}>
+                                          Step {index + 1}
+                                        </div>
+                                        <div className="text-sm font-medium text-gray-800 mb-2">
+                                          {module.title || `Module ${index + 1}`}
+                                        </div>
+                                        {/* Progress Bar */}
+                                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                          <div 
+                                            className="bg-gradient-to-r from-blue-500 to-cyan-500 h-1.5 rounded-full transition-all"
+                                            style={{ width: `${progress}%` }}
+                                          ></div>
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1 text-right">{progress}%</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Right Content - Video Player */}
+                          <div className="flex-1 p-4 lg:p-6">
+                            {/* Module Tabs - Main navigation on mobile */}
+                            <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
                               <button 
-                                className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all"
-                                onClick={() => toggleCourses(p.id)}
+                                onClick={() => {
+                                  if (currentModuleIndex > 0) {
+                                    setCurrentModuleIndex(currentModuleIndex - 1);
+                                  }
+                                }}
+                                className="flex-shrink-0 px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1"
                               >
-                                Continue Learning
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                <span className="hidden sm:inline">Previous</span>
+                              </button>
+                              
+                              {(selectedCourse.modules || [selectedCourse]).map((module, index) => {
+                                const progress = moduleProgress[module.id] || 0;
+                                const isCompleted = progress === 100;
+                                const isActive = index === currentModuleIndex;
+                                
+                                return (
+                                  <button
+                                    key={module.id || index}
+                                    onClick={() => setCurrentModuleIndex(index)}
+                                    className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-1 sm:gap-2 transition-all ${
+                                      isActive 
+                                        ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-md' 
+                                        : isCompleted
+                                          ? 'bg-purple-100 text-purple-700'
+                                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                  >
+                                    Module {index + 1}
+                                    {isCompleted && <FaCheck className="text-xs" />}
+                                    {!isCompleted && index > currentModuleIndex && (
+                                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {/* Current Module Title */}
+                            <div className="mb-4">
+                              <div className="text-purple-600 font-semibold text-lg border-l-4 border-purple-500 pl-3">
+                                Module {currentModuleIndex + 1}
+                              </div>
+                            </div>
+
+                            {/* Video Player */}
+                            <div className="relative bg-black rounded-xl overflow-hidden shadow-xl mb-6">
+                              {(() => {
+                                const currentModule = (selectedCourse.modules || [selectedCourse])[currentModuleIndex];
+                                const videoUrl = currentModule?.video || selectedCourse.video;
+                                
+                                // Check if it's a YouTube URL
+                                const youtubeMatch = videoUrl?.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+                                
+                                if (youtubeMatch) {
+                                  return (
+                                    <iframe
+                                      className="w-full aspect-video"
+                                      src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
+                                      title={currentModule?.title || 'Course Video'}
+                                      frameBorder="0"
+                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                      allowFullScreen
+                                    ></iframe>
+                                  );
+                                } else if (videoUrl) {
+                                  return (
+                                    <video
+                                      className="w-full aspect-video"
+                                      controls
+                                      src={videoUrl}
+                                    >
+                                      Your browser does not support the video tag.
+                                    </video>
+                                  );
+                                } else {
+                                  return (
+                                    <div className="w-full aspect-video flex items-center justify-center bg-gray-800 text-white">
+                                      <div className="text-center">
+                                        <FaBook className="text-4xl mx-auto mb-2 opacity-50" />
+                                        <p>No video available</p>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                              })()}
+                            </div>
+
+                            {/* Next Module Button */}
+                            <div className="flex justify-center">
+                              <button
+                                onClick={() => {
+                                  // Mark current module as complete
+                                  const currentModule = (selectedCourse.modules || [selectedCourse])[currentModuleIndex];
+                                  setModuleProgress(prev => ({
+                                    ...prev,
+                                    [currentModule?.id || currentModuleIndex]: 100
+                                  }));
+                                  
+                                  // Go to next module
+                                  if (currentModuleIndex < (selectedCourse.modules || [selectedCourse]).length - 1) {
+                                    setCurrentModuleIndex(currentModuleIndex + 1);
+                                  }
+                                }}
+                                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-full font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+                              >
+                                Next Module
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
                               </button>
                             </div>
                           </div>
-                        ))}
+                        </div>
                       </div>
-
-                      <div className="mt-6">
-                        {selectedPackageId !== null && (
-                          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-                            <h3 className="text-xl font-semibold mb-4">
-                              Courses for {packages.find(pkg => pkg.id === selectedPackageId)?.title}
-                            </h3>
-                            {loadingCourses ? (
-                              <p>Loading courses...</p>
-                            ) : courses.length === 0 ? (
-                              <p>No courses available for this package.</p>
-                            ) : (
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {courses.map(course => (
-                                  <div key={course.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition duration-300">
-                                    {course.image ? (
-                                      <img src={course.image} alt={course.title} className="w-full h-40 object-cover" />
-                                    ) : (
-                                      <div className="w-full h-40 bg-gray-200 flex items-center justify-center text-gray-500">
-                                        No Image
+                    ) : (
+                      /* Course List View */
+                      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                        <div className="flex items-center gap-2 mb-6">
+                          <FaBook className="text-blue-600 text-xl" />
+                          <h2 className="text-2xl font-bold text-gray-800">My Courses</h2>
+                        </div>
+                        
+                        {loadingCourses ? (
+                          <div className="text-center py-16">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                            <p className="mt-4 text-gray-600">Loading courses...</p>
+                          </div>
+                        ) : courses.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {courses.map(course => (
+                              <div key={course.id} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1">
+                                {course.image ? (
+                                  <div className="relative h-48 overflow-hidden">
+                                    <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                                    {course.packageName && (
+                                      <div className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-semibold rounded-full">
+                                        {course.packageName}
                                       </div>
                                     )}
-                                    <div className="p-3">
-                                      <h4 className="font-semibold mb-2 truncate">{course.title || 'Course'}</h4>
-                                      <button
-                                        className="w-full px-3 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded hover:shadow-md transition"
-                                        onClick={() => setPlayerVideoUrl(course.video)}
-                                      >
-                                        Play Now
-                                      </button>
-                                    </div>
                                   </div>
-                                ))}
+                                ) : (
+                                  <div className="relative h-48 bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center">
+                                    <FaBook className="text-4xl text-blue-400" />
+                                    {course.packageName && (
+                                      <div className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-semibold rounded-full">
+                                        {course.packageName}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                <div className="p-4">
+                                  <h4 className="font-bold text-gray-800 text-lg mb-3 line-clamp-2">{course.title || 'Course'}</h4>
+                                  <button
+                                    className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-medium hover:shadow-md transition-all flex items-center justify-center gap-2"
+                                    onClick={() => {
+                                      setSelectedCourse(course);
+                                      setCurrentModuleIndex(0);
+                                    }}
+                                  >
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                                    </svg>
+                                    Start Learning
+                                  </button>
+                                </div>
                               </div>
-                            )}
+                            ))}
+                          </div>
+                        ) : packages.length === 0 ? (
+                          <div className="text-center py-16">
+                            <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                              <FaBook className="text-4xl text-gray-400" />
+                            </div>
+                            <p className="text-gray-500 text-lg">No courses available yet</p>
+                            <p className="text-gray-400 text-sm mt-2">Start your learning journey by purchasing a package</p>
+                          </div>
+                        ) : (
+                          <div className="text-center py-16">
+                            <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                              <FaBook className="text-4xl text-gray-400" />
+                            </div>
+                            <p className="text-gray-500 text-lg">No courses in your packages yet</p>
+                            <p className="text-gray-400 text-sm mt-2">Courses will appear here once added</p>
                           </div>
                         )}
                       </div>
-                      </>
-                    ) : (
-                      <div className="text-center py-16">
-                        <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                          <FaBook className="text-4xl text-gray-400" />
-                        </div>
-                        <p className="text-gray-500 text-lg">No courses available yet</p>
-                        <p className="text-gray-400 text-sm mt-2">Start your learning journey by purchasing a package</p>
-                      </div>
                     )}
-                  </div>
+                  </>
                 )}
 
                 {/* Affiliate Dashboard Tab */}
