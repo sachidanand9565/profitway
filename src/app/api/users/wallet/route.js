@@ -18,14 +18,14 @@ export async function GET(request) {
 
     const wallet = walletResult[0] || { balance: 0, total_earned: 0, total_withdrawn: 0 };
 
-    // Get commission summary (active vs passive)
+    // Get commission summary (active vs passive) - only credited commissions
     const commissionSummary = await query(`
       SELECT
         commission_type,
         SUM(commission_amount) as total_amount,
         COUNT(*) as count
       FROM commissions
-      WHERE earner_user_id = ?
+      WHERE earner_user_id = ? AND status = 'credited'
       GROUP BY commission_type
     `, [userId]);
 
@@ -47,25 +47,25 @@ export async function GET(request) {
     const sevenDaysAgo = new Date(todayStart.getTime() - 7 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(todayStart.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Today's earnings
+    // Today's earnings (only credited commissions)
     const todayEarnings = await query(`
       SELECT SUM(commission_amount) as total
       FROM commissions
-      WHERE earner_user_id = ? AND created_at >= ?
+      WHERE earner_user_id = ? AND created_at >= ? AND status = 'credited'
     `, [userId, todayStart]);
 
-    // Last 7 days earnings
+    // Last 7 days earnings (only credited commissions)
     const last7DaysEarnings = await query(`
       SELECT SUM(commission_amount) as total
       FROM commissions
-      WHERE earner_user_id = ? AND created_at >= ?
+      WHERE earner_user_id = ? AND created_at >= ? AND status = 'credited'
     `, [userId, sevenDaysAgo]);
 
-    // Last 30 days earnings
+    // Last 30 days earnings (only credited commissions)
     const last30DaysEarnings = await query(`
       SELECT SUM(commission_amount) as total
       FROM commissions
-      WHERE earner_user_id = ? AND created_at >= ?
+      WHERE earner_user_id = ? AND created_at >= ? AND status = 'credited'
     `, [userId, thirtyDaysAgo]);
 
     // Get recent commissions (last 10)
