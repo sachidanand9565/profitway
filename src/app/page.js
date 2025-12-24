@@ -298,9 +298,11 @@ export default function Home() {
               <div className="relative">
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-8 border border-blue-200 shadow-lg">
                   <div className="text-center mb-8">
-                    <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl font-bold text-white">
-                      SK
-                    </div>
+                    <img
+                      src="/images/founder.jpg"
+                      alt="Himanshu Kushwaha - Founder & CEO"
+                      className="w-32 h-32 rounded-full mx-auto mb-6 object-cover shadow-lg"
+                    />
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Himanshu Kushwaha</h3>
                     <p className="text-blue-600 font-semibold">Founder & CEO</p>
                   </div>

@@ -88,6 +88,18 @@ export async function POST(request) {
       [username, password, email, JSON.stringify(approved_packages), status || 'active']
     );
 
+    // Create wallet record for the new user
+    try {
+      await query(
+        "INSERT INTO user_wallets (user_id, balance, total_earned, total_withdrawn) VALUES (?, 0.00, 0.00, 0.00)",
+        [result.insertId]
+      );
+      console.log(`Wallet record created for new user: ${username}`);
+    } catch (walletErr) {
+      console.error("Failed to create wallet record:", walletErr);
+      // Don't fail the user creation if wallet creation fails
+    }
+
     return NextResponse.json({ message: "User created successfully", id: result.insertId });
   } catch (err) {
     console.error("Failed to create user:", err);

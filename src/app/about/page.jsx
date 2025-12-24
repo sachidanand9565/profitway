@@ -163,9 +163,11 @@ export default function About() {
               <div className="bg-white backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200 shadow-lg">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
                   <div className="text-center lg:text-left">
-                    <div className="w-48 h-48 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-full mx-auto lg:mx-0 mb-6 flex items-center justify-center text-6xl font-bold text-white">
-                      HK
-                    </div>
+                    <img
+                      src="/images/founder.jpg"
+                      alt="Himanshu Kushwaha - Founder & CEO"
+                      className="w-48 h-48 rounded-full mx-auto lg:mx-0 mb-6 object-cover shadow-lg"
+                    />
                     <div className="space-y-2">
                       <h3 className="text-3xl font-bold text-black">Himanshu Kushwaha</h3>
                       <p className="text-cyan-600 font-semibold text-lg">Founder & CEO</p>
