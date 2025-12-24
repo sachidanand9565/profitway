@@ -14,7 +14,7 @@ export default function PackagesGrid({ packages, handleEnrollNow, busySlug }) {
                   <img
                     src={pkg.image}
                     alt={pkg.title}
-                    className="w-36 h-48 sm:w-36 sm:h-48 object-contain drop-shadow-lg"
+                    className="w-full h-full sm:w-36 sm:h-40 object-contain drop-shadow-lg"
                   />
                 </div>
 
