@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import Header from '../../component/include/header';
 import Footer from '../../component/include/footer';
 import VideoPlayerModal from '../../component/VideoPlayerModal';
-import { FaUser, FaBook, FaChartLine, FaMoneyBillWave, FaUsers, FaComments, FaCopy, FaEdit, FaCheck, FaTrophy, FaGraduationCap, FaRocket } from 'react-icons/fa';
+import { FaUser, FaBook, FaChartLine, FaMoneyBillWave, FaUsers, FaComments, FaCopy, FaEdit, FaCheck, FaTrophy, FaGraduationCap, FaRocket, FaSignOutAlt } from 'react-icons/fa';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -19,6 +19,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [packages, setPackages] = useState([]);
+  const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
 
   // Add state for course viewing and video player
   const [selectedPackageId, setSelectedPackageId] = useState(null);
@@ -211,6 +212,19 @@ export default function UserDashboard() {
     }
   }, [router]);
 
+  // Listen for dashboard menu clicks from header
+  useEffect(() => {
+    const handleDashboardMenuClick = (event) => {
+      setActiveTab(event.detail);
+    };
+
+    window.addEventListener('dashboardMenuClick', handleDashboardMenuClick);
+
+    return () => {
+      window.removeEventListener('dashboardMenuClick', handleDashboardMenuClick);
+    };
+  }, []);
+
   // Load withdrawal history when withdraw tab is active
   useEffect(() => {
     if (activeTab === 'withdraw' && user?.id) {
@@ -315,15 +329,7 @@ export default function UserDashboard() {
 
   if (!user) return null;
 
-  const menuItems = [
-    { k: 'dashboard', l: 'Dashboard', i: <FaUser /> },
-    { k: 'myprofile', l: 'My Profile', i: <FaEdit /> },
-    { k: 'mycourses', l: 'My Courses', i: <FaBook /> },
-    { k: 'affiliate', l: 'Affiliate', i: <FaChartLine /> },
-    { k: 'withdraw', l: 'Withdrawals', i: <FaMoneyBillWave /> },
-    { k: 'team', l: 'My Team', i: <FaUsers /> },
-    { k: 'community', l: 'Community', i: <FaComments /> }
-  ];
+
 
   return (
     <>
@@ -383,55 +389,13 @@ export default function UserDashboard() {
                       </div>
                     </div>
 
-                    <nav className="p-3">
-                      {menuItems.map(item => (
-                        <button
-                          key={item.k}
-                          onClick={() => setActiveTab(item.k)}
-                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-2 transition-all ${
-                            activeTab === item.k
-                              ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md transform scale-[1.02]'
-                              : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          <span className={activeTab === item.k ? 'text-white' : 'text-blue-600'}>
-                            {item.i}
-                          </span>
-                          <span className="text-sm font-medium">{item.l}</span>
-                        </button>
-                      ))}
-                    </nav>
+                 
 
-                    <div className="p-4 border-t border-gray-100">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
-                      >
-                        Logout
-                      </button>
-                    </div>
+
                   </div>
                 </div>
 
-                {/* Mobile Navigation */}
-                <div className="lg:hidden bg-white rounded-xl shadow-md p-2 mb-4 overflow-x-auto">
-                  <div className="flex gap-2">
-                    {menuItems.map(item => (
-                      <button
-                        key={item.k}
-                        onClick={() => setActiveTab(item.k)}
-                        className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                          activeTab === item.k
-                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md'
-                            : 'bg-gray-50 text-gray-700'
-                        }`}
-                      >
-                        <span>{item.i}</span>
-                        <span className="whitespace-nowrap">{item.l}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              
               </aside>
 
               {/* Main Content */}
