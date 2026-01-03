@@ -137,9 +137,10 @@ export default function UserDashboard() {
       setUser(parsed);
       setProfileForm(f => ({
         ...f,
-        name: parsed.username || '',
+        name: parsed.name || '',
         phone: parsed.phone || '',
         state: parsed.state || '',
+        email: parsed.email || '',
         photoPreview: parsed.photo || null
       }));
 
@@ -232,6 +233,7 @@ export default function UserDashboard() {
         name: profileForm.name,
         phone: profileForm.phone,
         state: profileForm.state,
+        email: profileForm.email,
         photo
       };
       
@@ -248,6 +250,7 @@ export default function UserDashboard() {
           username: payload.name,
           phone: payload.phone,
           state: payload.state,
+          email: payload.email,
           photo: updated.photo || profileForm.photoPreview
         };
         setUser(newUser);
@@ -612,6 +615,16 @@ export default function UserDashboard() {
                               <option key={state} value={state}>{state}</option>
                             ))}
                           </select>
+                        </div>
+                         <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                         <input
+                            type="text"
+                            value={profileForm.email}
+                            onChange={e => setProfileForm(p => ({ ...p, email: e.target.value }))}
+                            className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                            placeholder="Enter your Email"
+                          />
                         </div>
 
                         <div className="md:col-span-2">

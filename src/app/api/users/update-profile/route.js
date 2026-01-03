@@ -3,7 +3,7 @@ import { query } from "../../../../lib/mysqlClient";
 
 export async function POST(request) {
   try {
-    const { userId, name, phone, state, photo } = await request.json();
+    const { userId, name, phone, state,email, photo } = await request.json();
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
@@ -21,7 +21,10 @@ export async function POST(request) {
       updateFields.push("phone = ?");
       values.push(phone);
     }
-
+if (email !== undefined) {
+      updateFields.push("email = ?");
+      values.push(email);
+    }
     if (state !== undefined) {
       updateFields.push("state = ?");
       values.push(state);
