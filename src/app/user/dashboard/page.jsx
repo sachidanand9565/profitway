@@ -1,11 +1,4 @@
-/*
-  Modern User Dashboard - Profitway Theme
-  - Sleek mobile-first responsive design
-  - Enhanced visual hierarchy with glassmorphism effects
-  - Smooth animations and transitions
-  - Professional cards with modern gradients
-  - Optimized for both mobile and desktop experiences
-*/
+
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -44,6 +37,10 @@ export default function UserDashboard() {
   // Withdrawal history state
   const [withdrawalHistory, setWithdrawalHistory] = useState([]);
   const [loadingWithdrawals, setLoadingWithdrawals] = useState(false);
+
+  // Referred users state
+  const [referredUsers, setReferredUsers] = useState([]);
+  const [loadingReferredUsers, setLoadingReferredUsers] = useState(false);
 
   const closeVideoPlayer = () => {
     setPlayerVideoUrl(null);
@@ -126,6 +123,23 @@ export default function UserDashboard() {
     }
   };
 
+  // Load referred users
+  const loadReferredUsers = async (userId) => {
+    setLoadingReferredUsers(true);
+    try {
+      const response = await fetch(`/api/users/referred-users?userId=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setReferredUsers(data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load referred users:', error);
+      setReferredUsers([]);
+    } finally {
+      setLoadingReferredUsers(false);
+    }
+  };
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem('user');
@@ -189,6 +203,13 @@ export default function UserDashboard() {
   useEffect(() => {
     if (activeTab === 'withdraw' && user?.id) {
       loadWithdrawalHistory(user.id);
+    }
+  }, [activeTab, user?.id]);
+
+  // Load referred users when team tab is active
+  useEffect(() => {
+    if (activeTab === 'team' && user?.id) {
+      loadReferredUsers(user.id);
     }
   }, [activeTab, user?.id]);
 
@@ -1069,15 +1090,102 @@ export default function UserDashboard() {
                       <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
                         <FaUsers className="text-white text-xl" />
                       </div>
-                      <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">My Team</h2>
-                    </div>
-                    <div className="text-center py-20">
-                      <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl flex items-center justify-center">
-                        <FaUsers className="text-6xl text-indigo-400" />
+                      <div>
+                        <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">My Team</h2>
+                        <p className="text-gray-600 text-sm">People who joined using your referral</p>
                       </div>
-                      <p className="text-gray-500 text-xl font-medium mb-2">No team members yet</p>
-                      <p className="text-gray-400">Build your team by sharing your referral link</p>
                     </div>
+
+                    {loadingReferredUsers ? (
+                      <div className="text-center py-16">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                        <p className="text-gray-500">Loading team members...</p>
+                      </div>
+                    ) : referredUsers.length > 0 ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-6">
+                          <p className="text-gray-600 font-medium">
+                            Total Team Members: <span className="text-indigo-600 font-bold">{referredUsers.length}</span>
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {referredUsers.map((member) => (
+                            <div key={member.id} className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-4 border border-indigo-100 hover:shadow-lg transition-all">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                                  <FaUser className="text-white text-sm" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-semibold text-gray-800 truncate">{member.name || 'N/A'}</h3>
+                                  <p className="text-xs text-gray-500 truncate">{member.email}</p>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Phone:</span>
+                                  <span className="font-medium">{member.phone || 'N/A'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">State:</span>
+                                  <span className="font-medium">{member.state || 'N/A'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Joined:</span>
+                                  <span className="font-medium text-xs">
+                                    {new Date(member.created_at).toLocaleDateString('en-IN')}
+                                  </span>
+                                </div>
+                                {member.packages && member.packages.length > 0 && (
+                                  <div className="pt-2 border-t border-indigo-200">
+                                    <span className="text-gray-600 text-xs">Packages:</span>
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {member.packages.slice(0, 2).map((pkg, idx) => (
+                                        <span key={idx} className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full">
+                                          {pkg}
+                                        </span>
+                                      ))}
+                                      {member.packages.length > 2 && (
+                                        <span className="text-xs text-gray-500">+{member.packages.length - 2} more</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-20">
+                        <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl flex items-center justify-center">
+                          <FaUsers className="text-6xl text-indigo-400" />
+                        </div>
+                        <p className="text-gray-500 text-xl font-medium mb-2">No team members yet</p>
+                        <p className="text-gray-400 mb-4">Build your team by sharing your referral link</p>
+                        {user?.referral_code && (
+                          <div className="bg-gray-50 rounded-2xl p-4 max-w-md mx-auto">
+                            <p className="text-sm text-gray-600 mb-2">Your Referral Code:</p>
+                            <div className="flex items-center gap-2">
+                              <code className="bg-white px-3 py-2 rounded-lg border font-mono text-indigo-600 flex-1 text-center">
+                                {user.referral_code}
+                              </code>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(user.referral_code);
+                                  setCopied(true);
+                                  setTimeout(() => setCopied(false), 2000);
+                                }}
+                                className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                              >
+                                {copied ? <FaCheck /> : <FaCopy />}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 

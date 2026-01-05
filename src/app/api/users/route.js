@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { query } from "../../../lib/mysqlClient";
+import { query } from "@/lib/mysqlClient";
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);

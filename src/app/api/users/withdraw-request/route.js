@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { query, getConnection } from '../../../../lib/mysqlClient';
+import { query, getConnection } from '@/lib/mysqlClient';
 
 export async function POST(request) {
   const { searchParams } = new URL(request.url);
