@@ -13,17 +13,27 @@ export async function GET(request) {
         return NextResponse.json({ error: "Package not found" }, { status: 404 });
       }
       const pkg = packages[0];
-      // Fetch videos for the package
-      const videos = await query("SELECT * FROM packages_content WHERE package_id = ? ORDER BY created_at DESC", [pkg.id]);
-      pkg.videos = videos;
+      // Fetch modules for the package
+      const modules = await query("SELECT * FROM modules WHERE package_id = ? ORDER BY order_index ASC, created_at ASC", [pkg.id]);
+      // Fetch videos for each module
+      for (let module of modules) {
+        const videos = await query("SELECT * FROM videos WHERE module_id = ? ORDER BY order_index ASC, created_at ASC", [module.id]);
+        module.videos = videos;
+      }
+      pkg.modules = modules;
       return NextResponse.json(pkg);
     } else {
       // Fetch all packages
       const packages = await query("SELECT * FROM packages");
-      // Fetch videos for each package
+      // Fetch modules for each package
       for (let pkg of packages) {
-        const videos = await query("SELECT * FROM packages_content WHERE package_id = ? ORDER BY created_at DESC", [pkg.id]);
-        pkg.videos = videos;
+        const modules = await query("SELECT * FROM modules WHERE package_id = ? ORDER BY order_index ASC, created_at ASC", [pkg.id]);
+        // Fetch videos for each module
+        for (let module of modules) {
+          const videos = await query("SELECT * FROM videos WHERE module_id = ? ORDER BY order_index ASC, created_at ASC", [module.id]);
+          module.videos = videos;
+        }
+        pkg.modules = modules;
       }
       return NextResponse.json(packages);
     }

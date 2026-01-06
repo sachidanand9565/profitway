@@ -217,16 +217,16 @@ export default function UserDashboard() {
   useEffect(() => {
     if (activeTab === 'mycourses' && packages.length > 0) {
       setLoadingCourses(true);
+      // Fetch packages with modules and videos
       Promise.all(
-        packages.map(pkg => 
-          fetch(`/api/packages/${pkg.id}/videos`)
+        packages.map(pkg =>
+          fetch(`/api/packages?slug=${pkg.slug}`)
             .then(res => res.json())
-            .then(data => data.map(course => ({ ...course, packageName: pkg.title || pkg.name })))
-            .catch(() => [])
+            .catch(() => null)
         )
-      ).then(allCoursesArrays => {
-        const allCourses = allCoursesArrays.flat();
-        setCourses(allCourses);
+      ).then(packagesData => {
+        const validPackages = packagesData.filter(pkg => pkg && pkg.modules);
+        setCourses(validPackages);
       }).finally(() => setLoadingCourses(false));
     }
   }, [activeTab, packages]);
@@ -785,15 +785,15 @@ export default function UserDashboard() {
                           <div className="flex-1 p-4 lg:p-8">
                             {/* Module Navigation Tabs - Mobile */}
                             <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
-                              {(selectedCourse.modules || [selectedCourse]).map((module, index) => {
+                              {selectedCourse.modules?.map((module, index) => {
                                 const progress = moduleProgress[module.id] || 0;
                                 const isCompleted = progress === 100;
                                 const isActive = index === currentModuleIndex;
-                                const isLocked = index > 0 && (moduleProgress[(selectedCourse.modules || [selectedCourse])[index - 1]?.id] || 0) < 100;
+                                const isLocked = index > 0 && (moduleProgress[selectedCourse.modules[index - 1]?.id] || 0) < 100;
                                 
                                 return (
                                   <button
-                                    key={module.id || index}
+                                    key={module.id}
                                     onClick={() => !isLocked && setCurrentModuleIndex(index)}
                                     disabled={isLocked}
                                     className={`flex-shrink-0 px-4 py-3 rounded-2xl text-sm font-semibold whitespace-nowrap flex items-center gap-2 transition-all ${
@@ -817,68 +817,158 @@ export default function UserDashboard() {
                             {/* Current Module Title */}
                             <div className="mb-6">
                               <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
-                                Module {currentModuleIndex + 1}
+                                {selectedCourse.modules?.[currentModuleIndex]?.title || 'Module'}
                               </h2>
                               <p className="text-gray-600">
-                                {(selectedCourse.modules || [selectedCourse])[currentModuleIndex]?.title || 'Course Module'}
+                                {selectedCourse.modules?.[currentModuleIndex]?.description || 'Course Module'}
                               </p>
                             </div>
 
                             {/* Video Player */}
                             <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl mb-8">
                               {(() => {
-                                const currentModule = (selectedCourse.modules || [selectedCourse])[currentModuleIndex];
-                                const videoUrl = currentModule?.video || selectedCourse.video;
+                                const currentModule = selectedCourse.modules?.[currentModuleIndex];
+                                const videos = currentModule?.videos || [];
+                                const currentVideoIndex = moduleProgress[currentModule?.id] || 0;
+                                const currentVideo = videos[currentVideoIndex];
                                 
-                                const youtubeMatch = videoUrl?.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-                                
-                                if (youtubeMatch) {
-                                  return (
-                                    <iframe
-                                      className="w-full aspect-video"
-                                      src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
-                                      title={currentModule?.title || 'Course Video'}
-                                      frameBorder="0"
-                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                      allowFullScreen
-                                    ></iframe>
-                                  );
-                                } else if (videoUrl) {
-                                  return (
-                                    <video className="w-full aspect-video" controls src={videoUrl}>
-                                      Your browser does not support the video tag.
-                                    </video>
-                                  );
-                                } else {
-                                  return (
-                                    <div className="w-full aspect-video flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
-                                      <div className="text-center">
-                                        <FaBook className="text-5xl mx-auto mb-4 opacity-50" />
-                                        <p className="text-lg">No video available</p>
-                                      </div>
-                                    </div>
-                                  );
+                                if (currentVideo) {
+                                  const videoUrl = currentVideo.video_url;
+                                  const youtubeMatch = videoUrl?.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+                                  
+                                  if (youtubeMatch) {
+                                    return (
+                                      <iframe
+                                        className="w-full aspect-video"
+                                        src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
+                                        title={currentVideo.title}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                      ></iframe>
+                                    );
+                                  } else if (videoUrl) {
+                                    return (
+                                      <video className="w-full aspect-video" controls src={videoUrl}>
+                                        Your browser does not support the video tag.
+                                      </video>
+                                    );
+                                  }
                                 }
+                                
+                                return (
+                                  <div className="w-full aspect-video flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
+                                    <div className="text-center">
+                                      <FaBook className="text-5xl mx-auto mb-4 opacity-50" />
+                                      <p className="text-lg">No video available</p>
+                                    </div>
+                                  </div>
+                                );
                               })()}
                             </div>
 
-                            {/* Next Module Button */}
+                            {/* Video Navigation within Module */}
+                            {(() => {
+                              const currentModule = selectedCourse.modules?.[currentModuleIndex];
+                              const videos = currentModule?.videos || [];
+                              
+                              if (videos.length > 1) {
+                                return (
+                                  <div className="mb-6">
+                                    <h3 className="text-lg font-semibold mb-4">Videos in this Module</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                      {videos.map((video, videoIndex) => {
+                                        const isCompleted = (moduleProgress[currentModule.id] || 0) > videoIndex;
+                                        const isCurrent = (moduleProgress[currentModule.id] || 0) === videoIndex;
+                                        
+                                        return (
+                                          <button
+                                            key={video.id}
+                                            onClick={() => {
+                                              setModuleProgress(prev => ({
+                                                ...prev,
+                                                [currentModule.id]: videoIndex
+                                              }));
+                                            }}
+                                            className={`p-4 rounded-2xl text-left transition-all ${
+                                              isCurrent
+                                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                                                : isCompleted
+                                                  ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                                                isCurrent ? 'bg-white text-blue-600' :
+                                                isCompleted ? 'bg-green-600 text-white' :
+                                                'bg-gray-300 text-gray-600'
+                                              }`}>
+                                                {isCompleted ? <FaCheck className="text-xs" /> : videoIndex + 1}
+                                              </div>
+                                              <div className="flex-1">
+                                                <h4 className="font-medium">{video.title}</h4>
+                                                {video.description && (
+                                                  <p className="text-sm opacity-75 mt-1">{video.description}</p>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              
+                              return null;
+                            })()}
+
+                            {/* Next Button */}
                             <div className="flex justify-center">
                               <button
                                 onClick={() => {
-                                  const currentModule = (selectedCourse.modules || [selectedCourse])[currentModuleIndex];
-                                  setModuleProgress(prev => ({
-                                    ...prev,
-                                    [currentModule?.id || currentModuleIndex]: 100
-                                  }));
+                                  const currentModule = selectedCourse.modules?.[currentModuleIndex];
+                                  const videos = currentModule?.videos || [];
+                                  const currentVideoIndex = moduleProgress[currentModule?.id] || 0;
                                   
-                                  if (currentModuleIndex < (selectedCourse.modules || [selectedCourse]).length - 1) {
+                                  if (currentVideoIndex < videos.length - 1) {
+                                    // Next video in current module
+                                    setModuleProgress(prev => ({
+                                      ...prev,
+                                      [currentModule.id]: currentVideoIndex + 1
+                                    }));
+                                  } else if (currentModuleIndex < (selectedCourse.modules?.length || 0) - 1) {
+                                    // Next module
+                                    setModuleProgress(prev => ({
+                                      ...prev,
+                                      [currentModule.id]: 100,
+                                      [selectedCourse.modules[currentModuleIndex + 1].id]: 0
+                                    }));
                                     setCurrentModuleIndex(currentModuleIndex + 1);
+                                  } else {
+                                    // Complete course
+                                    setModuleProgress(prev => ({
+                                      ...prev,
+                                      [currentModule.id]: 100
+                                    }));
                                   }
                                 }}
                                 className="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-bold text-lg hover:shadow-2xl transition-all flex items-center gap-3 transform hover:scale-105"
                               >
-                                {currentModuleIndex < (selectedCourse.modules || [selectedCourse]).length - 1 ? 'Next Module' : 'Complete Course'}
+                                {(() => {
+                                  const currentModule = selectedCourse.modules?.[currentModuleIndex];
+                                  const videos = currentModule?.videos || [];
+                                  const currentVideoIndex = moduleProgress[currentModule?.id] || 0;
+                                  
+                                  if (currentVideoIndex < videos.length - 1) {
+                                    return 'Next Video';
+                                  } else if (currentModuleIndex < (selectedCourse.modules?.length || 0) - 1) {
+                                    return 'Next Module';
+                                  } else {
+                                    return 'Complete Course';
+                                  }
+                                })()}
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>
@@ -910,24 +1000,23 @@ export default function UserDashboard() {
                                   <div className="relative h-56 overflow-hidden">
                                     <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                                    {course.packageName && (
-                                      <div className="absolute top-4 left-4 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold rounded-full shadow-lg">
-                                        {course.packageName}
-                                      </div>
-                                    )}
+                                    <div className="absolute top-4 left-4 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold rounded-full shadow-lg">
+                                      {course.modules?.length || 0} Modules
+                                    </div>
                                   </div>
                                 ) : (
                                   <div className="relative h-56 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 flex items-center justify-center">
                                     <FaBook className="text-6xl text-blue-400" />
-                                    {course.packageName && (
-                                      <div className="absolute top-4 left-4 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold rounded-full shadow-lg">
-                                        {course.packageName}
-                                      </div>
-                                    )}
+                                    <div className="absolute top-4 left-4 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold rounded-full shadow-lg">
+                                      {course.modules?.length || 0} Modules
+                                    </div>
                                   </div>
                                 )}
                                 <div className="p-6">
-                                  <h4 className="font-bold text-gray-800 text-lg mb-4 line-clamp-2 h-14">{course.title || 'Course'}</h4>
+                                  <h4 className="font-bold text-gray-800 text-lg mb-2 line-clamp-2 h-14">{course.title || course.name}</h4>
+                                  <p className="text-sm text-gray-600 mb-4">
+                                    {course.modules?.reduce((total, module) => total + (module.videos?.length || 0), 0) || 0} Videos
+                                  </p>
                                   <button
                                     className="w-full px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold hover:shadow-xl transition-all flex items-center justify-center gap-3 transform hover:scale-105"
                                     onClick={() => {

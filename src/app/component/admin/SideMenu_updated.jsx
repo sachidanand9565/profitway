@@ -18,8 +18,8 @@ export default function SideMenu({ onClose }) {
       icon: FaBox,
     },
     {
-      name: 'Videos',
-      href: '/admin/videos',
+      name: 'Courses',
+      href: '/admin/courses',
       icon: FaPlay,
     },
     {
