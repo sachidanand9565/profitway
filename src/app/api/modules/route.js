@@ -37,44 +37,52 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { packageId, title, description, orderIndex = 0 } = body;
+    const { packageId, title, description, image, orderIndex = 0 } = body;
+
+    console.log('POST /api/modules - Body:', body);
 
     if (!packageId || !title) {
       return NextResponse.json({ error: "Package ID and title are required" }, { status: 400 });
     }
 
     const result = await query(
-      `INSERT INTO modules (package_id, title, description, order_index)
-       VALUES (?, ?, ?, ?)`,
-      [packageId, title, description, orderIndex]
+      `INSERT INTO modules (package_id, title, description, order_index${image && image.trim() ? ', image' : ''})
+       VALUES (?, ?, ?, ?${image && image.trim() ? ', ?' : ''})`,
+      image && image.trim() ? [packageId, title, description, orderIndex, image] : [packageId, title, description, orderIndex]
     );
+
+    console.log('Module inserted, result:', result);
 
     return NextResponse.json({ message: "Module created successfully", id: result.insertId });
   } catch (err) {
     console.error("Create module error:", err);
-    return NextResponse.json({ error: "Failed to create module" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create module", details: err.message }, { status: 500 });
   }
 }
 
 export async function PUT(request) {
   try {
     const body = await request.json();
-    const { id, title, description, orderIndex } = body;
+    const { id, title, description, image, orderIndex } = body;
+
+    console.log('PUT /api/modules - Body:', body);
 
     if (!id) {
       return NextResponse.json({ error: "Module ID is required" }, { status: 400 });
     }
 
     await query(
-      `UPDATE modules SET title = ?, description = ?, order_index = ?, updated_at = CURRENT_TIMESTAMP
+      `UPDATE modules SET title = ?, description = ?, order_index = ?, updated_at = CURRENT_TIMESTAMP${image && image.trim() ? ', image = ?' : ''}
        WHERE id = ?`,
-      [title, description, orderIndex, id]
+      image && image.trim() ? [title, description, orderIndex, image, id] : [title, description, orderIndex, id]
     );
+
+    console.log('Module updated successfully');
 
     return NextResponse.json({ message: "Module updated successfully" });
   } catch (err) {
     console.error("Update module error:", err);
-    return NextResponse.json({ error: "Failed to update module" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update module", details: err.message }, { status: 500 });
   }
 }
 

@@ -15,6 +15,7 @@ export default function CoursesManagement() {
   const [moduleFormData, setModuleFormData] = useState({
     title: '',
     description: '',
+    image: '',
     orderIndex: 0
   });
   const [videoFormData, setVideoFormData] = useState({
@@ -25,8 +26,10 @@ export default function CoursesManagement() {
     orderIndex: 0
   });
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedModuleFile, setSelectedModuleFile] = useState(null);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
+  const [submittingModule, setSubmittingModule] = useState(false);
 
   useEffect(() => {
     fetchPackages();
@@ -76,12 +79,49 @@ export default function CoursesManagement() {
 
   const handleModuleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!selectedPackage) {
+      setMessage('Please select a package first');
+      setMessageType('error');
+      return;
+    }
+
+    setSubmittingModule(true);
+    
     try {
+      let imageUrl = moduleFormData.image;
+
+      // Upload file if selected
+      if (selectedModuleFile) {
+        try {
+          const formDataUpload = new FormData();
+          formDataUpload.append('file', selectedModuleFile);
+
+          const uploadResponse = await fetch('/api/upload', {
+            method: 'POST',
+            body: formDataUpload
+          });
+
+          if (uploadResponse.ok) {
+            const uploadData = await uploadResponse.json();
+            imageUrl = uploadData.url;
+          } else {
+            console.warn('Image upload failed, saving module without image');
+            // Continue without image
+          }
+        } catch (uploadError) {
+          console.warn('Image upload error:', uploadError);
+          // Continue without image
+        }
+      }
+
       const url = editingModule ? `/api/modules` : '/api/modules';
       const method = editingModule ? 'PUT' : 'POST';
       const body = editingModule
-        ? { ...moduleFormData, id: editingModule.id }
-        : { ...moduleFormData, packageId: selectedPackage.id };
+        ? { ...moduleFormData, id: editingModule.id, image: imageUrl }
+        : { ...moduleFormData, packageId: selectedPackage.id, image: imageUrl };
+
+      console.log('Submitting module:', body); // Debug log
 
       const response = await fetch(url, {
         method,
@@ -89,17 +129,26 @@ export default function CoursesManagement() {
         body: JSON.stringify(body)
       });
 
+      console.log('Response status:', response.status); // Debug log
+
       if (response.ok) {
         fetchModules(selectedPackage.id);
         setShowModuleModal(false);
         resetModuleForm();
         setMessage(editingModule ? 'Module updated successfully' : 'Module added successfully');
         setMessageType('success');
+      } else {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        setMessage(`Failed to save module: ${errorData.error || 'Unknown error'}`);
+        setMessageType('error');
       }
     } catch (error) {
       console.error('Failed to save module:', error);
       setMessage('Failed to save module');
       setMessageType('error');
+    } finally {
+      setSubmittingModule(false);
     }
   };
 
@@ -194,8 +243,10 @@ export default function CoursesManagement() {
     setModuleFormData({
       title: module.title,
       description: module.description || '',
+      image: module.image || '',
       orderIndex: module.order_index || 0
     });
+    setSelectedModuleFile(null);
     setShowModuleModal(true);
     setMessage('');
     setMessageType('');
@@ -227,9 +278,11 @@ export default function CoursesManagement() {
     setModuleFormData({
       title: '',
       description: '',
+      image: '',
       orderIndex: 0
     });
     setEditingModule(null);
+    setSelectedModuleFile(null);
   };
 
   const resetVideoForm = () => {
@@ -428,6 +481,7 @@ export default function CoursesManagement() {
                   onChange={(e) => setModuleFormData({...moduleFormData, title: e.target.value})}
                   className="w-full p-2 border rounded"
                   required
+                  disabled={submittingModule}
                 />
               </div>
               <div className="mb-4">
@@ -437,7 +491,21 @@ export default function CoursesManagement() {
                   onChange={(e) => setModuleFormData({...moduleFormData, description: e.target.value})}
                   className="w-full p-2 border rounded"
                   rows="3"
+                  disabled={submittingModule}
                 />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Module Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setSelectedModuleFile(e.target.files[0])}
+                  className="w-full p-2 border rounded"
+                  disabled={submittingModule}
+                />
+                {moduleFormData.image && (
+                  <p className="text-sm text-gray-600 mt-1">Current: {moduleFormData.image}</p>
+                )}
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">Order</label>
@@ -447,19 +515,29 @@ export default function CoursesManagement() {
                   onChange={(e) => setModuleFormData({...moduleFormData, orderIndex: parseInt(e.target.value)})}
                   className="w-full p-2 border rounded"
                   min="0"
+                  disabled={submittingModule}
                 />
               </div>
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  disabled={submittingModule}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  {editingModule ? 'Update' : 'Add'}
+                  {submittingModule ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      {editingModule ? 'Updating...' : 'Adding...'}
+                    </>
+                  ) : (
+                    editingModule ? 'Update' : 'Add'
+                  )}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModuleModal(false)}
-                  className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+                  disabled={submittingModule}
+                  className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
