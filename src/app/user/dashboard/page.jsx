@@ -13,6 +13,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [packages, setPackages] = useState([]);
+  const [allPackages, setAllPackages] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Course and video states
@@ -74,11 +75,123 @@ export default function UserDashboard() {
     { id: 'dashboard', label: 'Dashboard', icon: <FaChartLine /> },
     { id: 'myprofile', label: 'My Profile', icon: <FaUser /> },
     { id: 'mycourses', label: 'My Courses', icon: <FaBook /> },
+    { id: 'upgrade', label: 'Upgrade', icon: <FaRocket /> },
     { id: 'affiliate', label: 'Affiliate', icon: <FaTrophy /> },
     { id: 'withdraw', label: 'Withdrawals', icon: <FaMoneyBillWave /> },
     { id: 'team', label: 'My Team', icon: <FaUsers /> },
     { id: 'community', label: 'Community', icon: <FaComments /> },
   ];
+  
+  // Package hierarchy for upgrades (lower index = lower tier)
+  const packageHierarchy = ['Ᏼasic Package', 'Medium Package', 'Pro Package', 'Master Package', 'Crown Package', 'Royal Package'];
+  
+  // Helper function to get available upgrades
+  const getAvailableUpgrades = () => {
+    if (!packages.length || !allPackages.length) {
+      return [];
+    }
+    
+    const currentPackage = packages[0];
+    const currentPackageName = (currentPackage.name || currentPackage.title || '').trim().toLowerCase();
+    
+    // Find current package index in hierarchy
+    let currentIndex = -1;
+    for (let i = 0; i < packageHierarchy.length; i++) {
+      const hierarchyName = packageHierarchy[i].toLowerCase().replace(/[^\w\s]/g, '').trim();
+      const currentName = currentPackageName.replace(/[^\w\s]/g, '').trim();
+      
+      if (hierarchyName.includes(currentName) || currentName.includes(hierarchyName)) {
+        currentIndex = i;
+        break;
+      }
+    }
+    
+    if (currentIndex === -1) {
+      // If not found in hierarchy, assume it's the lowest tier
+      currentIndex = 0;
+    }
+    
+    if (currentIndex === packageHierarchy.length - 1) {
+      return [];
+    }
+    
+    // Get all packages and filter those higher than current
+    const availableUpgrades = allPackages.filter(pkg => {
+      const pkgName = (pkg.name || pkg.title || '').toLowerCase().replace(/[^\w\s]/g, '').trim();
+      let pkgIndex = -1;
+      
+      for (let i = 0; i < packageHierarchy.length; i++) {
+        const hierarchyName = packageHierarchy[i].toLowerCase().replace(/[^\w\s]/g, '').trim();
+        if (hierarchyName.includes(pkgName) || pkgName.includes(hierarchyName)) {
+          pkgIndex = i;
+          break;
+        }
+      }
+      
+      return pkgIndex > currentIndex;
+    });
+    
+    return availableUpgrades;
+  };
+  
+  // Calculate upgrade cost (new price - current price)
+  const calculateUpgradeCost = (upgradePkg) => {
+    const currentPrice = parsePrice(packages[0]?.price || '0');
+    const upgradePrice = parsePrice(upgradePkg.price);
+    return Math.max(0, upgradePrice - currentPrice);
+  };
+  
+  // Calculate savings from full price
+  const calculateSavings = (upgradePkg) => {
+    const fullPrice = parsePrice(upgradePkg.price);
+    const upgradeCost = calculateUpgradeCost(upgradePkg);
+    return fullPrice - upgradeCost;
+  };
+  
+  // Parse price string to number (handles ₹ and commas)
+  const parsePrice = (priceStr) => {
+    if (!priceStr) return 0;
+    return parseInt(priceStr.replace(/[₹,]/g, '')) || 0;
+  };
+  
+  // Handle package upgrade
+  const handleUpgrade = async (upgradePkg) => {
+    if (!user || !packages.length) return;
+    
+    const upgradeCost = calculateUpgradeCost(upgradePkg);
+    
+    if (confirm(`Are you sure you want to upgrade to ${upgradePkg.name || upgradePkg.title} for ₹${upgradeCost}?`)) {
+      try {
+        const response = await fetch('/api/users/upgrade-package', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            currentPackageId: packages[0].id,
+            upgradePackageId: upgradePkg.id,
+            upgradeCost: upgradeCost
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          alert(`Package upgraded successfully! New balance: ₹${result.newBalance}`);
+          
+          // Refresh user data and packages
+          window.location.reload();
+        } else {
+          console.error('Upgrade failed:', result);
+          alert(result.error || 'Upgrade failed. Please try again.');
+        }
+        
+      } catch (error) {
+        console.error('Upgrade failed:', error);
+        alert('Upgrade failed. Please try again.');
+      }
+    }
+  };
+
   const loadWalletData = async (userId) => {
     setLoadingWallet(true);
     try {
@@ -146,17 +259,22 @@ export default function UserDashboard() {
         photoPreview: parsed.photo || null
       }));
 
-      // Fetch packages
+      // Always fetch all packages for upgrade logic
       fetch('/api/packages')
         .then(r => r.json())
         .then(list => {
-          const ups = list.filter(p => (parsed.approved_packages || []).includes(p.id));
-          setPackages(ups);
+          setAllPackages(list); // Store all packages for upgrade logic
+          
+          // If we don't have approved_packages_details, filter from the fetched list
+          if (!parsed.approved_packages_details) {
+            const ups = list.filter(p => (parsed.approved_packages || []).includes(p.id));
+            setPackages(ups);
 
-          if (ups.length > 0) {
-            parsed.package_name = ups[0].name || ups[0].title;
-            setUser(parsed);
-            try { localStorage.setItem('user', JSON.stringify(parsed)); } catch (e) {}
+            if (ups.length > 0) {
+              parsed.package_name = ups[0].name || ups[0].title;
+              setUser(parsed);
+              try { localStorage.setItem('user', JSON.stringify(parsed)); } catch (e) {}
+            }
           }
         })
         .catch(() => {})
@@ -169,6 +287,7 @@ export default function UserDashboard() {
           setUser(parsed);
           try { localStorage.setItem('user', JSON.stringify(parsed)); } catch (e) {}
         }
+        setLoading(false); // Set loading to false if we have cached data
       }
 
       loadWalletData(parsed.id);
@@ -1150,6 +1269,84 @@ export default function UserDashboard() {
                             </div>
                           </div>
                         )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Upgrade Tab */}
+                {activeTab === 'upgrade' && (
+                  <div className="bg-white rounded-3xl shadow-xl p-6 lg:p-8 border border-gray-100">
+                    <div className="flex items-center gap-3 mb-8">
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
+                        <FaRocket className="text-white text-xl" />
+                      </div>
+                      <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Upgrade Package</h2>
+                    </div>
+
+                    {!allPackages.length ? (
+                      <div className="text-center py-12">
+                        <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent"></div>
+                        <h3 className="text-xl font-semibold text-gray-600 mb-2">Loading Packages...</h3>
+                        <p className="text-gray-500">Please wait while we load available upgrades.</p>
+                      </div>
+                    ) : packages.length === 0 ? (
+                      <div className="text-center py-12">
+                        <FaRocket className="text-6xl text-gray-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-gray-600 mb-2">No Packages Found</h3>
+                        <p className="text-gray-500">You don't have any active packages to upgrade from.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-3xl border-2 border-blue-200">
+                          <h3 className="font-bold text-gray-800 text-lg mb-2">Your Current Package</h3>
+                          <p className="text-gray-600">{packages[0]?.name || packages[0]?.title}</p>
+                          <p className="text-sm text-gray-500 mt-1">Price: {packages[0]?.price}</p>
+                        </div>
+
+                        <div>
+                          <h3 className="font-bold text-gray-800 text-xl mb-6">Available Upgrades</h3>
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {getAvailableUpgrades().map((upgradePkg) => (
+                              <div key={upgradePkg.id} className="bg-white border-2 border-gray-200 rounded-3xl p-6 hover:border-purple-400 transition-all hover:shadow-xl">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div>
+                                    <h4 className="font-bold text-gray-800 text-lg">{upgradePkg.name || upgradePkg.title}</h4>
+                                    <p className="text-gray-600 text-sm mt-1">{upgradePkg.subtitle}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-2xl font-bold text-purple-600">{upgradePkg.price}</div>
+                                    <div className="text-sm text-gray-500 line-through">{packages[0]?.price}</div>
+                                  </div>
+                                </div>
+                                
+                                <div className="mb-4">
+                                  <div className="text-lg font-semibold text-green-600 mb-2">
+                                    Upgrade Cost: ₹{calculateUpgradeCost(upgradePkg)}
+                                  </div>
+                                  <p className="text-sm text-gray-600">
+                                    You save ₹{calculateSavings(upgradePkg)} from paying full price
+                                  </p>
+                                </div>
+
+                                <button
+                                  onClick={() => handleUpgrade(upgradePkg)}
+                                  className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-bold hover:shadow-2xl transform hover:scale-105 transition-all"
+                                >
+                                  Upgrade Now
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {getAvailableUpgrades().length === 0 && (
+                            <div className="text-center py-12">
+                              <FaTrophy className="text-6xl text-yellow-400 mx-auto mb-4" />
+                              <h3 className="text-xl font-semibold text-gray-600 mb-2">You're Already at the Top!</h3>
+                              <p className="text-gray-500">You have the highest tier package available.</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
