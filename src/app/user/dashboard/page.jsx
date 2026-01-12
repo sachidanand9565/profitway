@@ -241,6 +241,29 @@ export default function UserDashboard() {
     }
   };
 
+  // Refresh user data from database
+  const refreshUserData = async (userId) => {
+    try {
+      const response = await fetch(`/api/users/profile?userId=${userId}`);
+      if (response.ok) {
+        const freshUser = await response.json();
+        const updatedUser = { ...user, ...freshUser };
+        setUser(updatedUser);
+        try { localStorage.setItem('user', JSON.stringify(updatedUser)); } catch (e) {}
+        setProfileForm(f => ({
+          ...f,
+          name: updatedUser.name || '',
+          phone: updatedUser.phone || '',
+          state: updatedUser.state || '',
+          email: updatedUser.email || '',
+          photoPreview: updatedUser.photo || null
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+    }
+  };
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem('user');
@@ -375,7 +398,7 @@ export default function UserDashboard() {
         const updated = await res.json();
         const newUser = {
           ...user,
-          username: payload.name,
+          name: payload.name,
           phone: payload.phone,
           state: payload.state,
           email: payload.email,
@@ -657,7 +680,7 @@ export default function UserDashboard() {
                       
                       <EarningCard
                         title="All Time Earning"
-                        amount={walletData.wallet?.totalEarned || 0}
+                        amount={walletData.commissions?.totalIncome || 0}
                         gradient="from-amber-500 via-orange-500 to-red-600"
                         icon={<FaTrophy />}
                         loading={loadingWallet}

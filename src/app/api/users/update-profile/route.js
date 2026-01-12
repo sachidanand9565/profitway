@@ -13,7 +13,7 @@ export async function POST(request) {
     const values = [];
 
     if (name !== undefined) {
-      updateFields.push("username = ?");
+      updateFields.push("name = ?");
       values.push(name);
     }
 

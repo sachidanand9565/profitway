@@ -54,19 +54,19 @@ export async function GET(request) {
       WHERE earner_user_id = ? AND created_at >= ? AND status = 'credited'
     `, [userId, todayStart]);
 
-    // Last 7 days earnings (only credited commissions)
+    // Last 7 days earnings (only credited commissions, excluding today)
     const last7DaysEarnings = await query(`
       SELECT SUM(commission_amount) as total
       FROM commissions
-      WHERE earner_user_id = ? AND created_at >= ? AND status = 'credited'
-    `, [userId, sevenDaysAgo]);
+      WHERE earner_user_id = ? AND created_at >= ? AND created_at < ? AND status = 'credited'
+    `, [userId, sevenDaysAgo, todayStart]);
 
-    // Last 30 days earnings (only credited commissions)
+    // Last 30 days earnings (only credited commissions, excluding today)
     const last30DaysEarnings = await query(`
       SELECT SUM(commission_amount) as total
       FROM commissions
-      WHERE earner_user_id = ? AND created_at >= ? AND status = 'credited'
-    `, [userId, thirtyDaysAgo]);
+      WHERE earner_user_id = ? AND created_at >= ? AND created_at < ? AND status = 'credited'
+    `, [userId, thirtyDaysAgo, todayStart]);
 
     // Get recent commissions (last 10)
     const recentCommissions = await query(`
