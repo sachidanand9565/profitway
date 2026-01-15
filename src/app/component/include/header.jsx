@@ -12,6 +12,19 @@ function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const router = useRouter();
 
+  // Helper function to format image source for display
+  const formatImageSrc = (imageData) => {
+    if (!imageData) return null;
+    // If it's already a data URL, return as is
+    if (imageData.startsWith('data:')) return imageData;
+    // If it's a base64 string, add the data URL prefix
+    if (imageData.startsWith('/9j/') || imageData.startsWith('iVBORw0KGgo=') || imageData.length > 100) {
+      return `data:image/jpeg;base64,${imageData}`;
+    }
+    // Otherwise, assume it's a regular URL
+    return imageData;
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const handleScroll = () => setScrollY(window.scrollY);
@@ -150,7 +163,7 @@ function Header() {
                       isUserMenuOpen ? 'border-blue-600 scale-105' : 'border-white'
                     }`}>
                       {user.photo ? (
-                        <img src={user.photo} alt="avatar" className="w-full h-full object-cover rounded-full" />
+                        <img src={formatImageSrc(user.photo)} alt="avatar" className="w-full h-full object-cover rounded-full" />
                       ) : (
                         <span className="text-white font-bold text-sm">
                           {(user.username || user.name || 'U').charAt(0).toUpperCase()}
@@ -185,7 +198,7 @@ function Header() {
                           <div className="flex items-center gap-3">
                             <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm border-2 border-white/50 flex items-center justify-center shadow-lg">
                               {user.photo ? (
-                                <img src={user.photo} alt="avatar" className="w-full h-full object-cover rounded-xl" />
+                                <img src={formatImageSrc(user.photo)} alt="avatar" className="w-full h-full object-cover rounded-xl" />
                               ) : (
                                 <span className="text-white font-bold text-xl">
                                   {(user.username || user.name || 'U').charAt(0).toUpperCase()}

@@ -366,12 +366,25 @@ export default function UserDashboard() {
     router.push('/'); 
   };
 
-  const fileToBase64 = (file) => new Promise((res, rej) => { 
-    const r = new FileReader(); 
-    r.onload = () => res(r.result); 
-    r.onerror = rej; 
-    r.readAsDataURL(file); 
+  const fileToBase64 = (file) => new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
   });
+
+  // Helper function to format image source for display
+  const formatImageSrc = (imageData) => {
+    if (!imageData) return null;
+    // If it's already a data URL, return as is
+    if (imageData.startsWith('data:')) return imageData;
+    // If it's a base64 string, add the data URL prefix
+    if (imageData.startsWith('/9j/') || imageData.startsWith('iVBORw0KGgo=') || imageData.length > 100) {
+      return `data:image/jpeg;base64,${imageData}`;
+    }
+    // Otherwise, assume it's a regular URL
+    return imageData;
+  };
 
   const handleSaveProfile = async () => {
     setSavingProfile(true); 
@@ -558,7 +571,7 @@ export default function UserDashboard() {
                       <div className="flex flex-col items-center text-center">
                         <div className="w-24 h-24 rounded-2xl border-4 border-white overflow-hidden bg-white shadow-2xl">
                           {user?.photo ? (
-                            <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
+                            <img src={formatImageSrc(user.photo)} alt="avatar" className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-white bg-gradient-to-br from-blue-500 to-indigo-600">
                               {(user?.name || 'U').charAt(0).toUpperCase()}
@@ -629,7 +642,7 @@ export default function UserDashboard() {
                           {/* Profile Photo - Left */}
                           <div className="w-20 h-20 rounded-xl overflow-hidden bg-white shadow-lg flex-shrink-0 border-2 border-white/50">
                             {user?.photo ? (
-                              <img src={user.photo} alt="avatar" className="w-full h-full object-cover" />
+                              <img src={formatImageSrc(user.photo)} alt="avatar" className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-indigo-600 bg-white">
                                 {(user?.name || 'U').charAt(0).toUpperCase()}
