@@ -110,12 +110,19 @@ export async function POST(request) {
         // Active commission for direct referrer
         const activeCommission = commissionBase * activeCommissionRate;
 
+        // Ensure wallet exists for direct referrer BEFORE updating
+        await connection.execute(
+          "INSERT INTO user_wallets (user_id, balance, total_earned) VALUES (?, 0, 0) ON DUPLICATE KEY UPDATE user_id = user_id",
+          [directReferrerId]
+        );
+
         // Insert active commission record
         await connection.execute(
           "INSERT INTO commissions (purchase_id, earner_user_id, referrer_user_id, package_name, package_price, commission_type, commission_percentage, commission_amount, status) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, 'credited')",
           [id, directReferrerId, directReferrerId, pkg.name, packagePrice, activeCommissionRate * 100, activeCommission]
         );
 
+        
         // Update wallet for active commission
         await connection.execute(
           "UPDATE user_wallets SET balance = balance + ?, total_earned = total_earned + ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?",
@@ -128,6 +135,12 @@ export async function POST(request) {
           const grandReferrerResult = await connection.execute("SELECT id FROM users WHERE referral_code = ?", [referrerDetails[0][0].sponsor_code]);
           if (grandReferrerResult[0].length > 0) {
             const grandReferrerId = grandReferrerResult[0][0].id;
+
+            // Ensure wallet exists for grand referrer BEFORE updating
+            await connection.execute(
+              "INSERT INTO user_wallets (user_id, balance, total_earned) VALUES (?, 0, 0) ON DUPLICATE KEY UPDATE user_id = user_id",
+              [grandReferrerId]
+            );
 
             // Passive commission for grand referrer
             const passiveCommission = commissionBase * passiveCommissionRate;
