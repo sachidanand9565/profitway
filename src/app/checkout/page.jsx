@@ -720,7 +720,7 @@ const handlePayNow = async () => {
                       <h3 className="text-lg font-bold text-white mb-4">Please Pay Rs. {form.price || pkgData.price || "TBD"} /- On below given UPI</h3>
                       <div className="text-center mb-6">
 <img
-  src="/payqr.jpeg"
+  src="/QR.jpeg"
   alt="UPI QR Code"
   className="mx-auto w-56 h-56 object-contain rounded-lg border border-gray-600 p-2 bg-white"
 />
