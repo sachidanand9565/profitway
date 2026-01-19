@@ -1463,7 +1463,46 @@ export default function UserDashboard() {
 }
 
 // Enhanced Earning Card Component
+// Counter Animation Component
+function CounterNumber({ value, duration = 2000 }) {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    const finalValue = Number(value || 0);
+    if (finalValue === 0) {
+      setCount(0);
+      return;
+    }
+
+    let startValue = 0;
+    const increment = finalValue / (duration / 50);
+    let currentValue = startValue;
+
+    const interval = setInterval(() => {
+      currentValue += increment;
+      if (currentValue >= finalValue) {
+        setCount(finalValue);
+        clearInterval(interval);
+      } else {
+        setCount(Math.floor(currentValue));
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [value, duration]);
+
+  return <span>{Number(count).toLocaleString('en-IN')}</span>;
+}
+
 function EarningCard({ title, amount, gradient, icon, loading, highlight = false }) {
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setHasLoaded(true);
+    }
+  }, [loading]);
+
   return (
     <div className={`group p-6 rounded-3xl bg-gradient-to-br ${gradient} text-white shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all ${highlight ? 'ring-4 ring-white ring-opacity-50' : ''}`}>
       <div className="flex items-start justify-between mb-4">
@@ -1473,7 +1512,7 @@ function EarningCard({ title, amount, gradient, icon, loading, highlight = false
             <div className="h-10 w-24 bg-white/20 rounded-lg animate-pulse"></div>
           ) : (
             <div className="text-3xl lg:text-4xl font-bold">
-              ₹{Number(amount || 0).toLocaleString('en-IN')}
+              ₹{hasLoaded ? <CounterNumber value={amount} duration={2000} /> : Number(amount || 0).toLocaleString('en-IN')}
             </div>
           )}
         </div>
