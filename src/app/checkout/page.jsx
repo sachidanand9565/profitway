@@ -763,7 +763,6 @@ const handlePayNow = async () => {
                           <input
                             type="file"
                             accept="image/*"
-                            capture="environment"
                             onChange={(e) => {
                               const file = e.target.files[0];
                               if (file && file.size > 5 * 1024 * 1024) {

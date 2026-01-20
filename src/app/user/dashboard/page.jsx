@@ -1104,11 +1104,11 @@ export default function UserDashboard() {
                       </div>
 
                       <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-3xl p-6 border-2 border-blue-200">
-                        <div className="text-sm font-bold text-gray-700 mb-4">Your Referral Link</div>
+                        <div className="text-sm font-bold text-gray-700 mb-4">Your Referral Code</div>
                         <div className="flex flex-col sm:flex-row gap-3">
                           <input
                             readOnly
-                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`}
+                            value={`${user.referral_code || ''}`}
                             className="flex-1 border-2 border-gray-300 rounded-2xl px-4 py-3.5 bg-white font-mono text-sm"
                           />
                           <button
