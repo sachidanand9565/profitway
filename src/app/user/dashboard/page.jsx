@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Header from '../../component/include/header';
 import Footer from '../../component/include/footer';
 import VideoPlayerModal from '../../component/VideoPlayerModal';
-import { FaUser, FaBook, FaChartLine, FaMoneyBillWave, FaUsers, FaComments, FaCopy, FaEdit, FaCheck, FaTrophy, FaGraduationCap, FaRocket, FaSignOutAlt, FaBars, FaTimes, FaPlay, FaLock, FaClock } from 'react-icons/fa';
+import { FaUser, FaBook, FaChartLine, FaMoneyBillWave, FaUsers, FaComments, FaCopy, FaEdit, FaCheck, FaTrophy, FaGraduationCap, FaRocket, FaSignOutAlt, FaBars, FaTimes, FaPlay, FaLock, FaClock, FaWhatsapp, FaTelegram, FaFacebook, FaInstagram } from 'react-icons/fa';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -1403,24 +1403,27 @@ export default function UserDashboard() {
                         <h3 className="font-bold text-gray-800 text-xl mb-6">Join Our Channels</h3>
                         <ul className="space-y-4">
                           {[
-                            { name: 'WhatsApp Group', color: 'from-green-500 to-emerald-600', icon: '💬' },
-                            { name: 'Telegram Channel', color: 'from-blue-500 to-cyan-600', icon: '✈️' },
-                            { name: 'Facebook Group', color: 'from-blue-600 to-indigo-600', icon: '👥' },
-                            { name: 'Instagram', color: 'from-pink-500 to-rose-600', icon: '📸' }
-                          ].map((channel, idx) => (
-                            <li key={idx}>
-                              <a
-                                href="#"
-                                className={`flex items-center justify-between px-6 py-4 rounded-2xl bg-gradient-to-r ${channel.color} text-white font-semibold hover:shadow-2xl transition-all transform hover:scale-105`}
-                              >
-                                <span className="flex items-center gap-3">
-                                  <span className="text-2xl">{channel.icon}</span>
-                                  {channel.name}
-                                </span>
-                                <span>→</span>
-                              </a>
-                            </li>
-                          ))}
+                            { name: 'WhatsApp Group', color: 'from-green-500 to-emerald-600', icon: FaWhatsapp },
+                            { name: 'Telegram Channel', color: 'from-blue-500 to-cyan-600', icon: FaTelegram },
+                            { name: 'Facebook Group', color: 'from-blue-600 to-indigo-600', icon: FaFacebook },
+                            { name: 'Instagram', color: 'from-pink-500 to-rose-600', icon: FaInstagram }
+                          ].map((channel, idx) => {
+                            const IconComponent = channel.icon;
+                            return (
+                              <li key={idx}>
+                                <a
+                                  href="#"
+                                  className={`flex items-center justify-between px-6 py-4 rounded-2xl bg-gradient-to-r ${channel.color} text-white font-semibold hover:shadow-2xl transition-all transform hover:scale-105`}
+                                >
+                                  <span className="flex items-center gap-3">
+                                    <IconComponent className="text-2xl" />
+                                    {channel.name}
+                                  </span>
+                                  <span>→</span>
+                                </a>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
 
