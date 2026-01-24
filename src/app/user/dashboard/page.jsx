@@ -1309,15 +1309,17 @@ export default function UserDashboard() {
                       ) : withdrawalHistory.length > 0 ? (
                         <div className="space-y-4">
                           {withdrawalHistory.map((withdrawal) => {
+                            // console.log(withdrawalHistory);
+                            
                             // Format date safely - handle MySQL datetime format
                             let formattedDate = 'Date not available';
                             try {
-                              if (withdrawal.created_at) {
+                              if (withdrawal.createdAt) {
                                 let dateObj;
-                                const dateStr = withdrawal.created_at.toString().trim();
+                                const dateStr = withdrawal.createdAt.toString().trim();
                                 
                                 // Try multiple date parsing methods
-                                if (typeof withdrawal.created_at === 'string') {
+                                if (typeof withdrawal.createdAt === 'string') {
                                   // MySQL format: "2026-01-16 22:05:22"
                                   if (dateStr.includes(' ') && !dateStr.includes('T')) {
                                     // Split and reconstruct as ISO format
@@ -1329,7 +1331,7 @@ export default function UserDashboard() {
                                     dateObj = new Date(dateStr);
                                   }
                                 } else {
-                                  dateObj = withdrawal.created_at;
+                                  dateObj = withdrawal.createdAt;
                                 }
                                 
                                 // Validate and format
