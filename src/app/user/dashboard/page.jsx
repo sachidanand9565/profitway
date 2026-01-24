@@ -43,6 +43,11 @@ export default function UserDashboard() {
   const [referredUsers, setReferredUsers] = useState([]);
   const [loadingReferredUsers, setLoadingReferredUsers] = useState(false);
 
+  // Top earners state
+  const [topEarners, setTopEarners] = useState([]);
+  const [loadingTopEarners, setLoadingTopEarners] = useState(false);
+  const [topEarnersFilter, setTopEarnersFilter] = useState('today');
+
   const closeVideoPlayer = () => {
     setPlayerVideoUrl(null);
   };
@@ -241,6 +246,23 @@ export default function UserDashboard() {
     }
   };
 
+  // Load top earners
+  const loadTopEarners = async (filter = 'today') => {
+    setLoadingTopEarners(true);
+    try {
+      const response = await fetch(`/api/users/top-earners?filter=${filter}&limit=5`);
+      if (response.ok) {
+        const data = await response.json();
+        setTopEarners(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load top earners:', error);
+      setTopEarners([]);
+    } finally {
+      setLoadingTopEarners(false);
+    }
+  };
+
   // Refresh user data from database
   const refreshUserData = async (userId) => {
     try {
@@ -342,6 +364,13 @@ export default function UserDashboard() {
       loadReferredUsers(user.id);
     }
   }, [activeTab, user?.id]);
+
+  // Load top earners when affiliate tab is active
+  useEffect(() => {
+    if (activeTab === 'affiliate') {
+      loadTopEarners(topEarnersFilter);
+    }
+  }, [activeTab, topEarnersFilter]);
 
   // Load all modules when mycourses tab is active
   useEffect(() => {
@@ -1088,47 +1117,162 @@ export default function UserDashboard() {
                         <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Affiliate Dashboard</h2>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                        <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 text-white shadow-xl">
-                          <div className="text-sm opacity-90 mb-2 font-medium">Total Earnings</div>
-                          <div className="text-4xl font-bold">₹0</div>
-                        </div>
-                        <div className="p-6 rounded-3xl bg-gradient-to-br from-amber-500 via-orange-500 to-red-600 text-white shadow-xl">
-                          <div className="text-sm opacity-90 mb-2 font-medium">Pending</div>
-                          <div className="text-4xl font-bold">₹0</div>
-                        </div>
-                        <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 text-white shadow-xl">
-                          <div className="text-sm opacity-90 mb-2 font-medium">Withdrawn</div>
-                          <div className="text-4xl font-bold">₹0</div>
-                        </div>
-                      </div>
+                     
 
-                      <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-3xl p-6 border-2 border-blue-200">
-                        <div className="text-sm font-bold text-gray-700 mb-4">Your Referral Code</div>
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <input
-                            readOnly
-                            value={`${user.referral_code || ''}`}
-                            className="flex-1 border-2 border-gray-300 rounded-2xl px-4 py-3.5 bg-white font-mono text-sm"
-                          />
-                          <button
-                            onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user.referral_code || ''}`)}
-                            className="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold hover:shadow-xl transition-all flex items-center justify-center gap-2"
-                          >
-                            {copied ? <FaCheck /> : <FaCopy />}
-                            {copied ? 'Copied!' : 'Copy'}
-                          </button>
-                        </div>
-                      </div>
-
+                      {/* Top Earners Section */}
                       <div className="mt-8">
-                        <h3 className="font-bold text-gray-800 text-xl mb-4">Recent Referrals</h3>
-                        <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl">
-                          <FaUsers className="text-6xl text-gray-300 mx-auto mb-4" />
-                          <p className="text-gray-500 text-lg font-medium">No referrals yet</p>
-                          <p className="text-sm text-gray-400 mt-2">Share your link to start earning</p>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                          <h3 className="font-bold text-gray-800 text-lg sm:text-xl">🏆 Top Earners</h3>
+                          <div className="flex flex-wrap gap-1 sm:gap-2 w-full sm:w-auto">
+                            {[
+                              { value: 'today', label: 'Today' },
+                              { value: 'yesterday', label: 'Yesterday' },
+                              { value: '7days', label: '7 Days' },
+                              { value: 'thisMonth', label: 'Month' },
+                              { value: 'lastMonth', label: 'Last Mo' }
+                            ].map(filter => (
+                              <button
+                                key={filter.value}
+                                onClick={() => setTopEarnersFilter(filter.value)}
+                                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+                                  topEarnersFilter === filter.value
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                }`}
+                              >
+                                {filter.label}
+                              </button>
+                            ))}
+                          </div>
                         </div>
+
+                        {loadingTopEarners ? (
+                          <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent"></div>
+                            <p className="mt-6 text-gray-600 font-medium">Loading top earners...</p>
+                          </div>
+                        ) : topEarners.length > 0 ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                            {topEarners.slice(0, 3).map((earner, index) => (
+                              <div
+                                key={earner.id}
+                                className={`relative rounded-2xl sm:rounded-3xl p-4 sm:p-6 overflow-hidden transition-all hover:shadow-2xl ${
+                                  index === 0
+                                    ? 'bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-400 shadow-lg sm:shadow-xl'
+                                    : index === 1
+                                    ? 'bg-gradient-to-br from-gray-50 to-slate-50 border-2 border-gray-400 shadow-md sm:shadow-lg'
+                                    : 'bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-400 shadow-md sm:shadow-lg'
+                                }`}
+                              >
+                                {/* Medal badge */}
+                                <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-12 sm:w-16 h-12 sm:h-16 flex items-center justify-center">
+                                  <div
+                                    className={`text-3xl sm:text-4xl ${
+                                      index === 0
+                                        ? 'text-yellow-500'
+                                        : index === 1
+                                        ? 'text-gray-400'
+                                        : 'text-orange-500'
+                                    }`}
+                                  >
+                                    {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-start gap-3 sm:gap-4">
+                                  <div className="flex-shrink-0">
+                                    {earner.image ? (
+                                      <img
+                                        src={earner.image}
+                                        alt={earner.name}
+                                        className="w-12 sm:w-16 h-12 sm:h-16 rounded-xl sm:rounded-2xl object-cover border-2 border-white shadow-lg"
+                                      />
+                                    ) : (
+                                      <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-lg sm:text-2xl font-bold shadow-lg border-2 border-white">
+                                        {earner.name.charAt(0).toUpperCase()}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-bold text-gray-800 text-sm sm:text-lg truncate">{earner.name}</h4>
+                                    <p className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">{earner.referralCount} referrals</p>
+                                    <div className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent truncate">
+                                      ₹{Number(earner.totalEarnings).toLocaleString('en-IN')}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl">
+                            <FaTrophy className="text-6xl text-gray-300 mx-auto mb-4" />
+                            <p className="text-gray-500 text-lg font-medium">No data available for this period</p>
+                            <p className="text-sm text-gray-400 mt-2">Check back later</p>
+                          </div>
+                        )}
                       </div>
+
+                      {/* Top 5 Earners Table */}
+                      {topEarners.length > 0 && (
+                        <div className="mt-8">
+                          <h3 className="font-bold text-gray-800 text-lg sm:text-xl mb-4">📊 Top 5 Earners</h3>
+                          <div className="overflow-x-auto -mx-4 sm:mx-0">
+                            <div className="inline-block min-w-full px-4 sm:px-0">
+                              <table className="w-full text-sm sm:text-base">
+                                <thead>
+                                  <tr className="bg-gradient-to-r from-purple-100 to-pink-100">
+                                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-bold text-gray-800">Rank</th>
+                                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-bold text-gray-800">Name</th>
+                                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-center font-bold text-gray-800 hidden sm:table-cell">Referrals</th>
+                                    <th className="px-2 sm:px-4 py-2 sm:py-3 text-right font-bold text-gray-800">Earnings</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {topEarners.map((earner, index) => (
+                                    <tr
+                                      key={earner.id}
+                                      className={`border-b border-gray-200 hover:bg-gray-50 transition-all ${
+                                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                      }`}
+                                    >
+                                      <td className="px-2 sm:px-4 py-3 sm:py-4 text-center">
+                                        <span className="inline-flex items-center justify-center w-6 sm:w-8 h-6 sm:h-8 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs sm:text-sm">
+                                          {index + 1}
+                                        </span>
+                                      </td>
+                                      <td className="px-2 sm:px-4 py-3 sm:py-4">
+                                        <div className="flex items-center gap-2">
+                                          {earner.image ? (
+                                            <img
+                                              src={earner.image}
+                                              alt={earner.name}
+                                              className="w-8 sm:w-10 h-8 sm:h-10 rounded-full object-cover flex-shrink-0"
+                                            />
+                                          ) : (
+                                            <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs sm:text-xs font-bold flex-shrink-0">
+                                              {earner.name.charAt(0).toUpperCase()}
+                                            </div>
+                                          )}
+                                          <div className="font-medium text-gray-800 truncate text-xs sm:text-base">{earner.name}</div>
+                                        </div>
+                                      </td>
+                                      <td className="px-2 sm:px-4 py-3 sm:py-4 text-gray-600 font-semibold text-center hidden sm:table-cell text-xs sm:text-base">{earner.referralCount}</td>
+                                      <td className="px-2 sm:px-4 py-3 sm:py-4 text-right">
+                                        <span className="font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent text-xs sm:text-lg inline-block">
+                                          ₹{Number(earner.totalEarnings).toLocaleString('en-IN')}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      
                     </div>
                   </div>
                 )}
@@ -1164,7 +1308,48 @@ export default function UserDashboard() {
                         </div>
                       ) : withdrawalHistory.length > 0 ? (
                         <div className="space-y-4">
-                          {withdrawalHistory.map((withdrawal) => (
+                          {withdrawalHistory.map((withdrawal) => {
+                            // Format date safely - handle MySQL datetime format
+                            let formattedDate = 'Date not available';
+                            try {
+                              if (withdrawal.created_at) {
+                                let dateObj;
+                                const dateStr = withdrawal.created_at.toString().trim();
+                                
+                                // Try multiple date parsing methods
+                                if (typeof withdrawal.created_at === 'string') {
+                                  // MySQL format: "2026-01-16 22:05:22"
+                                  if (dateStr.includes(' ') && !dateStr.includes('T')) {
+                                    // Split and reconstruct as ISO format
+                                    const [datePart, timePart] = dateStr.split(' ');
+                                    const isoStr = `${datePart}T${timePart}Z`;
+                                    dateObj = new Date(isoStr);
+                                  } else {
+                                    // Already ISO or other format
+                                    dateObj = new Date(dateStr);
+                                  }
+                                } else {
+                                  dateObj = withdrawal.created_at;
+                                }
+                                
+                                // Validate and format
+                                if (dateObj && !isNaN(dateObj.getTime())) {
+                                  const timestamp = dateObj.getTime();
+                                  // Additional check for valid date (not in future beyond reasonable limit)
+                                  if (timestamp > 0) {
+                                    formattedDate = dateObj.toLocaleDateString('en-IN', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    });
+                                  }
+                                }
+                              }
+                            } catch (error) {
+                              console.error('Date parsing error:', error, withdrawal.created_at);
+                            }
+                            
+                            return (
                             <div key={withdrawal.id} className="bg-gradient-to-r from-white to-gray-50 border-2 border-gray-200 rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
@@ -1174,11 +1359,7 @@ export default function UserDashboard() {
                                   <div>
                                     <div className="font-bold text-gray-800 text-xl">₹{Number(withdrawal.amount || 0).toLocaleString('en-IN')}</div>
                                     <div className="text-sm text-gray-500 mt-1">
-                                      {new Date(withdrawal.created_at).toLocaleDateString('en-IN', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        year: 'numeric'
-                                      })} • {withdrawal.method}
+                                      {formattedDate} • {withdrawal.method}
                                     </div>
                                   </div>
                                 </div>
@@ -1192,7 +1373,8 @@ export default function UserDashboard() {
                                 </div>
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       ) : (
                         <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl">

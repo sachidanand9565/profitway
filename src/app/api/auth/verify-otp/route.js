@@ -34,8 +34,8 @@ export async function POST(request) {
       return NextResponse.json({ success: false, error: "OTP expired" }, { status: 400 });
     }
 
-    const hashed = await bcrypt.hash(newPassword, 10);
-    await query("UPDATE users SET password = ?, otp = NULL, otp_expires = NULL WHERE id = ?", [hashed, user.id]);
+    // const hashed = await bcrypt.hash(newPassword, 10);
+    await query("UPDATE users SET password = ?, otp = NULL, otp_expires = NULL WHERE id = ?", [newPassword, user.id]);
 
     return NextResponse.json({ success: true, message: "Password reset successful" });
   } catch (err) {
