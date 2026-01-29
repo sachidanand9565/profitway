@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { FaLock, FaCheck } from 'react-icons/fa';
@@ -7,6 +8,8 @@ import { FaLock, FaCheck } from 'react-icons/fa';
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
@@ -149,38 +152,44 @@ export default function ResetPassword() {
               </div>
             )}
 
-            <div>
+            <div className="relative">
               <label htmlFor="password" className="sr-only">
                 New Password
               </label>
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm pr-10"
                 placeholder="New password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3 top-2 text-gray-600">
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
 
-            <div>
+            <div className="relative">
               <label htmlFor="confirmPassword" className="sr-only">
                 Confirm New Password
               </label>
               <input
                 id="confirmPassword"
                 name="confirmPassword"
-                type="password"
+                type={showConfirm ? 'text' : 'password'}
                 autoComplete="new-password"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm pr-10"
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
+              <button type="button" onClick={() => setShowConfirm(s => !s)} className="absolute right-3 top-2 text-gray-600">
+                {showConfirm ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
 
             <div>

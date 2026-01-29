@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import Head from "next/head";
 import Header from '../component/include/header'
 import Footer from '../component/include/footer'
@@ -8,6 +9,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [status, setStatus] = useState(null);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => setForm(s => ({ ...s, [e.target.name]: e.target.value }));
 
@@ -59,9 +61,19 @@ export default function LoginPage() {
                   <label className="block text-sm text-gray-700 mb-1">Email</label>
                   <input name="username" value={form.username} onChange={handleChange} required className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300" />
                 </div>
-                <div>
+                <div className="relative">
                   <label className="block text-sm text-gray-700 mb-1">Password</label>
-                  <input name="password" type="password" value={form.password} onChange={handleChange} required className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300" />
+                  <input
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                    className="w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-lg border border-gray-300 pr-10"
+                  />
+                  <button type="button" onClick={() => setShowPassword(s => !s)} className="absolute right-3 top-9 text-gray-600">
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
                 </div>
                 <div className="flex items-center justify-between">
                   <a href="/forgot-password" className="text-blue-600 hover:text-blue-800 text-sm">

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { FaArrowLeft, FaEnvelope, FaLock } from 'react-icons/fa';
+import { FaArrowLeft, FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function ForgotPassword() {
   const [step, setStep] = useState(1); // 1: enter email, 2: enter OTP & new passwords, 3: success
@@ -9,6 +9,8 @@ export default function ForgotPassword() {
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
@@ -203,38 +205,44 @@ export default function ForgotPassword() {
                 />
               </div>
 
-              <div>
+              <div className="relative">
                 <label htmlFor="newPassword" className="sr-only">
                   New Password
                 </label>
                 <input
                   id="newPassword"
                   name="newPassword"
-                  type="password"
+                  type={showNew ? 'text' : 'password'}
                   required
                   minLength={6}
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm"
+                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm pr-10"
                   placeholder="New Password (min 6 characters)"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                 />
+                <button type="button" onClick={() => setShowNew(s => !s)} className="absolute right-3 top-2 text-gray-600">
+                  {showNew ? <FaEyeSlash /> : <FaEye />}
+                </button>
               </div>
 
-              <div>
+              <div className="relative">
                 <label htmlFor="confirmPassword" className="sr-only">
                   Confirm New Password
                 </label>
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type="password"
+                  type={showConfirm ? 'text' : 'password'}
                   required
                   minLength={6}
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm"
+                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 focus:z-10 sm:text-sm pr-10"
                   placeholder="Confirm New Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
+                <button type="button" onClick={() => setShowConfirm(s => !s)} className="absolute right-3 top-2 text-gray-600">
+                  {showConfirm ? <FaEyeSlash /> : <FaEye />}
+                </button>
               </div>
 
               <div>

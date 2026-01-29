@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Header from '../../component/include/header';
 import Footer from '../../component/include/footer';
 import VideoPlayerModal from '../../component/VideoPlayerModal';
-import { FaUser, FaBook, FaChartLine, FaMoneyBillWave, FaUsers, FaComments, FaCopy, FaEdit, FaCheck, FaTrophy, FaGraduationCap, FaRocket, FaSignOutAlt, FaBars, FaTimes, FaPlay, FaLock, FaClock, FaWhatsapp, FaTelegram, FaFacebook, FaInstagram } from 'react-icons/fa';
+import { FaUser, FaBook, FaChartLine, FaMoneyBillWave, FaUsers, FaComments, FaCopy, FaEdit, FaCheck, FaTrophy, FaGraduationCap, FaRocket, FaSignOutAlt, FaBars, FaTimes, FaPlay, FaLock, FaEye, FaEyeSlash, FaClock, FaWhatsapp, FaTelegram, FaFacebook, FaInstagram } from 'react-icons/fa';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -1722,6 +1722,9 @@ function ChangePasswordForm() {
   const [oldPass, setOld] = useState('');
   const [newPass, setNew] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [msg, setMsg] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -1781,37 +1784,46 @@ function ChangePasswordForm() {
         </div>
       )}
       
-      <div>
+      <div className="relative">
         <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
         <input
-          type="password"
+          type={showOld ? 'text' : 'password'}
           value={oldPass}
           onChange={e => setOld(e.target.value)}
-          className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+          className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
           placeholder="Enter current password"
         />
+        <button type="button" onClick={() => setShowOld(s => !s)} className="absolute right-3 top-9 text-gray-600">
+          {showOld ? <FaEyeSlash /> : <FaEye />}
+        </button>
       </div>
 
-      <div>
+      <div className="relative">
         <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
         <input
-          type="password"
+          type={showNew ? 'text' : 'password'}
           value={newPass}
           onChange={e => setNew(e.target.value)}
-          className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+          className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
           placeholder="Enter new password"
         />
+        <button type="button" onClick={() => setShowNew(s => !s)} className="absolute right-3 top-9 text-gray-600">
+          {showNew ? <FaEyeSlash /> : <FaEye />}
+        </button>
       </div>
 
-      <div>
+      <div className="relative">
         <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
         <input
-          type="password"
+          type={showConfirm ? 'text' : 'password'}
           value={confirm}
           onChange={e => setConfirm(e.target.value)}
-          className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+          className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
           placeholder="Confirm new password"
         />
+        <button type="button" onClick={() => setShowConfirm(s => !s)} className="absolute right-3 top-9 text-gray-600">
+          {showConfirm ? <FaEyeSlash /> : <FaEye />}
+        </button>
       </div>
 
       <button
