@@ -4,92 +4,147 @@ import { query } from "@/lib/mysqlClient";
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const userId = searchParams.get("userId");
 
     if (!userId) {
-      return NextResponse.json({ error: "User ID required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "User ID required" },
+        { status: 400 }
+      );
     }
 
-    // Get wallet balance
+    /* =========================
+       WALLET DETAILS
+    ========================== */
     const walletResult = await query(
-      "SELECT balance, total_earned, total_withdrawn FROM user_wallets WHERE user_id = ?",
+      `SELECT balance, total_earned, total_withdrawn 
+       FROM user_wallets 
+       WHERE user_id = ?`,
       [userId]
     );
 
-    const wallet = walletResult[0] || { balance: 0, total_earned: 0, total_withdrawn: 0 };
+    const wallet = walletResult[0] || {
+      balance: 0,
+      total_earned: 0,
+      total_withdrawn: 0
+    };
 
-    // Get commission summary (active vs passive) - only credited commissions
-    const commissionSummary = await query(`
+    /* =========================
+       COMMISSION SUMMARY
+    ========================== */
+    const commissionSummary = await query(
+      `
       SELECT
         commission_type,
-        SUM(commission_amount) as total_amount,
-        COUNT(*) as count
+        SUM(commission_amount) AS total_amount
       FROM commissions
-      WHERE earner_user_id = ? AND status = 'credited'
+      WHERE earner_user_id = ?
+        AND status = 'credited'
       GROUP BY commission_type
-    `, [userId]);
+      `,
+      [userId]
+    );
 
-    // Calculate active and passive income
     let activeIncome = 0;
     let passiveIncome = 0;
 
-    commissionSummary.forEach(commission => {
-      if (commission.commission_type === 'active') {
-        activeIncome = parseFloat(commission.total_amount);
-      } else if (commission.commission_type === 'passive') {
-        passiveIncome = parseFloat(commission.total_amount);
+    commissionSummary.forEach(row => {
+      if (row.commission_type === "active") {
+        activeIncome = parseFloat(row.total_amount || 0);
+      }
+      if (row.commission_type === "passive") {
+        passiveIncome = parseFloat(row.total_amount || 0);
       }
     });
 
-    // Get time-based earnings
+    /* =========================
+       DATE CALCULATIONS
+    ========================== */
     const today = new Date();
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const sevenDaysAgo = new Date(todayStart.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const thirtyDaysAgo = new Date(todayStart.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
 
-    // Today's earnings (only credited commissions)
-    const todayEarnings = await query(`
-      SELECT SUM(commission_amount) as total
+    const sevenDaysAgo = new Date(todayStart);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // today + last 6 days
+
+    const thirtyDaysAgo = new Date(todayStart);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29); // today + last 29 days
+
+    /* =========================
+       TODAY EARNING
+    ========================== */
+    const todayEarnings = await query(
+      `
+      SELECT SUM(commission_amount) AS total
       FROM commissions
-      WHERE earner_user_id = ? AND created_at >= ? AND status = 'credited'
-    `, [userId, todayStart]);
+      WHERE earner_user_id = ?
+        AND created_at >= ?
+        AND status = 'credited'
+      `,
+      [userId, todayStart]
+    );
 
-    // Last 7 days earnings (only credited commissions, excluding today)
-    const last7DaysEarnings = await query(`
-      SELECT SUM(commission_amount) as total
+    /* =========================
+       LAST 7 DAYS (INCLUDING TODAY)
+    ========================== */
+    const last7DaysEarnings = await query(
+      `
+      SELECT SUM(commission_amount) AS total
       FROM commissions
-      WHERE earner_user_id = ? AND created_at >= ? AND created_at < ? AND status = 'credited'
-    `, [userId, sevenDaysAgo, todayStart]);
+      WHERE earner_user_id = ?
+        AND created_at >= ?
+        AND status = 'credited'
+      `,
+      [userId, sevenDaysAgo]
+    );
 
-    // Last 30 days earnings (only credited commissions, excluding today)
-    const last30DaysEarnings = await query(`
-      SELECT SUM(commission_amount) as total
+    /* =========================
+       LAST 30 DAYS (INCLUDING TODAY)
+    ========================== */
+    const last30DaysEarnings = await query(
+      `
+      SELECT SUM(commission_amount) AS total
       FROM commissions
-      WHERE earner_user_id = ? AND created_at >= ? AND created_at < ? AND status = 'credited'
-    `, [userId, thirtyDaysAgo, todayStart]);
+      WHERE earner_user_id = ?
+        AND created_at >= ?
+        AND status = 'credited'
+      `,
+      [userId, thirtyDaysAgo]
+    );
 
-    // Get recent commissions (last 10)
-    const recentCommissions = await query(`
+    /* =========================
+       RECENT COMMISSIONS
+    ========================== */
+    const recentCommissions = await query(
+      `
       SELECT
         c.commission_amount,
         c.commission_type,
         c.commission_percentage,
         c.created_at,
-        p.name as package_name,
-        u.username as referrer_name
+        p.name AS package_name,
+        u.username AS referrer_name
       FROM commissions c
       LEFT JOIN packages p ON c.package_name = p.name
       LEFT JOIN users u ON c.referrer_user_id = u.id
       WHERE c.earner_user_id = ?
       ORDER BY c.created_at DESC
       LIMIT 10
-    `, [userId]);
+      `,
+      [userId]
+    );
 
+    /* =========================
+       RESPONSE
+    ========================== */
     return NextResponse.json({
       wallet: {
-        balance: parseFloat(wallet.balance),
-        totalEarned: parseFloat(wallet.total_earned),
-        totalWithdrawn: parseFloat(wallet.total_withdrawn)
+        balance: parseFloat(wallet.balance || 0),
+        totalEarned: parseFloat(wallet.total_earned || 0),
+        totalWithdrawn: parseFloat(wallet.total_withdrawn || 0)
       },
       commissions: {
         activeIncome,
@@ -111,6 +166,9 @@ export async function GET(request) {
 
   } catch (err) {
     console.error("Failed to fetch wallet data:", err);
-    return NextResponse.json({ error: "Failed to fetch wallet data" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch wallet data" },
+      { status: 500 }
+    );
   }
 }
